@@ -67,10 +67,6 @@ static char const GCC_UNUSED rcsid[] =
 
 
 
-
-/* external ref, in case missing in older version */
-extern int pcap_offline_read(void *, int, pcap_handler, u_char *);
-
 /* global pointer, the pcap info header */
 static pcap_t *pcap;
 
@@ -248,7 +244,7 @@ pread_tcpdump(
     int ret;
 
     while (1) {
-	if ((ret = pcap_offline_read(pcap,1,(pcap_handler)callback,0)) != 1) {
+	if ((ret = pcap_dispatch(pcap,1,(pcap_handler)callback,0)) != 1) {
 	    /* prob EOF */
 
 	    if (ret == -1) {
