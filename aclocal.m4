@@ -22,31 +22,15 @@ dnl
 dnl LBL autoconf macros
 dnl
 
-dnl
-dnl Determine which compiler we're using (cc or gcc)
-dnl If using gcc, determine the version number
-dnl If using cc, require that it support ansi prototypes
-dnl If using gcc, use -O2 (otherwise use -O)
-dnl If using cc, explicitly specify /usr/local/include
-dnl
-dnl usage:
-dnl
-dnl	AC_LBL_C_INIT(copt, incls)
-dnl
-dnl results:
-dnl
-dnl	$1 (copt set)
-dnl	$2 (incls set)
-dnl	CC
-dnl	LDFLAGS
-dnl	ac_cv_lbl_gcc_vers
-dnl	LBL_CFLAGS
-dnl
-AC_DEFUN(AC_LBL_C_INIT,
-    [AC_PREREQ(2.12)
-    AC_BEFORE([$0], [AC_PROG_CC])
-    AC_BEFORE([$0], [AC_LBL_FIXINCLUDES])
-    AC_BEFORE([$0], [AC_LBL_DEVEL])
+dnl Do whatever compiler identification work is necessary before AC_PROG_CC
+dnl runs.
+dnl 
+dnl This derived from libpcap patches--it seems like all of this should be
+dnl cleaned up, but we'll leave it in for now, taking the path of least
+dnl resistance.
+
+AC_DEFUN(AC_LBL_C_PREINIT,
+[
     AC_ARG_WITH(gcc, [  --without-gcc           don't use gcc])
     $1="-O"
     $2=""
@@ -72,7 +56,32 @@ AC_DEFUN(AC_LBL_C_INIT,
 	    CC=cc
 	    export CC
     fi
-    AC_PROG_CC
+])
+
+dnl
+dnl Determine which compiler we're using (cc or gcc)
+dnl If using gcc, determine the version number
+dnl If using cc, require that it support ansi prototypes
+dnl If using gcc, use -O2 (otherwise use -O)
+dnl If using cc, explicitly specify /usr/local/include
+dnl
+dnl usage:
+dnl
+dnl    AC_LBL_C_INIT(copt, incls)
+dnl
+dnl results:
+dnl
+dnl    $1 (copt set)
+dnl    $2 (incls set)
+dnl    CC
+dnl    LDFLAGS
+dnl    ac_cv_lbl_gcc_vers
+dnl    LBL_CFLAGS
+
+AC_DEFUN(AC_LBL_C_INIT,
+    [AC_PREREQ(2.12)
+    AC_BEFORE([$0], [AC_LBL_FIXINCLUDES])
+    AC_BEFORE([$0], [AC_LBL_DEVEL])
     if test "$GCC" = yes ; then
 	    if test "$SHLICC2" = yes ; then
 		    ac_cv_lbl_gcc_vers=2
