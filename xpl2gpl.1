@@ -1,0 +1,49 @@
+.\" In .TH, FOO should be all caps, SECTION should be 1-8, maybe w/ subsection
+.\" other parms are allowed: see man(7), man(1)
+.\"
+.\" This template provided by Tom Christiansen <tchrist@jhereg.perl.com>.
+.\" 
+.TH XPL2GPL 1 "Aug 8, 2009"
+.SH NAME
+xpl2gpl \- Convert tcptrace-style xplot input to gnuplot input.
+.SH SYNOPSIS
+.PP
+.B xpl2gpl
+.B [-s]
+.I <file_name>
+.SH DESCRIPTION
+.\" Putting a newline after each sentence can generate better output.
+xpl2gpl is a utility that converters tcptrace-style xplot input to
+gnuplot input.  This converter gives a nearly perfect gnuplot
+reproduction of the corresponding xplot graph.
+.SH OPTIONS
+.TP
+.B \-s
+Seperate files.
+If you wish to plot only some data from the xpl file, you may use the
+-s option, which generates a bunch of data-files
+filtered based on the color and plotting style.
+
+.SH EXAMPLES
+xpl2gpl foo.xpl
+
+This would produce files by the names "foo.gpl", "foo.datasets" and
+"foo.labels".  Load the file "file_name.gpl" in gnuplot and it should
+give you the plot.
+
+.SH NOTES
+xpl2gpl is provided for convenience, as gnuplot is more commonly
+installed than the xplot package that tcptrace typically expects, and
+because xplot has not always been available in Debian. If possible,
+you should consider installing the xplot-xplot.org package and using
+it instead of using xpl2gpl.
+.SH AUTHOR
+Avinash Lakhiani (no known email address)
+
+This manual page was written by Noah Meyerhans <noahm@debian.org> for
+the Debian project and may be used freely and without restriction by
+others.
+
+.SH "SEE ALSO"
+.\" Always quote multiple words for .SH
+.BR tcptrace (1)
