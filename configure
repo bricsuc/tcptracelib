@@ -5149,7 +5149,7 @@ case "$target" in
   *cygwin*)	V_PCAP_LDLIBS="-lwpcap";
 esac
 
-if [ -f /lib/libc-2* ]; then
+if [ -f /lib/libc-2* -o -f /lib/*linux*/libc-2* ]; then
  V_DEFINES="$V_DEFINES -D_BSD_SOURCE"
 fi
 

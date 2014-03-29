@@ -91,7 +91,7 @@ case "$target" in
 esac
 
 dnl define _BSD_SOURCE for libc-2
-if [[ -f /lib/libc-2* ]]; then
+if [[ -f /lib/libc-2* -o -f /lib/*linux*/libc-2* ]]; then
  V_DEFINES="$V_DEFINES -D_BSD_SOURCE"
 fi
 
