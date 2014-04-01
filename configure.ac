@@ -120,6 +120,21 @@ AC_ARG_ENABLE([mod-tcplib],
               [])
 AM_CONDITIONAL([MOD_TCPLIB], [test x$enable_mod_tcplib = xyes])
 
+## Checks for decompression programs.
+
+# gzip
+AC_CHECK_PROG([has_gzip], [gunzip], [yes])
+AM_CONDITIONAL([COMPRESS_GZIP], [test x$has_gzip = xyes])
+
+# bzip2
+AC_CHECK_PROG([has_bzip2], [bunzip2], [yes])
+AM_CONDITIONAL([COMPRESS_BZIP2], [test x$has_bzip2 = xyes])
+
+# uncompress is obsolete (by gzip), no need to include it anymore
+
+# TODO: add something for xz
+
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_LN_S

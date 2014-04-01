@@ -89,5 +89,14 @@ if MOD_TCPLIB
     tcptrace_SOURCES += mod_tcplib.c
 endif
 
+# decompression options
+if COMPRESS_GZIP
+    tcptrace_CPPFLAGS += -DGUNZIP=\"gunzip\"
+endif
+
+if COMPRESS_BZIP2
+    tcptrace_CPPFLAGS += -DBUNZIP2=\"bunzip2\"
+endif
+
 # missing: dependencies?
 
