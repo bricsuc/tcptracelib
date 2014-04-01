@@ -36,10 +36,17 @@ bin_PROGRAMS = tcptrace$(EXEEXT)
 
 # Input format options
 @FORMAT_PCAP_TRUE@am__append_1 = -DGROK_TCPDUMP
+@FORMAT_SNOOP_TRUE@am__append_2 = -DGROK_SNOOP
+@FORMAT_NETM_TRUE@am__append_3 = -DGROK_NETM
+@FORMAT_ETHERPEEK_TRUE@am__append_4 = -DGROK_ETHERPEEK
+@FORMAT_NS_TRUE@am__append_5 = -DGROK_NS
+@FORMAT_NLANR_TRUE@am__append_6 = -DGROK_NLANR
+@FORMAT_NETSCOUT_TRUE@am__append_7 = -DGROK_NETSCOUT
+@FORMAT_ERF_TRUE@am__append_8 = -DGROK_ERF
 
 # Module options
-@MOD_TRAFFIC_TRUE@am__append_2 = -DLOAD_MODULE_TRAFFIC
-@MOD_TRAFFIC_TRUE@am__append_3 = mod_traffic.c
+@MOD_TRAFFIC_TRUE@am__append_9 = -DLOAD_MODULE_TRAFFIC
+@MOD_TRAFFIC_TRUE@am__append_10 = mod_traffic.c
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure COPYING INSTALL \
@@ -218,9 +225,11 @@ tcptrace_SOURCES = avl.c compress.c erf.c etherpeek.c gcache.c \
 	mfiles.c names.c netm.c output.c plotter.c print.c rexmit.c \
 	snoop.c nlanr.c tcpdump.c tcptrace.c thruput.c trace.c ipv6.c \
 	filter.c udp.c ns.c netscout.c version.c pool.c poolaccess.c \
-	dstring.c filt_parser.y filt_scanner.l $(am__append_3)
+	dstring.c filt_parser.y filt_scanner.l $(am__append_10)
 tcptrace_LDADD = @LEXLIB@
-tcptrace_CPPFLAGS = $(am__append_1) $(am__append_2)
+tcptrace_CPPFLAGS = $(am__append_1) $(am__append_2) $(am__append_3) \
+	$(am__append_4) $(am__append_5) $(am__append_6) \
+	$(am__append_7) $(am__append_8) $(am__append_9)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

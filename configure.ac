@@ -7,15 +7,57 @@ AM_INIT_AUTOMAKE([-Wall foreign])
 # AC_CONFIG_SRCDIR([mod_collie.c])
 # AC_CONFIG_HEADERS([config.h])
 
-# Input format options
+## Input format options
+
 # pcap/tcpdump (enabled by default)
 AC_ARG_ENABLE([pcap],
               [AC_HELP_STRING([--disable-pcap], [Disable pcap/tcpdump format])],
               [], [enable_pcap=yes])
-
 AM_CONDITIONAL([FORMAT_PCAP], [test x$enable_pcap = xyes])
 
-# Modile options
+# snoop (enabled by default)
+AC_ARG_ENABLE([snoop],
+              [AC_HELP_STRING([--disable-snoop], [Disable Sun snoop format])],
+              [], [enable_snoop=yes])
+AM_CONDITIONAL([FORMAT_SNOOP], [test x$enable_snoop = xyes])
+
+# netm (enabled by default)
+AC_ARG_ENABLE([netm],
+              [AC_HELP_STRING([--disable-netm], [Disable HP netm format])],
+              [], [enable_netm=yes])
+AM_CONDITIONAL([FORMAT_NETM], [test x$enable_netm = xyes])
+
+# etherpeek (enabled by default)
+AC_ARG_ENABLE([etherpeek],
+              [AC_HELP_STRING([--disable-etherpeek], [Disable etherpeek format])],
+              [], [enable_etherpeek=yes])
+AM_CONDITIONAL([FORMAT_ETHERPEEK], [test x$enable_etherpeek = xyes])
+
+# LBL network simulator (enabled by default)
+AC_ARG_ENABLE([ns],
+              [AC_HELP_STRING([--disable-ns], [Disable LBL ns format])],
+              [], [enable_ns=yes])
+AM_CONDITIONAL([FORMAT_NS], [test x$enable_ns = xyes])
+
+# netscout (enabled by default)
+AC_ARG_ENABLE([netscout],
+              [AC_HELP_STRING([--disable-netscout], [Disable netscout format])],
+              [], [enable_netscout=yes])
+AM_CONDITIONAL([FORMAT_NETSCOUT], [test x$enable_netscout = xyes])
+
+# Endace Technology dagsnap (enabled by default)
+AC_ARG_ENABLE([erf],
+              [AC_HELP_STRING([--disable-erf], [Disable Endace dagsnap format])],
+              [], [enable_erf=yes])
+AM_CONDITIONAL([FORMAT_ERF], [test x$enable_erf = xyes])
+
+# NLANL NLANR (disabled by default, supposedly not working well)
+AC_ARG_ENABLE([nlanr],
+              [AC_HELP_STRING([--enable-nlanr=@<:@yes/no@:>@], [Enable NLANR format])],
+              [], [enable_nlanr=no])
+AM_CONDITIONAL([FORMAT_NLANR], [test x$enable_nlanr = xyes])
+
+## Module options
 
 AC_ARG_ENABLE([mod-traffic],
               [AC_HELP_STRING([--disable-mod-traffic], [Disable Traffic Module])],

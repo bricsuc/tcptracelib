@@ -635,6 +635,20 @@ CFLAGS
 CC
 MOD_TRAFFIC_FALSE
 MOD_TRAFFIC_TRUE
+FORMAT_NLANR_FALSE
+FORMAT_NLANR_TRUE
+FORMAT_ERF_FALSE
+FORMAT_ERF_TRUE
+FORMAT_NETSCOUT_FALSE
+FORMAT_NETSCOUT_TRUE
+FORMAT_NS_FALSE
+FORMAT_NS_TRUE
+FORMAT_ETHERPEEK_FALSE
+FORMAT_ETHERPEEK_TRUE
+FORMAT_NETM_FALSE
+FORMAT_NETM_TRUE
+FORMAT_SNOOP_FALSE
+FORMAT_SNOOP_TRUE
 FORMAT_PCAP_FALSE
 FORMAT_PCAP_TRUE
 am__untar
@@ -702,6 +716,13 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_pcap
+enable_snoop
+enable_netm
+enable_etherpeek
+enable_ns
+enable_netscout
+enable_erf
+enable_nlanr
 enable_mod_traffic
 enable_dependency_tracking
 '
@@ -1333,6 +1354,13 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-pcap          Disable pcap/tcpdump format
+  --disable-snoop         Disable Sun snoop format
+  --disable-netm          Disable HP netm format
+  --disable-etherpeek     Disable etherpeek format
+  --disable-ns            Disable LBL ns format
+  --disable-netscout      Disable netscout format
+  --disable-erf           Disable Endace dagsnap format
+  --enable-nlanr=[yes/no] Enable NLANR format
   --disable-mod-traffic   Disable Traffic Module
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
@@ -2883,7 +2911,8 @@ am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 # AC_CONFIG_SRCDIR([mod_collie.c])
 # AC_CONFIG_HEADERS([config.h])
 
-# Input format options
+## Input format options
+
 # pcap/tcpdump (enabled by default)
 # Check whether --enable-pcap was given.
 if test "${enable_pcap+set}" = set; then :
@@ -2891,7 +2920,6 @@ if test "${enable_pcap+set}" = set; then :
 else
   enable_pcap=yes
 fi
-
 
  if test x$enable_pcap = xyes; then
   FORMAT_PCAP_TRUE=
@@ -2902,7 +2930,126 @@ else
 fi
 
 
-# Modile options
+# snoop (enabled by default)
+# Check whether --enable-snoop was given.
+if test "${enable_snoop+set}" = set; then :
+  enableval=$enable_snoop;
+else
+  enable_snoop=yes
+fi
+
+ if test x$enable_snoop = xyes; then
+  FORMAT_SNOOP_TRUE=
+  FORMAT_SNOOP_FALSE='#'
+else
+  FORMAT_SNOOP_TRUE='#'
+  FORMAT_SNOOP_FALSE=
+fi
+
+
+# netm (enabled by default)
+# Check whether --enable-netm was given.
+if test "${enable_netm+set}" = set; then :
+  enableval=$enable_netm;
+else
+  enable_netm=yes
+fi
+
+ if test x$enable_netm = xyes; then
+  FORMAT_NETM_TRUE=
+  FORMAT_NETM_FALSE='#'
+else
+  FORMAT_NETM_TRUE='#'
+  FORMAT_NETM_FALSE=
+fi
+
+
+# etherpeek (enabled by default)
+# Check whether --enable-etherpeek was given.
+if test "${enable_etherpeek+set}" = set; then :
+  enableval=$enable_etherpeek;
+else
+  enable_etherpeek=yes
+fi
+
+ if test x$enable_etherpeek = xyes; then
+  FORMAT_ETHERPEEK_TRUE=
+  FORMAT_ETHERPEEK_FALSE='#'
+else
+  FORMAT_ETHERPEEK_TRUE='#'
+  FORMAT_ETHERPEEK_FALSE=
+fi
+
+
+# LBL network simulator (enabled by default)
+# Check whether --enable-ns was given.
+if test "${enable_ns+set}" = set; then :
+  enableval=$enable_ns;
+else
+  enable_ns=yes
+fi
+
+ if test x$enable_ns = xyes; then
+  FORMAT_NS_TRUE=
+  FORMAT_NS_FALSE='#'
+else
+  FORMAT_NS_TRUE='#'
+  FORMAT_NS_FALSE=
+fi
+
+
+# netscout (enabled by default)
+# Check whether --enable-netscout was given.
+if test "${enable_netscout+set}" = set; then :
+  enableval=$enable_netscout;
+else
+  enable_netscout=yes
+fi
+
+ if test x$enable_netscout = xyes; then
+  FORMAT_NETSCOUT_TRUE=
+  FORMAT_NETSCOUT_FALSE='#'
+else
+  FORMAT_NETSCOUT_TRUE='#'
+  FORMAT_NETSCOUT_FALSE=
+fi
+
+
+# Endace Technology dagsnap (enabled by default)
+# Check whether --enable-erf was given.
+if test "${enable_erf+set}" = set; then :
+  enableval=$enable_erf;
+else
+  enable_erf=yes
+fi
+
+ if test x$enable_erf = xyes; then
+  FORMAT_ERF_TRUE=
+  FORMAT_ERF_FALSE='#'
+else
+  FORMAT_ERF_TRUE='#'
+  FORMAT_ERF_FALSE=
+fi
+
+
+# NLANL NLANR (disabled by default, supposedly not working well)
+# Check whether --enable-nlanr was given.
+if test "${enable_nlanr+set}" = set; then :
+  enableval=$enable_nlanr;
+else
+  enable_nlanr=no
+fi
+
+ if test x$enable_nlanr = xyes; then
+  FORMAT_NLANR_TRUE=
+  FORMAT_NLANR_FALSE='#'
+else
+  FORMAT_NLANR_TRUE='#'
+  FORMAT_NLANR_FALSE=
+fi
+
+
+## Module options
 
 # Check whether --enable-mod-traffic was given.
 if test "${enable_mod_traffic+set}" = set; then :
@@ -6367,6 +6514,34 @@ fi
 
 if test -z "${FORMAT_PCAP_TRUE}" && test -z "${FORMAT_PCAP_FALSE}"; then
   as_fn_error $? "conditional \"FORMAT_PCAP\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${FORMAT_SNOOP_TRUE}" && test -z "${FORMAT_SNOOP_FALSE}"; then
+  as_fn_error $? "conditional \"FORMAT_SNOOP\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${FORMAT_NETM_TRUE}" && test -z "${FORMAT_NETM_FALSE}"; then
+  as_fn_error $? "conditional \"FORMAT_NETM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${FORMAT_ETHERPEEK_TRUE}" && test -z "${FORMAT_ETHERPEEK_FALSE}"; then
+  as_fn_error $? "conditional \"FORMAT_ETHERPEEK\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${FORMAT_NS_TRUE}" && test -z "${FORMAT_NS_FALSE}"; then
+  as_fn_error $? "conditional \"FORMAT_NS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${FORMAT_NETSCOUT_TRUE}" && test -z "${FORMAT_NETSCOUT_FALSE}"; then
+  as_fn_error $? "conditional \"FORMAT_NETSCOUT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${FORMAT_ERF_TRUE}" && test -z "${FORMAT_ERF_FALSE}"; then
+  as_fn_error $? "conditional \"FORMAT_ERF\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${FORMAT_NLANR_TRUE}" && test -z "${FORMAT_NLANR_FALSE}"; then
+  as_fn_error $? "conditional \"FORMAT_NLANR\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${MOD_TRAFFIC_TRUE}" && test -z "${MOD_TRAFFIC_FALSE}"; then

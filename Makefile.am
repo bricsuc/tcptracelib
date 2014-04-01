@@ -30,6 +30,27 @@ tcptrace_CPPFLAGS =
 if FORMAT_PCAP
     tcptrace_CPPFLAGS += -DGROK_TCPDUMP
 endif
+if FORMAT_SNOOP
+    tcptrace_CPPFLAGS += -DGROK_SNOOP
+endif
+if FORMAT_NETM
+    tcptrace_CPPFLAGS += -DGROK_NETM
+endif
+if FORMAT_ETHERPEEK
+    tcptrace_CPPFLAGS += -DGROK_ETHERPEEK
+endif
+if FORMAT_NS
+    tcptrace_CPPFLAGS += -DGROK_NS
+endif
+if FORMAT_NLANR
+    tcptrace_CPPFLAGS += -DGROK_NLANR
+endif
+if FORMAT_NETSCOUT
+    tcptrace_CPPFLAGS += -DGROK_NETSCOUT
+endif
+if FORMAT_ERF
+    tcptrace_CPPFLAGS += -DGROK_ERF
+endif
 
 # Module options
 
