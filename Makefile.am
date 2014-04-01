@@ -1,4 +1,5 @@
 AUTOMAKE_OPTIONS = foreign
+# ACLOCAL_AMFLAGS([-I m4])
 
 bin_PROGRAMS = tcptrace
 
@@ -14,16 +15,19 @@ AM_LFLAGS = -P filtyy -o lex.yy.c
 tcptrace_SOURCES = \
     avl.c compress.c erf.c etherpeek.c gcache.c mfiles.c names.c \
     netm.c output.c plotter.c print.c rexmit.c snoop.c nlanr.c \
-    tcpdump.c tcptrace.c thruput.c trace.c ipv6.c   \
+    tcpdump.c tcptrace.c thruput.c trace.c \
     filter.c udp.c \
     ns.c netscout.c version.c pool.c poolaccess.c \
     dstring.c \
     filt_parser.y \
     filt_scanner.l
 
-tcptrace_LDADD = @LEXLIB@
+tcptrace_LDADD = libtcptrace.la @LEXLIB@
 
 tcptrace_CPPFLAGS =
+
+lib_LTLIBRARIES = libtcptrace.la
+libtcptrace_la_SOURCES = ipv6.c
 
 # Input format options
 
