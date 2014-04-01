@@ -59,12 +59,66 @@ AM_CONDITIONAL([FORMAT_NLANR], [test x$enable_nlanr = xyes])
 
 ## Module options
 
+# HTTP analysis module
+AC_ARG_ENABLE([mod-http],
+              [AC_HELP_STRING([--disable-mod-http], [Disable HTTP module])],
+              [],
+              [enable_mod_http=yes])
+AM_CONDITIONAL([MOD_HTTP], [test x$enable_mod_http = xyes])
+
+# traffic-by-port module
 AC_ARG_ENABLE([mod-traffic],
-              [AC_HELP_STRING([--disable-mod-traffic], [Disable Traffic Module])],
+              [AC_HELP_STRING([--disable-mod-traffic], [Disable traffic module])],
               [],
               [enable_mod_traffic=yes])
-
 AM_CONDITIONAL([MOD_TRAFFIC], [test x$enable_mod_traffic = xyes])
+
+# traffic-by-timeslice module
+AC_ARG_ENABLE([mod-slice],
+              [AC_HELP_STRING([--disable-mod-slice], [Disable traffic by timeslice module])],
+              [],
+              [enable_mod_slice=yes])
+AM_CONDITIONAL([MOD_SLICE], [test x$enable_mod_slice = xyes])
+
+# round trip time module
+AC_ARG_ENABLE([mod-rtt],
+              [AC_HELP_STRING([--disable-mod-rtt], [Disable round trip time module])],
+              [],
+              [enable_mod_rtt=yes])
+AM_CONDITIONAL([MOD_RTT], [test x$enable_mod_rtt = xyes])
+
+# collie module
+AC_ARG_ENABLE([mod-collie],
+              [AC_HELP_STRING([--disable-mod-collie], [Disable connection summary module])],
+              [],
+              [enable_mod_collie=yes])
+AM_CONDITIONAL([MOD_COLLIE], [test x$enable_mod_collie = xyes])
+
+# realtime module
+AC_ARG_ENABLE([mod-realtime],
+              [AC_HELP_STRING([--disable-mod-realtime], [Disable realtime module])],
+              [],
+              [enable_mod_realtime=yes])
+AM_CONDITIONAL([MOD_REALTIME], [test x$enable_mod_realtime = xyes])
+
+AC_ARG_ENABLE([mod-inbounds],
+              [AC_HELP_STRING([--enable-mod-inbounds], [Enable INBOUNDS module])],
+              [enable_mod_inbounds=yes],
+              [])
+AM_CONDITIONAL([MOD_INBOUNDS], [test x$enable_mod_inbounds = xyes])
+
+# tcplib-data module (disabled by default)
+# We are not going to compile in the antiquated TCPLIB module by default 
+# anymore.
+# It seems to have quite some bugs, and being antiquated as it is, we
+# thought it is not worth the time fixing them.  - Mani, 15 Aug 2003.
+#
+# This requires the tcplib library, and who knows its status. -bdw
+AC_ARG_ENABLE([mod-tcplib],
+              [AC_HELP_STRING([--enable-mod-tcplib], [Enable TCPLIB module])],
+              [enable_mod_tcplib=yes],
+              [])
+AM_CONDITIONAL([MOD_TCPLIB], [test x$enable_mod_tcplib = xyes])
 
 # Checks for programs.
 AC_PROG_CC

@@ -633,8 +633,22 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+MOD_TCPLIB_FALSE
+MOD_TCPLIB_TRUE
+MOD_INBOUNDS_FALSE
+MOD_INBOUNDS_TRUE
+MOD_REALTIME_FALSE
+MOD_REALTIME_TRUE
+MOD_COLLIE_FALSE
+MOD_COLLIE_TRUE
+MOD_RTT_FALSE
+MOD_RTT_TRUE
+MOD_SLICE_FALSE
+MOD_SLICE_TRUE
 MOD_TRAFFIC_FALSE
 MOD_TRAFFIC_TRUE
+MOD_HTTP_FALSE
+MOD_HTTP_TRUE
 FORMAT_NLANR_FALSE
 FORMAT_NLANR_TRUE
 FORMAT_ERF_FALSE
@@ -723,7 +737,14 @@ enable_ns
 enable_netscout
 enable_erf
 enable_nlanr
+enable_mod_http
 enable_mod_traffic
+enable_mod_slice
+enable_mod_rtt
+enable_mod_collie
+enable_mod_realtime
+enable_mod_inbounds
+enable_mod_tcplib
 enable_dependency_tracking
 '
       ac_precious_vars='build_alias
@@ -1361,7 +1382,14 @@ Optional Features:
   --disable-netscout      Disable netscout format
   --disable-erf           Disable Endace dagsnap format
   --enable-nlanr=[yes/no] Enable NLANR format
-  --disable-mod-traffic   Disable Traffic Module
+  --disable-mod-http      Disable HTTP module
+  --disable-mod-traffic   Disable traffic module
+  --disable-mod-slice     Disable traffic by timeslice module
+  --disable-mod-rtt       Disable round trip time module
+  --disable-mod-collie    Disable connection summary module
+  --disable-mod-realtime  Disable realtime module
+  --enable-mod-inbounds   Enable INBOUNDS module
+  --enable-mod-tcplib     Enable TCPLIB module
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
 
@@ -3051,6 +3079,24 @@ fi
 
 ## Module options
 
+# HTTP analysis module
+# Check whether --enable-mod-http was given.
+if test "${enable_mod_http+set}" = set; then :
+  enableval=$enable_mod_http;
+else
+  enable_mod_http=yes
+fi
+
+ if test x$enable_mod_http = xyes; then
+  MOD_HTTP_TRUE=
+  MOD_HTTP_FALSE='#'
+else
+  MOD_HTTP_TRUE='#'
+  MOD_HTTP_FALSE=
+fi
+
+
+# traffic-by-port module
 # Check whether --enable-mod-traffic was given.
 if test "${enable_mod_traffic+set}" = set; then :
   enableval=$enable_mod_traffic;
@@ -3058,13 +3104,115 @@ else
   enable_mod_traffic=yes
 fi
 
-
  if test x$enable_mod_traffic = xyes; then
   MOD_TRAFFIC_TRUE=
   MOD_TRAFFIC_FALSE='#'
 else
   MOD_TRAFFIC_TRUE='#'
   MOD_TRAFFIC_FALSE=
+fi
+
+
+# traffic-by-timeslice module
+# Check whether --enable-mod-slice was given.
+if test "${enable_mod_slice+set}" = set; then :
+  enableval=$enable_mod_slice;
+else
+  enable_mod_slice=yes
+fi
+
+ if test x$enable_mod_slice = xyes; then
+  MOD_SLICE_TRUE=
+  MOD_SLICE_FALSE='#'
+else
+  MOD_SLICE_TRUE='#'
+  MOD_SLICE_FALSE=
+fi
+
+
+# round trip time module
+# Check whether --enable-mod-rtt was given.
+if test "${enable_mod_rtt+set}" = set; then :
+  enableval=$enable_mod_rtt;
+else
+  enable_mod_rtt=yes
+fi
+
+ if test x$enable_mod_rtt = xyes; then
+  MOD_RTT_TRUE=
+  MOD_RTT_FALSE='#'
+else
+  MOD_RTT_TRUE='#'
+  MOD_RTT_FALSE=
+fi
+
+
+# collie module
+# Check whether --enable-mod-collie was given.
+if test "${enable_mod_collie+set}" = set; then :
+  enableval=$enable_mod_collie;
+else
+  enable_mod_collie=yes
+fi
+
+ if test x$enable_mod_collie = xyes; then
+  MOD_COLLIE_TRUE=
+  MOD_COLLIE_FALSE='#'
+else
+  MOD_COLLIE_TRUE='#'
+  MOD_COLLIE_FALSE=
+fi
+
+
+# realtime module
+# Check whether --enable-mod-realtime was given.
+if test "${enable_mod_realtime+set}" = set; then :
+  enableval=$enable_mod_realtime;
+else
+  enable_mod_realtime=yes
+fi
+
+ if test x$enable_mod_realtime = xyes; then
+  MOD_REALTIME_TRUE=
+  MOD_REALTIME_FALSE='#'
+else
+  MOD_REALTIME_TRUE='#'
+  MOD_REALTIME_FALSE=
+fi
+
+
+# Check whether --enable-mod-inbounds was given.
+if test "${enable_mod_inbounds+set}" = set; then :
+  enableval=$enable_mod_inbounds; enable_mod_inbounds=yes
+fi
+
+ if test x$enable_mod_inbounds = xyes; then
+  MOD_INBOUNDS_TRUE=
+  MOD_INBOUNDS_FALSE='#'
+else
+  MOD_INBOUNDS_TRUE='#'
+  MOD_INBOUNDS_FALSE=
+fi
+
+
+# tcplib-data module (disabled by default)
+# We are not going to compile in the antiquated TCPLIB module by default
+# anymore.
+# It seems to have quite some bugs, and being antiquated as it is, we
+# thought it is not worth the time fixing them.  - Mani, 15 Aug 2003.
+#
+# This requires the tcplib library, and who knows its status. -bdw
+# Check whether --enable-mod-tcplib was given.
+if test "${enable_mod_tcplib+set}" = set; then :
+  enableval=$enable_mod_tcplib; enable_mod_tcplib=yes
+fi
+
+ if test x$enable_mod_tcplib = xyes; then
+  MOD_TCPLIB_TRUE=
+  MOD_TCPLIB_FALSE='#'
+else
+  MOD_TCPLIB_TRUE='#'
+  MOD_TCPLIB_FALSE=
 fi
 
 
@@ -6544,8 +6692,36 @@ if test -z "${FORMAT_NLANR_TRUE}" && test -z "${FORMAT_NLANR_FALSE}"; then
   as_fn_error $? "conditional \"FORMAT_NLANR\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${MOD_HTTP_TRUE}" && test -z "${MOD_HTTP_FALSE}"; then
+  as_fn_error $? "conditional \"MOD_HTTP\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${MOD_TRAFFIC_TRUE}" && test -z "${MOD_TRAFFIC_FALSE}"; then
   as_fn_error $? "conditional \"MOD_TRAFFIC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MOD_SLICE_TRUE}" && test -z "${MOD_SLICE_FALSE}"; then
+  as_fn_error $? "conditional \"MOD_SLICE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MOD_RTT_TRUE}" && test -z "${MOD_RTT_FALSE}"; then
+  as_fn_error $? "conditional \"MOD_RTT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MOD_COLLIE_TRUE}" && test -z "${MOD_COLLIE_FALSE}"; then
+  as_fn_error $? "conditional \"MOD_COLLIE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MOD_REALTIME_TRUE}" && test -z "${MOD_REALTIME_FALSE}"; then
+  as_fn_error $? "conditional \"MOD_REALTIME\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MOD_INBOUNDS_TRUE}" && test -z "${MOD_INBOUNDS_FALSE}"; then
+  as_fn_error $? "conditional \"MOD_INBOUNDS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MOD_TCPLIB_TRUE}" && test -z "${MOD_TCPLIB_FALSE}"; then
+  as_fn_error $? "conditional \"MOD_TCPLIB\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${AMDEP_TRUE}" && test -z "${AMDEP_FALSE}"; then
