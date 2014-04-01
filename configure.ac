@@ -7,6 +7,13 @@ AM_INIT_AUTOMAKE([-Wall foreign])
 # AC_CONFIG_SRCDIR([mod_collie.c])
 # AC_CONFIG_HEADERS([config.h])
 
+AC_ARG_ENABLE([mod-traffic],
+              [AC_HELP_STRING([--disable-mod-traffic], [Disable Traffic Module])],
+              [],
+              [enable_mod_traffic=yes])
+
+AM_CONDITIONAL([MOD_TRAFFIC], [test x$enable_mod_traffic = xyes])
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_LN_S
@@ -43,7 +50,8 @@ AC_SEARCH_LIBS([sqrt],[m])
 AC_SEARCH_LIBS([floor],[m])
 AC_SEARCH_LIBS([ceilf],[m])
 AC_SEARCH_LIBS([truncf],[m])
-AC_CHECK_FUNCS([bzero dup2 floor gethostbyaddr gettimeofday inet_ntoa memchr memmove memset mkdir munmap sqrt strcasecmp strchr strdup strncasecmp strrchr strstr])
+AC_CHECK_FUNCS([bzero dup2 gethostbyaddr gettimeofday inet_ntoa memchr memmove memset mkdir munmap strcasecmp strchr strdup strncasecmp strrchr strstr])
+# should probably go barf when any of those are missing
 
 # Checks for _BSD_SOURCE flag
 if [[ -f /lib/libc-2* -o -f /lib/*linux*/libc-2* ]]; then

@@ -633,6 +633,8 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+MOD_TRAFFIC_FALSE
+MOD_TRAFFIC_TRUE
 am__untar
 am__tar
 AMTAR
@@ -697,6 +699,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+enable_mod_traffic
 enable_dependency_tracking
 '
       ac_precious_vars='build_alias
@@ -1326,6 +1329,7 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --disable-mod-traffic   Disable Traffic Module
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
 
@@ -2874,6 +2878,23 @@ am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 # AC_CONFIG_SRCDIR([mod_collie.c])
 # AC_CONFIG_HEADERS([config.h])
+
+# Check whether --enable-mod-traffic was given.
+if test "${enable_mod_traffic+set}" = set; then :
+  enableval=$enable_mod_traffic;
+else
+  enable_mod_traffic=yes
+fi
+
+
+ if test x$enable_mod_traffic = xyes; then
+  MOD_TRAFFIC_TRUE=
+  MOD_TRAFFIC_FALSE='#'
+else
+  MOD_TRAFFIC_TRUE='#'
+  MOD_TRAFFIC_FALSE=
+fi
+
 
 # Checks for programs.
 ac_ext=c
@@ -6075,7 +6096,7 @@ if test "$ac_res" != no; then :
 
 fi
 
-for ac_func in bzero dup2 floor gethostbyaddr gettimeofday inet_ntoa memchr memmove memset mkdir munmap sqrt strcasecmp strchr strdup strncasecmp strrchr strstr
+for ac_func in bzero dup2 gethostbyaddr gettimeofday inet_ntoa memchr memmove memset mkdir munmap strcasecmp strchr strdup strncasecmp strrchr strstr
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -6087,6 +6108,7 @@ _ACEOF
 fi
 done
 
+# should probably go barf when any of those are missing
 
 # Checks for _BSD_SOURCE flag
 if [ -f /lib/libc-2* -o -f /lib/*linux*/libc-2* ]; then
@@ -6254,6 +6276,10 @@ else
   am__EXEEXT_FALSE=
 fi
 
+if test -z "${MOD_TRAFFIC_TRUE}" && test -z "${MOD_TRAFFIC_FALSE}"; then
+  as_fn_error $? "conditional \"MOD_TRAFFIC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${AMDEP_TRUE}" && test -z "${AMDEP_FALSE}"; then
   as_fn_error $? "conditional \"AMDEP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5

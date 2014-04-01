@@ -23,3 +23,10 @@ tcptrace_SOURCES = \
 
 tcptrace_LDADD = @LEXLIB@
 
+tcptrace_CPPFLAGS =
+
+if MOD_TRAFFIC
+    tcptrace_CPPFLAGS += -DLOAD_MODULE_TRAFFIC
+    tcptrace_SOURCES += mod_traffic.c
+endif
+
