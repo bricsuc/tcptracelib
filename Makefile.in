@@ -33,8 +33,13 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = tcptrace$(EXEEXT)
-@MOD_TRAFFIC_TRUE@am__append_1 = -DLOAD_MODULE_TRAFFIC
-@MOD_TRAFFIC_TRUE@am__append_2 = mod_traffic.c
+
+# Input format options
+@FORMAT_PCAP_TRUE@am__append_1 = -DGROK_TCPDUMP
+
+# Module options
+@MOD_TRAFFIC_TRUE@am__append_2 = -DLOAD_MODULE_TRAFFIC
+@MOD_TRAFFIC_TRUE@am__append_3 = mod_traffic.c
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure COPYING INSTALL \
@@ -213,9 +218,9 @@ tcptrace_SOURCES = avl.c compress.c erf.c etherpeek.c gcache.c \
 	mfiles.c names.c netm.c output.c plotter.c print.c rexmit.c \
 	snoop.c nlanr.c tcpdump.c tcptrace.c thruput.c trace.c ipv6.c \
 	filter.c udp.c ns.c netscout.c version.c pool.c poolaccess.c \
-	dstring.c filt_parser.y filt_scanner.l $(am__append_2)
+	dstring.c filt_parser.y filt_scanner.l $(am__append_3)
 tcptrace_LDADD = @LEXLIB@
-tcptrace_CPPFLAGS = $(am__append_1)
+tcptrace_CPPFLAGS = $(am__append_1) $(am__append_2)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

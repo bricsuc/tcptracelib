@@ -25,6 +25,14 @@ tcptrace_LDADD = @LEXLIB@
 
 tcptrace_CPPFLAGS =
 
+# Input format options
+
+if FORMAT_PCAP
+    tcptrace_CPPFLAGS += -DGROK_TCPDUMP
+endif
+
+# Module options
+
 if MOD_TRAFFIC
     tcptrace_CPPFLAGS += -DLOAD_MODULE_TRAFFIC
     tcptrace_SOURCES += mod_traffic.c

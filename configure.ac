@@ -7,6 +7,16 @@ AM_INIT_AUTOMAKE([-Wall foreign])
 # AC_CONFIG_SRCDIR([mod_collie.c])
 # AC_CONFIG_HEADERS([config.h])
 
+# Input format options
+# pcap/tcpdump (enabled by default)
+AC_ARG_ENABLE([pcap],
+              [AC_HELP_STRING([--disable-pcap], [Disable pcap/tcpdump format])],
+              [], [enable_pcap=yes])
+
+AM_CONDITIONAL([FORMAT_PCAP], [test x$enable_pcap = xyes])
+
+# Modile options
+
 AC_ARG_ENABLE([mod-traffic],
               [AC_HELP_STRING([--disable-mod-traffic], [Disable Traffic Module])],
               [],
@@ -46,12 +56,24 @@ AC_FUNC_MALLOC
 AC_FUNC_MKTIME
 AC_FUNC_MMAP
 AC_FUNC_REALLOC
+
+# Math library.
 AC_SEARCH_LIBS([sqrt],[m])
 AC_SEARCH_LIBS([floor],[m])
 AC_SEARCH_LIBS([ceilf],[m])
 AC_SEARCH_LIBS([truncf],[m])
+
+# Others
+# should probably barf when any of these are missing
 AC_CHECK_FUNCS([bzero dup2 gethostbyaddr gettimeofday inet_ntoa memchr memmove memset mkdir munmap strcasecmp strchr strdup strncasecmp strrchr strstr])
-# should probably go barf when any of those are missing
+
+# look for pcap (tcpdump) library if pcap is enabled
+AM_COND_IF([FORMAT_PCAP],
+    AC_CHECK_LIB([pcap], [pcap_dispatch],
+                 [],
+                 AM_CONDITIONAL([FORMAT_PCAP], [false])
+    )
+)
 
 # Checks for _BSD_SOURCE flag
 if [[ -f /lib/libc-2* -o -f /lib/*linux*/libc-2* ]]; then

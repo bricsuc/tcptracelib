@@ -635,6 +635,8 @@ CFLAGS
 CC
 MOD_TRAFFIC_FALSE
 MOD_TRAFFIC_TRUE
+FORMAT_PCAP_FALSE
+FORMAT_PCAP_TRUE
 am__untar
 am__tar
 AMTAR
@@ -699,6 +701,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+enable_pcap
 enable_mod_traffic
 enable_dependency_tracking
 '
@@ -1329,6 +1332,7 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --disable-pcap          Disable pcap/tcpdump format
   --disable-mod-traffic   Disable Traffic Module
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
@@ -2878,6 +2882,27 @@ am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 # AC_CONFIG_SRCDIR([mod_collie.c])
 # AC_CONFIG_HEADERS([config.h])
+
+# Input format options
+# pcap/tcpdump (enabled by default)
+# Check whether --enable-pcap was given.
+if test "${enable_pcap+set}" = set; then :
+  enableval=$enable_pcap;
+else
+  enable_pcap=yes
+fi
+
+
+ if test x$enable_pcap = xyes; then
+  FORMAT_PCAP_TRUE=
+  FORMAT_PCAP_FALSE='#'
+else
+  FORMAT_PCAP_TRUE='#'
+  FORMAT_PCAP_FALSE=
+fi
+
+
+# Modile options
 
 # Check whether --enable-mod-traffic was given.
 if test "${enable_mod_traffic+set}" = set; then :
@@ -5872,6 +5897,8 @@ $as_echo "#define realloc rpl_realloc" >>confdefs.h
 fi
 
 
+
+# Math library.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing sqrt" >&5
 $as_echo_n "checking for library containing sqrt... " >&6; }
 if ${ac_cv_search_sqrt+:} false; then :
@@ -6096,6 +6123,9 @@ if test "$ac_res" != no; then :
 
 fi
 
+
+# Others
+# should probably barf when any of these are missing
 for ac_func in bzero dup2 gethostbyaddr gettimeofday inet_ntoa memchr memmove memset mkdir munmap strcasecmp strchr strdup strncasecmp strrchr strstr
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
@@ -6108,7 +6138,66 @@ _ACEOF
 fi
 done
 
-# should probably go barf when any of those are missing
+
+# look for pcap (tcpdump) library if pcap is enabled
+if test -z "$FORMAT_PCAP_TRUE"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pcap_dispatch in -lpcap" >&5
+$as_echo_n "checking for pcap_dispatch in -lpcap... " >&6; }
+if ${ac_cv_lib_pcap_pcap_dispatch+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpcap  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pcap_dispatch ();
+int
+main ()
+{
+return pcap_dispatch ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_pcap_pcap_dispatch=yes
+else
+  ac_cv_lib_pcap_pcap_dispatch=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pcap_pcap_dispatch" >&5
+$as_echo "$ac_cv_lib_pcap_pcap_dispatch" >&6; }
+if test "x$ac_cv_lib_pcap_pcap_dispatch" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBPCAP 1
+_ACEOF
+
+  LIBS="-lpcap $LIBS"
+
+else
+   if false; then
+  FORMAT_PCAP_TRUE=
+  FORMAT_PCAP_FALSE='#'
+else
+  FORMAT_PCAP_TRUE='#'
+  FORMAT_PCAP_FALSE=
+fi
+
+
+fi
+
+
+fi
 
 # Checks for _BSD_SOURCE flag
 if [ -f /lib/libc-2* -o -f /lib/*linux*/libc-2* ]; then
@@ -6276,6 +6365,10 @@ else
   am__EXEEXT_FALSE=
 fi
 
+if test -z "${FORMAT_PCAP_TRUE}" && test -z "${FORMAT_PCAP_FALSE}"; then
+  as_fn_error $? "conditional \"FORMAT_PCAP\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${MOD_TRAFFIC_TRUE}" && test -z "${MOD_TRAFFIC_FALSE}"; then
   as_fn_error $? "conditional \"MOD_TRAFFIC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -6286,6 +6379,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${FORMAT_PCAP_TRUE}" && test -z "${FORMAT_PCAP_FALSE}"; then
+  as_fn_error $? "conditional \"FORMAT_PCAP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
