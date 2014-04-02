@@ -5,7 +5,7 @@ AC_PREREQ([2.68])
 AC_INIT([tcptrace], [6.6.7], [bri@aem7.net])
 LT_INIT([])
 AC_CONFIG_MACRO_DIR([m4])
-AM_ENABLE_STATIC
+# AM_ENABLE_STATIC
 AM_INIT_AUTOMAKE([-Wall foreign])
 # AC_CONFIG_SRCDIR([mod_collie.c])
 # AC_CONFIG_HEADERS([config.h])
