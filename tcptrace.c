@@ -873,6 +873,13 @@ ProcessFile(
     }
 #endif /* __WIN32 */   
 
+    /* load the file */
+    tcptrace_load_file(filename, &working_file);
+    ppread = working_file.reader_function;
+    filesize = working_file.filesize;
+    is_stdin = working_file.is_stdin;
+
+#if 0
     /* see how big the file is */
     if (FileIsStdin(filename)) {
 	filesize = 1;
@@ -885,10 +892,6 @@ ProcessFile(
 	filesize = str_stat.st_size;
     }
 
-    tcptrace_load_file(filename, &working_file);
-    ppread = working_file.reader_function;
-
-#if 0
     /* determine which input file format it is... */
     ppread = NULL;
     if (debug>1)

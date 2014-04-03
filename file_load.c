@@ -73,23 +73,22 @@ tcptrace_load_file(
     int ret;
     int fix;
     struct stat str_stat;
-    Bool is_stdin = 0;
 
-#if 0
+    working_file->is_stdin = 0;
+
     /* see how big the file is */
     if (FileIsStdin(filename)) {
-	filesize = 1;
-	is_stdin = 1;
+	working_file->filesize = 1;
+	working_file->is_stdin = 1;
     } else {
 	if (stat(filename,&str_stat) != 0) {
 	    perror("stat");
 	    exit(1);
 	}
-	filesize = str_stat.st_size;
+	working_file->filesize = str_stat.st_size;
     }
-#endif
 
-    /* determine which input file format it is... */
+    /* determine file format */
     ppread = NULL;
     if (debug>1)
 	printf("NUM_FILE_FORMATS: %u\n", (unsigned)NUM_FILE_FORMATS);
