@@ -38,38 +38,47 @@ host_triplet = @host@
 bin_PROGRAMS = tcptrace$(EXEEXT)
 
 # Input format options
+# Have to fix these includes, probably
 @FORMAT_PCAP_TRUE@am__append_1 = -DGROK_TCPDUMP
-@FORMAT_SNOOP_TRUE@am__append_2 = -DGROK_SNOOP
-@FORMAT_NETM_TRUE@am__append_3 = -DGROK_NETM
-@FORMAT_ETHERPEEK_TRUE@am__append_4 = -DGROK_ETHERPEEK
-@FORMAT_NS_TRUE@am__append_5 = -DGROK_NS
-@FORMAT_NLANR_TRUE@am__append_6 = -DGROK_NLANR
-@FORMAT_NETSCOUT_TRUE@am__append_7 = -DGROK_NETSCOUT
-@FORMAT_ERF_TRUE@am__append_8 = -DGROK_ERF
+@FORMAT_PCAP_TRUE@am__append_2 = -DGROK_TCPDUMP
+@FORMAT_SNOOP_TRUE@am__append_3 = -DGROK_SNOOP
+@FORMAT_SNOOP_TRUE@am__append_4 = -DGROK_SNOOP
+@FORMAT_NETM_TRUE@am__append_5 = -DGROK_NETM
+@FORMAT_NETM_TRUE@am__append_6 = -DGROK_NETM
+@FORMAT_ETHERPEEK_TRUE@am__append_7 = -DGROK_ETHERPEEK
+@FORMAT_ETHERPEEK_TRUE@am__append_8 = -DGROK_ETHERPEEK
+@FORMAT_NS_TRUE@am__append_9 = -DGROK_NS
+@FORMAT_NS_TRUE@am__append_10 = -DGROK_NS
+@FORMAT_NLANR_TRUE@am__append_11 = -DGROK_NLANR
+@FORMAT_NLANR_TRUE@am__append_12 = -DGROK_NLANR
+@FORMAT_NETSCOUT_TRUE@am__append_13 = -DGROK_NETSCOUT
+@FORMAT_NETSCOUT_TRUE@am__append_14 = -DGROK_NETSCOUT
+@FORMAT_ERF_TRUE@am__append_15 = -DGROK_ERF
+@FORMAT_ERF_TRUE@am__append_16 = -DGROK_ERF
 
 # Module options
-@MOD_HTTP_TRUE@am__append_9 = -DLOAD_MODULE_HTTP -DHTTP_SAFE -DHTTP_DUMP_TIMES
-@MOD_HTTP_TRUE@am__append_10 = mod_http.c
-@MOD_TRAFFIC_TRUE@am__append_11 = -DLOAD_MODULE_TRAFFIC
-@MOD_TRAFFIC_TRUE@am__append_12 = mod_traffic.c
-@MOD_SLICE_TRUE@am__append_13 = -DLOAD_MODULE_SLICE
-@MOD_SLICE_TRUE@am__append_14 = mod_slice.c
-@MOD_RTT_TRUE@am__append_15 = -DLOAD_MODULE_RTTGRAPH
-@MOD_RTT_TRUE@am__append_16 = mod_rttgraph.c
-@MOD_COLLIE_TRUE@am__append_17 = -DLOAD_MODULE_COLLIE
-@MOD_COLLIE_TRUE@am__append_18 = mod_collie.c
-@MOD_REALTIME_TRUE@am__append_19 = -DLOAD_MODULE_REALTIME
-@MOD_REALTIME_TRUE@am__append_20 = mod_realtime.c
+@MOD_HTTP_TRUE@am__append_17 = -DLOAD_MODULE_HTTP -DHTTP_SAFE -DHTTP_DUMP_TIMES
+@MOD_HTTP_TRUE@am__append_18 = mod_http.c
+@MOD_TRAFFIC_TRUE@am__append_19 = -DLOAD_MODULE_TRAFFIC
+@MOD_TRAFFIC_TRUE@am__append_20 = mod_traffic.c
+@MOD_SLICE_TRUE@am__append_21 = -DLOAD_MODULE_SLICE
+@MOD_SLICE_TRUE@am__append_22 = mod_slice.c
+@MOD_RTT_TRUE@am__append_23 = -DLOAD_MODULE_RTTGRAPH
+@MOD_RTT_TRUE@am__append_24 = mod_rttgraph.c
+@MOD_COLLIE_TRUE@am__append_25 = -DLOAD_MODULE_COLLIE
+@MOD_COLLIE_TRUE@am__append_26 = mod_collie.c
+@MOD_REALTIME_TRUE@am__append_27 = -DLOAD_MODULE_REALTIME
+@MOD_REALTIME_TRUE@am__append_28 = mod_realtime.c
 
 # modules disabled by default
-@MOD_INBOUNDS_TRUE@am__append_21 = -DLOAD_MODULE_INBOUNDS
-@MOD_INBOUNDS_TRUE@am__append_22 = mod_inbounds.c
-@MOD_TCPLIB_TRUE@am__append_23 = -DLOAD_MODULE_TCPLIB
-@MOD_TCPLIB_TRUE@am__append_24 = mod_tcplib.c
+@MOD_INBOUNDS_TRUE@am__append_29 = -DLOAD_MODULE_INBOUNDS
+@MOD_INBOUNDS_TRUE@am__append_30 = mod_inbounds.c
+@MOD_TCPLIB_TRUE@am__append_31 = -DLOAD_MODULE_TCPLIB
+@MOD_TCPLIB_TRUE@am__append_32 = mod_tcplib.c
 
 # decompression options
-@COMPRESS_GZIP_TRUE@am__append_25 = -DGUNZIP=\"gunzip\"
-@COMPRESS_BZIP2_TRUE@am__append_26 = -DBUNZIP2=\"bunzip2\"
+@COMPRESS_GZIP_TRUE@am__append_33 = -DGUNZIP=\"gunzip\"
+@COMPRESS_BZIP2_TRUE@am__append_34 = -DBUNZIP2=\"bunzip2\"
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure COPYING INSTALL \
@@ -115,7 +124,8 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libtcptrace_la_LIBADD =
-am_libtcptrace_la_OBJECTS = ipv6.lo
+am_libtcptrace_la_OBJECTS = libtcptrace_la-ipv6.lo \
+	libtcptrace_la-file_load.lo
 libtcptrace_la_OBJECTS = $(am_libtcptrace_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
 am__tcptrace_SOURCES_DIST = avl.c compress.c erf.c etherpeek.c \
@@ -327,19 +337,22 @@ tcptrace_SOURCES = avl.c compress.c erf.c etherpeek.c gcache.c \
 	mfiles.c names.c netm.c output.c plotter.c print.c rexmit.c \
 	snoop.c nlanr.c tcpdump.c tcptrace.c thruput.c trace.c \
 	filter.c udp.c ns.c netscout.c version.c pool.c poolaccess.c \
-	dstring.c filt_parser.y filt_scanner.l $(am__append_10) \
-	$(am__append_12) $(am__append_14) $(am__append_16) \
-	$(am__append_18) $(am__append_20) $(am__append_22) \
-	$(am__append_24)
+	dstring.c filt_parser.y filt_scanner.l $(am__append_18) \
+	$(am__append_20) $(am__append_22) $(am__append_24) \
+	$(am__append_26) $(am__append_28) $(am__append_30) \
+	$(am__append_32)
 tcptrace_LDADD = libtcptrace.la @LEXLIB@
-tcptrace_CPPFLAGS = $(am__append_1) $(am__append_2) $(am__append_3) \
-	$(am__append_4) $(am__append_5) $(am__append_6) \
-	$(am__append_7) $(am__append_8) $(am__append_9) \
-	$(am__append_11) $(am__append_13) $(am__append_15) \
-	$(am__append_17) $(am__append_19) $(am__append_21) \
-	$(am__append_23) $(am__append_25) $(am__append_26)
+tcptrace_CPPFLAGS = $(am__append_1) $(am__append_3) $(am__append_5) \
+	$(am__append_7) $(am__append_9) $(am__append_11) \
+	$(am__append_13) $(am__append_15) $(am__append_17) \
+	$(am__append_19) $(am__append_21) $(am__append_23) \
+	$(am__append_25) $(am__append_27) $(am__append_29) \
+	$(am__append_31) $(am__append_33) $(am__append_34)
 lib_LTLIBRARIES = libtcptrace.la
-libtcptrace_la_SOURCES = ipv6.c
+libtcptrace_la_SOURCES = ipv6.c file_load.c
+libtcptrace_la_CPPFLAGS = $(am__append_2) $(am__append_4) \
+	$(am__append_6) $(am__append_8) $(am__append_10) \
+	$(am__append_12) $(am__append_14) $(am__append_16)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -468,7 +481,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipv6.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-file_load.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-ipv6.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-avl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-compress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-dstring.Po@am__quote@
@@ -526,6 +540,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+libtcptrace_la-ipv6.lo: ipv6.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-ipv6.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-ipv6.Tpo -c -o libtcptrace_la-ipv6.lo `test -f 'ipv6.c' || echo '$(srcdir)/'`ipv6.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-ipv6.Tpo $(DEPDIR)/libtcptrace_la-ipv6.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ipv6.c' object='libtcptrace_la-ipv6.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-ipv6.lo `test -f 'ipv6.c' || echo '$(srcdir)/'`ipv6.c
+
+libtcptrace_la-file_load.lo: file_load.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-file_load.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-file_load.Tpo -c -o libtcptrace_la-file_load.lo `test -f 'file_load.c' || echo '$(srcdir)/'`file_load.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-file_load.Tpo $(DEPDIR)/libtcptrace_la-file_load.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='file_load.c' object='libtcptrace_la-file_load.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-file_load.lo `test -f 'file_load.c' || echo '$(srcdir)/'`file_load.c
 
 tcptrace-avl.o: avl.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-avl.o -MD -MP -MF $(DEPDIR)/tcptrace-avl.Tpo -c -o tcptrace-avl.o `test -f 'avl.c' || echo '$(srcdir)/'`avl.c

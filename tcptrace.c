@@ -59,6 +59,7 @@ static char const GCC_UNUSED rcsid[] =
     "@(#)$Header: /usr/local/cvs/tcptrace/tcptrace.c,v 5.59 2004/10/01 21:42:34 mramadas Exp $";
 
 #include "file_formats.h"
+#include "file_load.h"
 #include "modules.h"
 #include "version.h"
 
@@ -855,6 +856,8 @@ ProcessFile(
     Bool is_stdin = 0;
     static int file_count = 0;
 
+    tcptrace_working_file working_file;
+
     /* share the current file name */
     cur_filename = filename;
 
@@ -882,6 +885,10 @@ ProcessFile(
 	filesize = str_stat.st_size;
     }
 
+    tcptrace_load_file(filename, &working_file);
+    ppread = working_file.reader_function;
+
+#if 0
     /* determine which input file format it is... */
     ppread = NULL;
     if (debug>1)
@@ -904,6 +911,7 @@ ProcessFile(
 		    file_formats[fix].format_name);
 	}
     }
+#endif
 
     /* if we haven't found a reader, then we can't continue */
     if (ppread == NULL) {
