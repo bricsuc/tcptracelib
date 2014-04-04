@@ -79,7 +79,6 @@ static void ModulesPerFile(char *filename);
 static void DumpFlags(void);
 static void ExplainOutput(void);
 static void FinishModules(void);
-static void Formats(void);
 static void Help(char *harg);
 static void Hints(void);
 static void ListModules(void);
@@ -347,7 +346,7 @@ Help(
     } else if (harg && *harg && strncmp(harg,"filt",4) == 0) {
 	HelpFilter();
     } else if (harg && *harg && strncmp(harg,"conf",4) == 0) {
-	Formats();
+	tcptrace_show_formats();
 	CompFormats();
 	ListModules();
     } else if (harg && *harg && strncmp(harg,"out",3) == 0) {
@@ -665,25 +664,6 @@ Version(void)
 
 
 static void
-Formats(void)
-{
-    int i;
-    
-    fprintf(stderr,"Supported Input File Formats:\n");
-    for (i=0; i < NUM_FILE_FORMATS; ++i)
-	fprintf(stderr,"\t%-15s  %s\n",
-		file_formats[i].format_name,
-		file_formats[i].format_descr);
-   fprintf(stderr, 
-	   "Try the tethereal program from the ethereal project to see if\n"
-	   "it can understand this capture format. If so, you may use \n"
-	   "tethereal to convert it to a tcpdump format file as in :\n"
-	   "\t tethereal -r inputfile -w outputfile\n"
-	   "and feed the outputfile to tcptrace\n");
-}
-
-
-static void
 ListModules(void)
 {
     int i;
@@ -875,80 +855,10 @@ ProcessFile(
 
     /* load the file */
     tcptrace_load_file(filename, &working_file);
+    /* TODO: check for error here */
     ppread = working_file.reader_function;
     filesize = working_file.filesize;
     is_stdin = working_file.is_stdin;
-
-#if 0
-    /* see how big the file is */
-    if (FileIsStdin(filename)) {
-	filesize = 1;
-	is_stdin = 1;
-    } else {
-	if (stat(filename,&str_stat) != 0) {
-	    perror("stat");
-	    exit(1);
-	}
-	filesize = str_stat.st_size;
-    }
-
-    /* determine which input file format it is... */
-    ppread = NULL;
-    if (debug>1)
-	printf("NUM_FILE_FORMATS: %u\n", (unsigned)NUM_FILE_FORMATS);
-    for (fix=0; fix < NUM_FILE_FORMATS; ++fix) {
-	if (debug)
-	    fprintf(stderr,"Checking for file format '%s' (%s)\n",
-		    file_formats[fix].format_name,
-		    file_formats[fix].format_descr);
-	rewind(stdin);
-       	ppread = (*file_formats[fix].test_func)(filename);
-	if (ppread) {
-	    if (debug)
-                fprintf(stderr,"File format is '%s' (%s)\n",
-	                file_formats[fix].format_name,
-	                file_formats[fix].format_descr);
-	    break;
-	} else if (debug) {
-	    fprintf(stderr,"File format is NOT '%s'\n",
-		    file_formats[fix].format_name);
-	}
-    }
-#endif
-
-    /* if we haven't found a reader, then we can't continue */
-    if (ppread == NULL) {
-	int count = 0;
-
-	fprintf(stderr,"Unknown input file format\n");
-	Formats();
-
-	/* check for ASCII, a common problem */
-	rewind(stdin);
-	while (1) {
-	    int ch;
-	    if ((ch = getchar()) == EOF)
-		break;
-	    if (!isprint(ch))
-		break;
-	    if (++count >= 20) {
-		/* first 20 are all ASCII */
-		fprintf(stderr,"\
-\n\nHmmmm.... this sure looks like an ASCII input file to me.\n\
-The first %d characters are all printable ASCII characters. All of the\n\
-packet grabbing formats that I understand output BINARY files that I\n\
-like to read.  Could it be that you've tried to give me the readable \n\
-output instead?  For example, with tcpdump, you need to use:\n\
-\t tcpdump -w outfile.dmp ; tcptrace outfile.dmp\n\
-rather than:\n\
-\t tcpdump > outfile ; tcptrace outfile\n\n\
-", count);
-		exit(1);
-	    }
-	}
-	
-	exit(1);
-    }
 
 #ifndef __WIN32   
     /* open the file for processing */

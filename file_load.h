@@ -6,4 +6,5 @@ typedef struct tcptrace_working_file {
 } tcptrace_working_file;
 
 int tcptrace_load_file(char *filename, tcptrace_working_file *working_file);
+void tcptrace_show_formats(void);
 

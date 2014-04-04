@@ -60,9 +60,11 @@ static char const GCC_UNUSED rcsid[] =
 #endif
 
 #include "tcptrace.h"
-/* XXX have to fix file_formats.h, probably make it into a .c file or
- * something */
+
+/* TODO: have to fix file_formats.h, probably make it into a .c file or
+ * incorporate it here, or something */
 #include "file_formats.h"
+
 #include "file_load.h"
 
 int 
@@ -112,15 +114,13 @@ tcptrace_load_file(
     }
 
     working_file->reader_function = ppread;
-    return(0);
 
-#if 0
     /* if we haven't found a reader, then we can't continue */
     if (ppread == NULL) {
 	int count = 0;
 
 	fprintf(stderr,"Unknown input file format\n");
-	Formats();
+	tcptrace_show_formats();
 
 	/* check for ASCII, a common problem */
 	rewind(stdin);
@@ -148,7 +148,28 @@ rather than:\n\
 	
 	exit(1);
     }
-#endif  /* error reporting */
 
+    /* TODO: rather than exit(1) in all of the above, return an error code */
+
+    return(0);
+
+}
+
+void
+tcptrace_show_formats(void)
+{
+    int i;
+    
+    fprintf(stderr,"Supported Input File Formats:\n");
+    for (i=0; i < NUM_FILE_FORMATS; ++i)
+	fprintf(stderr,"\t%-15s  %s\n",
+		file_formats[i].format_name,
+		file_formats[i].format_descr);
+   fprintf(stderr, 
+	   "Try the tethereal program from the ethereal project to see if\n"
+	   "it can understand this capture format. If so, you may use \n"
+	   "tethereal to convert it to a tcpdump format file as in :\n"
+	   "\t tethereal -r inputfile -w outputfile\n"
+	   "and feed the outputfile to tcptrace\n");
 }
 
