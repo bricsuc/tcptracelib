@@ -107,20 +107,23 @@ tcptrace_load_file(
 
     /* determine file format */
     ppread = NULL;
-    if (debug>1)
+    if (debug > 1) {
 	printf("NUM_FILE_FORMATS: %u\n", (unsigned)NUM_FILE_FORMATS);
+    }
     for (fix=0; fix < NUM_FILE_FORMATS; ++fix) {
-	if (debug)
+	if (debug) {
 	    fprintf(stderr,"Checking for file format '%s' (%s)\n",
 		    file_formats[fix].format_name,
 		    file_formats[fix].format_descr);
+        }
 	rewind(stdin);
        	ppread = (*file_formats[fix].test_func)(filename);
 	if (ppread) {
-	    if (debug)
+	    if (debug) {
                 fprintf(stderr,"File format is '%s' (%s)\n",
 	                file_formats[fix].format_name,
 	                file_formats[fix].format_descr);
+            }
 	    break;
 	} else if (debug) {
 	    fprintf(stderr,"File format is NOT '%s'\n",
@@ -141,10 +144,12 @@ tcptrace_load_file(
 	rewind(stdin);
 	while (1) {
 	    int ch;
-	    if ((ch = getchar()) == EOF)
-		break;
-	    if (!isprint(ch))
-		break;
+	    if ((ch = getchar()) == EOF) {
+                break;
+            }
+	    if (!isprint(ch)) {
+                break;
+            }
 	    if (++count >= 20) {
 		/* first 20 are all ASCII */
 		fprintf(stderr,"\
@@ -186,11 +191,11 @@ tcptrace_show_formats(void)
 	fprintf(stderr,"\t%-15s  %s\n",
 		file_formats[i].format_name,
 		file_formats[i].format_descr);
-   fprintf(stderr, 
-	   "Try the tethereal program from the ethereal project to see if\n"
-	   "it can understand this capture format. If so, you may use \n"
-	   "tethereal to convert it to a tcpdump format file as in :\n"
-	   "\t tethereal -r inputfile -w outputfile\n"
-	   "and feed the outputfile to tcptrace\n");
+    fprintf(stderr, 
+           "Try the tethereal program from the ethereal project to see if\n"
+           "it can understand this capture format. If so, you may use \n"
+           "tethereal to convert it to a tcpdump format file as in :\n"
+           "\t tethereal -r inputfile -w outputfile\n"
+           "and feed the outputfile to tcptrace\n");
 }
 
