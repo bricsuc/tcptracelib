@@ -841,18 +841,6 @@ ProcessFile(
     /* share the current file name */
     cur_filename = filename;
 
-#ifdef __WIN32
-    /* If the file is compressed, exit (Windows version does not support compressed dump files) */
-    if (CompOpenHeader(filename) == (FILE *)-1) {
-	exit(-1);
-    }
-#else   
-    /* open the file header */
-    if (CompOpenHeader(filename) == NULL) {
-	exit(-1);
-    }
-#endif /* __WIN32 */   
-
     /* load the file */
     tcptrace_load_file(filename, &working_file);
     /* TODO: check for error here */
@@ -860,18 +848,10 @@ ProcessFile(
     filesize = working_file.filesize;
     is_stdin = working_file.is_stdin;
 
-#ifndef __WIN32   
-    /* open the file for processing */
-    if (CompOpenFile(filename) == NULL) {
-	exit(-1);
-    }
-#endif /* __WIN32 */   
-
-    /* how big is it.... (possibly compressed) */
     if (debug) {
-	/* print file size */
-	printf("Trace file size: %lu bytes\n", filesize);
+        printf("Trace file size: %lu bytes\n", working_file.filesize);
     }
+
     location = 0;
 
     /* inform the modules, if they care... */

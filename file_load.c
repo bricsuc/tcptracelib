@@ -76,6 +76,21 @@ tcptrace_load_file(
     int fix;
     struct stat str_stat;
 
+    /* TODO: compressed file support seems somewhat unecessary;
+       consider removing feature or moving it elsewhere */
+
+#ifdef __WIN32
+    /* If the file is compressed, exit (Windows version does not support compressed dump files) */
+    if (CompOpenHeader(filename) == (FILE *)-1) {
+        exit(-1);
+    }
+#else
+    /* open the file header */
+    if (CompOpenHeader(filename) == NULL) {
+        exit(-1);
+    }
+#endif /* __WIN32 */
+
     working_file->is_stdin = 0;
 
     /* see how big the file is */
@@ -149,8 +164,14 @@ rather than:\n\
 	exit(1);
     }
 
-    /* TODO: rather than exit(1) in all of the above, return an error code */
+#ifndef __WIN32   
+    /* open the file for processing */
+    if (CompOpenFile(filename) == NULL) {
+	exit(-1);
+    }
+#endif /* __WIN32 */   
 
+    /* TODO: rather than exit(1) in all of the above, return an error code */
     return(0);
 
 }
