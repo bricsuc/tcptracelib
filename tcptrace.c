@@ -60,6 +60,7 @@ static char const GCC_UNUSED rcsid[] =
 
 #include "file_formats.h"
 #include "file_load.h"
+#include "process.h"
 #include "modules.h"
 #include "version.h"
 
@@ -838,7 +839,12 @@ ProcessFile(
 
     tcptrace_load_status_t status;
 
+    /* global state (packets read across all files, etc) */
+    tcptrace_global_state global_state;
+
+    /* storage for current working files and packets */
     tcptrace_working_file working_file;
+    raw_packet_t raw_packet;
 
     /* share the current file name */
     cur_filename = filename;
@@ -879,6 +885,10 @@ ProcessFile(
 	++pnum;			/* global */
 	++fpnum;		/* local to this file */
 
+        /* TODO: move this stuff to read packet struct */
+        raw_packet.current_time = &current_time;
+        raw_packet.pip = pip;
+
 
 	/* in case only a subset analysis was requested */
 	if (pnum < beginpnum)	continue;
@@ -886,8 +896,13 @@ ProcessFile(
 	    --pnum;
 	    --fpnum;
 	    break;
-	    }
+        }
 
+        /* TODO: move pnum to working_file entirely */
+        working_file.pnum = fpnum;
+
+        /* TODO: de-globalize all of this */
+        global_state.pnum = pnum;
 
 	/* check for re-ordered packets */
 	if (!ZERO_TIME(&last_packet)) {
@@ -964,6 +979,12 @@ That will likely confuse the program, so be careful!\n", filename);
 	}
 
 
+        if (check_packet_type(&raw_packet, &working_file, &global_state)
+            == FALSE) {
+            continue;
+        }
+
+#if 0
 	/* quick sanity check, better be an IPv4/v6 packet */
 	if (!PIP_ISV4(pip) && !PIP_ISV6(pip)) {
 	    static Bool warned = FALSE;
@@ -980,6 +1001,7 @@ That will likely confuse the program, so be careful!\n", filename);
 			pnum,IP_V(pip));
 	    continue;
 	}
+#endif
 
 	/* another sanity check, only understand ETHERNET right now */
 	if (phystype != PHYS_ETHER) {
