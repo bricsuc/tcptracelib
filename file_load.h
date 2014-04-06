@@ -3,6 +3,7 @@ typedef struct tcptrace_working_file {
     pread_f *reader_function;
     u_long filesize;
     Bool is_stdin;
+    u_long pnum;       /* number of packets read in file */
 } tcptrace_working_file;
 
 typedef enum {
