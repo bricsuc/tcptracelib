@@ -836,14 +836,21 @@ ProcessFile(
     Bool is_stdin = 0;
     static int file_count = 0;
 
+    tcptrace_load_status_t status;
+
     tcptrace_working_file working_file;
 
     /* share the current file name */
     cur_filename = filename;
 
     /* load the file */
-    tcptrace_load_file(filename, &working_file);
-    /* TODO: check for error here */
+    status = tcptrace_load_file(filename, &working_file);
+    if (status != TCPTRACE_LOAD_SUCCESS) {
+        exit(1);
+        /* could use different exit codes depending on status */
+        /* could also move some error reporting here */
+    }
+
     ppread = working_file.reader_function;
     filesize = working_file.filesize;
     is_stdin = working_file.is_stdin;
