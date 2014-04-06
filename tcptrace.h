@@ -1080,6 +1080,18 @@ struct tcp_options {
 /* name of the argument envariable */
 #define TCPTRACE_ENVARIABLE "TCPTRACEOPTS"
 
+/* packet-reading state */
+typedef struct tcptrace_global_state {
+    u_long pnum;
+} tcptrace_global_state;
+
+/* raw packet, read from file */
+typedef struct raw_packet_t {
+    int phystype;
+    struct ip *pip;
+    struct timeval *current_time;
+} raw_packet_t;
+
 /* packet-reading options... */
 /* the type for a packet reading routine */
 typedef int pread_f(struct timeval *, int *, int *, void **,
