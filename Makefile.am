@@ -27,7 +27,7 @@ tcptrace_LDADD = libtcptrace.la @LEXLIB@
 tcptrace_CPPFLAGS =
 
 lib_LTLIBRARIES = libtcptrace.la
-libtcptrace_la_SOURCES = ipv6.c file_load.c
+libtcptrace_la_SOURCES = ipv6.c file_load.c process.c
 libtcptrace_la_CPPFLAGS =
 
 # Input format options
