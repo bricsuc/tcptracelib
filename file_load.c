@@ -67,7 +67,7 @@ static char const GCC_UNUSED rcsid[] =
 
 #include "file_load.h"
 
-int 
+tcptrace_load_status_t 
 tcptrace_load_file(
     char *filename, tcptrace_working_file *working_file)
 {
@@ -82,12 +82,12 @@ tcptrace_load_file(
 #ifdef __WIN32
     /* If the file is compressed, exit (Windows version does not support compressed dump files) */
     if (CompOpenHeader(filename) == (FILE *)-1) {
-        exit(-1);
+        return(TCPTRACE_WONT_UNCOMPRESS);  /* was exit(-1); */
     }
 #else
     /* open the file header */
     if (CompOpenHeader(filename) == NULL) {
-        exit(-1);
+        return(TCPTRACE_WONT_UNCOMPRESS);  /* was exit(-1); */
     }
 #endif /* __WIN32 */
 
@@ -100,7 +100,7 @@ tcptrace_load_file(
     } else {
 	if (stat(filename,&str_stat) != 0) {
 	    perror("stat");
-	    exit(1);
+	    return(TCPTRACE_CANT_STAT);  /* was exit(1); */
 	}
 	working_file->filesize = str_stat.st_size;
     }
@@ -162,23 +162,21 @@ output instead?  For example, with tcpdump, you need to use:\n\
 rather than:\n\
 \t tcpdump > outfile ; tcptrace outfile\n\n\
 ", count);
-		exit(1);
+		return(TCPTRACE_UNKNOWN_FORMAT);  /* was exit(1); */
 	    }
 	}
 	
-	exit(1);
+	return(TCPTRACE_UNKNOWN_FORMAT);  /* was exit(1); */
     }
 
 #ifndef __WIN32   
     /* open the file for processing */
     if (CompOpenFile(filename) == NULL) {
-	exit(-1);
+	return(TCPTRACE_WONT_UNCOMPRESS);  /* was exit(-1); */
     }
 #endif /* __WIN32 */   
 
-    /* TODO: rather than exit(1) in all of the above, return an error code */
-    return(0);
-
+    return(TCPTRACE_LOAD_SUCCESS);
 }
 
 void
