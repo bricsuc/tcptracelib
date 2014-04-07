@@ -151,9 +151,13 @@ u_long remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL;
 u_long update_interval = UPDATE_INTERVAL;
 u_long max_conn_num = MAX_CONN_NUM;
 int debug = 0;
+
+/* global state (packets read across all files, etc) */
+tcptrace_global_state global_state;
+
+/* u_long pnum = 0; */
 u_long beginpnum = 0;
 u_long endpnum = 0;
-u_long pnum = 0;
 u_long ctrunc = 0;
 u_long bad_ip_checksums = 0;
 u_long bad_tcp_checksums = 0;
@@ -753,6 +757,10 @@ main(
     /* knock, knock... */
     printf("%s%s\n\n", comment, VERSION);
 
+    /* initialize global state */
+    /* TODO: move this into a separate function */
+    global_state.pnum = 0;
+
     /* read each file in turn */
     numfiles = argc;
     for (i=0; i < argc; ++i) {
@@ -776,7 +784,7 @@ main(
 
     /* general output */
     fprintf(stdout, "%s%lu packets seen, %lu TCP packets traced",
-	    comment, pnum, tcp_trace_count);
+	    comment, global_state.pnum, tcp_trace_count);
     if (do_udp)
 	fprintf(stdout,", %lu UDP packets traced", udp_trace_count);
     fprintf(stdout,"\n");
@@ -786,7 +794,7 @@ main(
     fprintf(stdout, "%selapsed wallclock time: %s, %d pkts/sec analyzed\n",
 	    comment,
 	    elapsed2str(etime),
-	    (int)((double)pnum/(etime/1000000)));
+	    (int)((double)global_state.pnum/(etime/1000000)));
 
     /* actual tracefile times */
     etime = elapsed(first_packet,last_packet);
@@ -839,8 +847,6 @@ ProcessFile(
 
     tcptrace_load_status_t status;
 
-    /* global state (packets read across all files, etc) */
-    tcptrace_global_state global_state;
 
     /* storage for current working files and packets */
     tcptrace_working_file working_file;
@@ -882,7 +888,7 @@ ProcessFile(
 	    break;
 
 	/* update global and per-file packet counters */
-	++pnum;			/* global */
+	global_state.pnum++;	/* global */
 	++fpnum;		/* local to this file */
 
         /* TODO: move this stuff to read packet struct */
@@ -891,9 +897,9 @@ ProcessFile(
 
 
 	/* in case only a subset analysis was requested */
-	if (pnum < beginpnum)	continue;
-	if ((endpnum != 0) && (pnum > endpnum))	{
-	    --pnum;
+	if (global_state.pnum < beginpnum)	continue;
+	if ((endpnum != 0) && (global_state.pnum > endpnum)) {
+	    global_state.pnum--;
 	    --fpnum;
 	    break;
         }
@@ -902,7 +908,7 @@ ProcessFile(
         working_file.pnum = fpnum;
 
         /* TODO: de-globalize all of this */
-        global_state.pnum = pnum;
+        /* global_state.pnum = pnum; */
 
 	/* check for re-ordered packets */
 	if (!ZERO_TIME(&last_packet)) {
@@ -998,7 +1004,7 @@ That will likely confuse the program, so be careful!\n", filename);
 	    if (debug)
 		fprintf(stderr,
 			"Skipping packet %lu, not an IPv4/v6 packet (version:%d)\n",
-			pnum,IP_V(pip));
+			global_state.pnum, IP_V(pip));
 	    continue;
 	}
 #endif
@@ -1017,15 +1023,15 @@ for other packet types, I just don't have a place to test them\n\n");
 	    } else if (not_ether < 5) {
 		fprintf(stderr,
 			"Skipping packet %lu, not an ethernet packet\n",
-			pnum);
+			global_state.pnum);
 	    } /* else, just shut up */
 	    continue;
 	}
 
 	/* print the packet, if requested */
 	if (printallofem || dump_packet_data) {
-	    printf("Packet %lu\n", pnum);
-	    printpacket(len,tlen,phys,phystype,pip,plast,NULL);
+	    printf("Packet %lu\n", global_state.pnum);
+	    printpacket(len,tlen,phys,phystype,pip,plast,NULL,&global_state);
 	}
 
 	/* keep track of global times */
@@ -1038,13 +1044,13 @@ for other packet types, I just don't have a place to test them\n\n");
 	    if (!ip_cksum_valid(pip,plast)) {
 		++bad_ip_checksums;
 		if (warn_printbadcsum)
-		    fprintf(stderr, "packet %lu: bad IP checksum\n", pnum);
+		    fprintf(stderr, "packet %lu: bad IP checksum\n", global_state.pnum);
 		continue;
 	    }
 	}
 		       
 	/* find the start of the TCP header */
-	ret = gettcp (pip, &ptcp, &plast);
+	ret = gettcp (pip, &ptcp, &plast, &global_state);
 
 	/* if that failed, it's not TCP */
 	if (ret < 0) {
@@ -1052,18 +1058,18 @@ for other packet types, I just don't have a place to test them\n\n");
 	    struct udphdr *pudp;
 
 	    /* look for a UDP header */
-	    ret = getudp(pip, &pudp, &plast);
+	    ret = getudp(pip, &pudp, &plast, &global_state);
 
 	    if (do_udp && (ret == 0)) {
-		pup = udpdotrace(pip,pudp,plast);
+		pup = udpdotrace(pip,pudp,plast, &global_state);
 
 		/* verify UDP checksums, if requested */
 		if (verify_checksums) {
-		    if (!udp_cksum_valid(pip,pudp,plast)) {
+		    if (!udp_cksum_valid(pip,pudp,plast,&global_state)) {
 			++bad_udp_checksums;
 			if (warn_printbadcsum)
 			    fprintf(stderr, "packet %lu: bad UDP checksum\n",
-				    pnum);
+				    global_state.pnum);
 			continue;
 		    }
 		}
@@ -1085,16 +1091,16 @@ for other packet types, I just don't have a place to test them\n\n");
 
 	/* verify TCP checksums, if requested */
 	if (verify_checksums) {
-	    if (!tcp_cksum_valid(pip,ptcp,plast)) {
+	    if (!tcp_cksum_valid(pip,ptcp,plast,&global_state)) {
 		++bad_tcp_checksums;
 		if (warn_printbadcsum) 
-		    fprintf(stderr, "packet %lu: bad TCP checksum\n", pnum);
+		    fprintf(stderr, "packet %lu: bad TCP checksum\n", global_state.pnum);
 		continue;
 	    }
 	}
 		       
         /* perform TCP packet analysis */
-	ptp = dotrace(pip,ptcp,plast);
+	ptp = dotrace(pip,ptcp,plast, &global_state);
 
 	/* if it wasn't "interesting", we return NULL here */
 	if (ptp == NULL)
@@ -1113,7 +1119,7 @@ for other packet types, I just don't have a place to test them\n\n");
 
 	/* for efficiency, only allow a signal every 1000 packets	*/
 	/* (otherwise the system call overhead will kill us)		*/
-	if (pnum % 1000 == 0) {
+	if (global_state.pnum % 1000 == 0) {
 	    sigset_t mask;
 
 	    sigemptyset(&mask);
@@ -1148,7 +1154,7 @@ QuitSig(
 {
     printf("%c\n\n", 7);  /* BELL */
     printf("Terminating processing early on signal %d\n", signum);
-    printf("Partial result after processing %lu packets:\n\n\n", pnum);
+    printf("Partial result after processing %lu packets:\n\n\n", global_state.pnum);
     FinishModules();
     plotter_done();
     trace_done();

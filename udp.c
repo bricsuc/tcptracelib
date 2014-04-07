@@ -234,7 +234,8 @@ udp_pair *
 udpdotrace(
     struct ip *pip,
     struct udphdr *pudp,
-    void *plast)
+    void *plast,
+    tcptrace_global_state *global_state)
 {
     udp_pair	*pup_save;
     ucb		*thisdir;
@@ -250,7 +251,7 @@ udpdotrace(
 	if (warn_printtrunc)
 	    fprintf(stderr,
 		    "UDP packet %lu truncated too short to trace, ignored\n",
-		    pnum);
+		    global_state->pnum);
 	++ctrunc;
 	return(NULL);
     }
@@ -289,11 +290,11 @@ udpdotrace(
 
     /* now, print it if requested */
     if (printem && !printallofem) {
-	printf("Packet %lu\n", pnum);
+	printf("Packet %lu\n", global_state->pnum);
 	printpacket(0,		/* original length not available */
 		    (char *)plast - (char *)pip + 1,
 		    NULL,0,	/* physical stuff not known here */
-		    pip,plast,NULL);
+		    pip,plast,NULL,global_state);
     }
 
     /* grab the address from this packet */

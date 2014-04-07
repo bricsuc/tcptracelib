@@ -43,7 +43,7 @@ for other packet types, I just don't have a place to test them\n\n");
         } else if (not_ether < 5) {
             fprintf(stderr,
                     "Skipping packet %lu, not an ethernet packet\n",
-                    pnum);
+                    global_state->pnum);
         } /* else, just shut up */
         return(FALSE);
     }

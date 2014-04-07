@@ -100,6 +100,18 @@ static char const GCC_UNUSED rcsid_tcptrace[] =
 #include <stdlib.h>
 #include <math.h>
 
+/* packet-reading state */
+typedef struct tcptrace_global_state {
+    u_long pnum;
+} tcptrace_global_state;
+
+/* raw packet, read from file */
+typedef struct raw_packet_t {
+    int phystype;
+    struct ip *pip;
+    struct timeval *current_time;
+} raw_packet_t;
+
 /* IPv6 support */
 #include "ipv6.h"
 
@@ -250,6 +262,7 @@ enum t_ack {NORMAL = 1,		/* no retransmits, just advance */
 
 /* type for an internal file pointer */
 typedef struct mfile MFILE;
+
 
 /* file name information */
 extern char **filenames;	/* all the files on the cmd line */
@@ -737,7 +750,7 @@ extern u_long max_conn_num;
 
 extern int debug;
 extern int thru_interval;
-extern u_long pnum;
+/* extern u_long pnum; */
 
 /* extended variables with values */
 extern char *output_file_dir;
@@ -781,7 +794,7 @@ void *ReallocZ(void *oldptr, int obytes, int nbytes);
 void trace_init(void);
 void trace_done(void);
 void seglist_init(tcb *);
-void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb);
+void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_global_state *global_state);
 void plotter_vtick(PLOTTER, timeval, u_long);
 void plotter_utick(PLOTTER, timeval, u_long);
 void plotter_uarrow(PLOTTER, timeval, u_long);
@@ -808,7 +821,7 @@ void plotter_nothing(PLOTTER, timeval);
 void plotter_invisible(PLOTTER, timeval, u_long);
 void plotter_switch_axis(PLOTTER, Bool);
 void plot_init(void);
-tcp_pair *dotrace(struct ip *, struct tcphdr *ptcp, void *plast);
+tcp_pair *dotrace(struct ip *, struct tcphdr *ptcp, void *plast, tcptrace_global_state *global_state);
 void PrintRawData(char *label, void *pfirst, void *plast, Bool octal);
 void PrintRawDataHex(char *label, void *pfirst, void *plast);
 void PrintTrace(tcp_pair *);
@@ -855,7 +868,7 @@ int Mfprintf(MFILE *pmf, char *format, ...);
 int Mfflush(MFILE *pmf);
 int Mfclose(MFILE *pmf);
 int Mfpipe(int pipes[2]);
-struct tcp_options *ParseOptions(struct tcphdr *ptcp, void *plast);
+struct tcp_options *ParseOptions(struct tcphdr *ptcp, void *plast, tcptrace_global_state *global_state);
 FILE *CompOpenHeader(char *filename);
 FILE *CompOpenFile(char *filename);
 void CompCloseFile(char *filename);
@@ -869,8 +882,8 @@ void CopyAddr(tcp_pair_addrblock *, struct ip *pip,portnum,portnum);
 int WhichDir(tcp_pair_addrblock *, tcp_pair_addrblock *);
 int SameConn(tcp_pair_addrblock *, tcp_pair_addrblock *, int *);
 Bool ip_cksum_valid(struct ip *pip, void *plast);
-Bool tcp_cksum_valid(struct ip *pip, struct tcphdr *ptcp, void *plast);
-Bool udp_cksum_valid(struct ip *pip, struct udphdr *pudp, void *plast);
+Bool tcp_cksum_valid(struct ip *pip, struct tcphdr *ptcp, void *plast, tcptrace_global_state *global_state);
+Bool udp_cksum_valid(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_global_state *global_state);
 ipaddr *str2ipaddr(char *str);
 int IPcmp(ipaddr *pipA, ipaddr *pipB);
 void ModulesPerOldConn(tcp_pair *ptp);
@@ -904,7 +917,7 @@ void extend_line(PLINE pline, timeval xval, int yval);
 /* UDP support routines */
 void udptrace_init(void);
 void udptrace_done(void);
-udp_pair *udpdotrace(struct ip *pip, struct udphdr *pudp, void *plast);
+udp_pair *udpdotrace(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_global_state *global_state);
 
 /* filter routines */
 void HelpFilter(void);
@@ -1079,18 +1092,6 @@ struct tcp_options {
 
 /* name of the argument envariable */
 #define TCPTRACE_ENVARIABLE "TCPTRACEOPTS"
-
-/* packet-reading state */
-typedef struct tcptrace_global_state {
-    u_long pnum;
-} tcptrace_global_state;
-
-/* raw packet, read from file */
-typedef struct raw_packet_t {
-    int phystype;
-    struct ip *pip;
-    struct timeval *current_time;
-} raw_packet_t;
 
 /* packet-reading options... */
 /* the type for a packet reading routine */
