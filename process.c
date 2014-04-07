@@ -6,7 +6,7 @@
 Bool
 check_packet_type(raw_packet_t *raw_packet,
                   tcptrace_working_file *working_file,
-                  tcptrace_global_state *global_state) {
+                  tcptrace_state_t *state) {
 
     /* TODO: need test for this one */
     /* quick sanity check, better be an IPv4/v6 packet */
@@ -22,7 +22,7 @@ check_packet_type(raw_packet_t *raw_packet,
         if (debug) {
             fprintf(stderr,
                     "Skipping packet %lu, not an IPv4/v6 packet (version:%d)\n",
-                    global_state->pnum, IP_V(raw_packet->pip));
+                    state->pnum, IP_V(raw_packet->pip));
         }
         return(FALSE);
     }
@@ -43,7 +43,7 @@ for other packet types, I just don't have a place to test them\n\n");
         } else if (not_ether < 5) {
             fprintf(stderr,
                     "Skipping packet %lu, not an ethernet packet\n",
-                    global_state->pnum);
+                    state->pnum);
         } /* else, just shut up */
         return(FALSE);
     }

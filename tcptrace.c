@@ -153,7 +153,7 @@ u_long max_conn_num = MAX_CONN_NUM;
 int debug = 0;
 
 /* global state (packets read across all files, etc) */
-tcptrace_global_state global_state;
+tcptrace_state_t global_state;
 
 /* u_long pnum = 0; */
 u_long beginpnum = 0;

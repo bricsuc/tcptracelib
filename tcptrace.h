@@ -101,9 +101,9 @@ static char const GCC_UNUSED rcsid_tcptrace[] =
 #include <math.h>
 
 /* packet-reading state */
-typedef struct tcptrace_global_state {
+typedef struct tcptrace_state_t {
     u_long pnum;
-} tcptrace_global_state;
+} tcptrace_state_t;
 
 /* raw packet, read from file */
 typedef struct raw_packet_t {
@@ -794,7 +794,7 @@ void *ReallocZ(void *oldptr, int obytes, int nbytes);
 void trace_init(void);
 void trace_done(void);
 void seglist_init(tcb *);
-void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_global_state *global_state);
+void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
 void plotter_vtick(PLOTTER, timeval, u_long);
 void plotter_utick(PLOTTER, timeval, u_long);
 void plotter_uarrow(PLOTTER, timeval, u_long);
@@ -821,7 +821,7 @@ void plotter_nothing(PLOTTER, timeval);
 void plotter_invisible(PLOTTER, timeval, u_long);
 void plotter_switch_axis(PLOTTER, Bool);
 void plot_init(void);
-tcp_pair *dotrace(struct ip *, struct tcphdr *ptcp, void *plast, tcptrace_global_state *global_state);
+tcp_pair *dotrace(struct ip *, struct tcphdr *ptcp, void *plast, tcptrace_state_t *state);
 void PrintRawData(char *label, void *pfirst, void *plast, Bool octal);
 void PrintRawDataHex(char *label, void *pfirst, void *plast);
 void PrintTrace(tcp_pair *);
@@ -868,7 +868,7 @@ int Mfprintf(MFILE *pmf, char *format, ...);
 int Mfflush(MFILE *pmf);
 int Mfclose(MFILE *pmf);
 int Mfpipe(int pipes[2]);
-struct tcp_options *ParseOptions(struct tcphdr *ptcp, void *plast, tcptrace_global_state *global_state);
+struct tcp_options *ParseOptions(struct tcphdr *ptcp, void *plast, tcptrace_state_t *state);
 FILE *CompOpenHeader(char *filename);
 FILE *CompOpenFile(char *filename);
 void CompCloseFile(char *filename);
@@ -882,8 +882,8 @@ void CopyAddr(tcp_pair_addrblock *, struct ip *pip,portnum,portnum);
 int WhichDir(tcp_pair_addrblock *, tcp_pair_addrblock *);
 int SameConn(tcp_pair_addrblock *, tcp_pair_addrblock *, int *);
 Bool ip_cksum_valid(struct ip *pip, void *plast);
-Bool tcp_cksum_valid(struct ip *pip, struct tcphdr *ptcp, void *plast, tcptrace_global_state *global_state);
-Bool udp_cksum_valid(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_global_state *global_state);
+Bool tcp_cksum_valid(struct ip *pip, struct tcphdr *ptcp, void *plast, tcptrace_state_t *state);
+Bool udp_cksum_valid(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_state_t *state);
 ipaddr *str2ipaddr(char *str);
 int IPcmp(ipaddr *pipA, ipaddr *pipB);
 void ModulesPerOldConn(tcp_pair *ptp);
@@ -917,7 +917,7 @@ void extend_line(PLINE pline, timeval xval, int yval);
 /* UDP support routines */
 void udptrace_init(void);
 void udptrace_done(void);
-udp_pair *udpdotrace(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_global_state *global_state);
+udp_pair *udpdotrace(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_state_t *state);
 
 /* filter routines */
 void HelpFilter(void);

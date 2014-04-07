@@ -67,8 +67,8 @@ static char const GCC_UNUSED rcsid[] =
 /* local routines */
 static void printeth_packet(struct ether_header *);
 static void printip_packet(struct ip *, void *plast);
-static void printtcp_packet(struct ip *, void *plast, tcb *tcb, tcptrace_global_state *global_state);
-static void printudp_packet(struct ip *, void *plast, tcptrace_global_state *global_state);
+static void printtcp_packet(struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
+static void printudp_packet(struct ip *, void *plast, tcptrace_state_t *state);
 static char *ParenServiceName(portnum);
 static char *ParenHostName(struct ipaddr addr);
 static void printipv4(struct ip *pip, void *plast);
@@ -349,7 +349,7 @@ printtcp_packet(
     struct ip *pip,
     void *plast,
     tcb *thisdir,
-    tcptrace_global_state *global_state)
+    tcptrace_state_t *state)
 {
     unsigned tcp_length;
     unsigned tcp_data_length;
@@ -360,7 +360,7 @@ printtcp_packet(
     tcb *otherdir = NULL;
 
     /* find the tcp header */
-    if (gettcp(pip, &ptcp, &plast, global_state))
+    if (gettcp(pip, &ptcp, &plast, state))
       return;		/* not TCP or bad TCP packet */
 
     /* make sure we have enough of the packet */
@@ -421,7 +421,7 @@ printtcp_packet(
 	if ((char *)pdata + tcp_data_length > ((char *)plast+1))
 	    printf(" (too short to verify)");
 	else
-	    printf(" (%s)", tcp_cksum_valid(pip,ptcp,plast,global_state)?"CORRECT":"WRONG");
+	    printf(" (%s)", tcp_cksum_valid(pip,ptcp,plast,state)?"CORRECT":"WRONG");
     }
     printf("\n");
 
@@ -454,7 +454,7 @@ printtcp_packet(
 
 	printf("\t");
 
-	ptcpo = ParseOptions(ptcp,plast,global_state);
+	ptcpo = ParseOptions(ptcp,plast,state);
 
 	if (ptcpo->mss != -1)
 	    printf(" MSS(%d)", ptcpo->mss);
@@ -514,7 +514,7 @@ static void
 printudp_packet(
     struct ip *pip,
     void *plast,
-    tcptrace_global_state *global_state)
+    tcptrace_state_t *state)
 {
     struct udphdr *pudp;
     unsigned udp_length;
@@ -522,7 +522,7 @@ printudp_packet(
     u_char *pdata;
 
     /* find the udp header */
-    if (getudp(pip, &pudp, &plast, global_state))
+    if (getudp(pip, &pudp, &plast, state))
       return;	  /* not UDP  or bad UDP packet */
 
     /* make sure we have enough of the packet */
@@ -548,7 +548,7 @@ printudp_packet(
 	if ((char *)pdata + udp_data_length > ((char *)plast+1))
 	    printf(" (too short to verify)");
 	else
-	    printf(" (%s)", udp_cksum_valid(pip,pudp,plast,global_state)?"CORRECT":"WRONG");
+	    printf(" (%s)", udp_cksum_valid(pip,pudp,plast,state)?"CORRECT":"WRONG");
     }
     printf("\n");
     printf("\t    DLEN: %u", ntohs(pudp->uh_ulen));
@@ -572,7 +572,7 @@ printpacket(
      struct ip		*pip,
      void 		*plast,
      tcb		*tcb,
-     tcptrace_global_state *global_state)
+     tcptrace_state_t *state)
 {
     if (len == 0)
 	/* original length unknown */
@@ -600,10 +600,10 @@ printpacket(
 
 
     /* this will fail if it's not TCP */
-    printtcp_packet(pip,plast,tcb,global_state);
+    printtcp_packet(pip,plast,tcb,state);
 
     /* this will fail if it's not UDP */
-    printudp_packet(pip,plast,global_state);
+    printudp_packet(pip,plast,state);
 }
 
 
