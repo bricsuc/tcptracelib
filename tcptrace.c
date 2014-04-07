@@ -847,6 +847,7 @@ ProcessFile(
 
     tcptrace_load_status_t status;
 
+    tcptrace_state_t *state = &global_state;
 
     /* storage for current working files and packets */
     tcptrace_working_file working_file;
@@ -888,7 +889,7 @@ ProcessFile(
 	    break;
 
 	/* update global and per-file packet counters */
-	global_state.pnum++;	/* global */
+	state->pnum++;          /* global */
 	++fpnum;		/* local to this file */
 
         /* TODO: move this stuff to read packet struct */
@@ -897,18 +898,15 @@ ProcessFile(
 
 
 	/* in case only a subset analysis was requested */
-	if (global_state.pnum < beginpnum)	continue;
-	if ((endpnum != 0) && (global_state.pnum > endpnum)) {
-	    global_state.pnum--;
+	if (state->pnum < beginpnum)	continue;
+	if ((endpnum != 0) && (state->pnum > endpnum)) {
+	    state->pnum--;
 	    --fpnum;
 	    break;
         }
 
         /* TODO: move pnum to working_file entirely */
         working_file.pnum = fpnum;
-
-        /* TODO: de-globalize all of this */
-        /* global_state.pnum = pnum; */
 
 	/* check for re-ordered packets */
 	if (!ZERO_TIME(&last_packet)) {
@@ -985,7 +983,7 @@ That will likely confuse the program, so be careful!\n", filename);
 	}
 
 
-        if (check_packet_type(&raw_packet, &working_file, &global_state)
+        if (check_packet_type(&raw_packet, &working_file, state)
             == FALSE) {
             continue;
         }
@@ -1004,7 +1002,7 @@ That will likely confuse the program, so be careful!\n", filename);
 	    if (debug)
 		fprintf(stderr,
 			"Skipping packet %lu, not an IPv4/v6 packet (version:%d)\n",
-			global_state.pnum, IP_V(pip));
+			state->pnum, IP_V(pip));
 	    continue;
 	}
 #endif
@@ -1023,15 +1021,15 @@ for other packet types, I just don't have a place to test them\n\n");
 	    } else if (not_ether < 5) {
 		fprintf(stderr,
 			"Skipping packet %lu, not an ethernet packet\n",
-			global_state.pnum);
+			state->pnum);
 	    } /* else, just shut up */
 	    continue;
 	}
 
 	/* print the packet, if requested */
 	if (printallofem || dump_packet_data) {
-	    printf("Packet %lu\n", global_state.pnum);
-	    printpacket(len,tlen,phys,phystype,pip,plast,NULL,&global_state);
+	    printf("Packet %lu\n", state->pnum);
+	    printpacket(len,tlen,phys,phystype,pip,plast,NULL,state);
 	}
 
 	/* keep track of global times */
@@ -1044,13 +1042,13 @@ for other packet types, I just don't have a place to test them\n\n");
 	    if (!ip_cksum_valid(pip,plast)) {
 		++bad_ip_checksums;
 		if (warn_printbadcsum)
-		    fprintf(stderr, "packet %lu: bad IP checksum\n", global_state.pnum);
+		    fprintf(stderr, "packet %lu: bad IP checksum\n", state->pnum);
 		continue;
 	    }
 	}
 		       
 	/* find the start of the TCP header */
-	ret = gettcp (pip, &ptcp, &plast, &global_state);
+	ret = gettcp (pip, &ptcp, &plast, state);
 
 	/* if that failed, it's not TCP */
 	if (ret < 0) {
@@ -1058,18 +1056,18 @@ for other packet types, I just don't have a place to test them\n\n");
 	    struct udphdr *pudp;
 
 	    /* look for a UDP header */
-	    ret = getudp(pip, &pudp, &plast, &global_state);
+	    ret = getudp(pip, &pudp, &plast, state);
 
 	    if (do_udp && (ret == 0)) {
-		pup = udpdotrace(pip,pudp,plast, &global_state);
+		pup = udpdotrace(pip,pudp,plast, state);
 
 		/* verify UDP checksums, if requested */
 		if (verify_checksums) {
-		    if (!udp_cksum_valid(pip,pudp,plast,&global_state)) {
+		    if (!udp_cksum_valid(pip,pudp,plast,state)) {
 			++bad_udp_checksums;
 			if (warn_printbadcsum)
 			    fprintf(stderr, "packet %lu: bad UDP checksum\n",
-				    global_state.pnum);
+				    state->pnum);
 			continue;
 		    }
 		}
@@ -1091,16 +1089,16 @@ for other packet types, I just don't have a place to test them\n\n");
 
 	/* verify TCP checksums, if requested */
 	if (verify_checksums) {
-	    if (!tcp_cksum_valid(pip,ptcp,plast,&global_state)) {
+	    if (!tcp_cksum_valid(pip,ptcp,plast,state)) {
 		++bad_tcp_checksums;
 		if (warn_printbadcsum) 
-		    fprintf(stderr, "packet %lu: bad TCP checksum\n", global_state.pnum);
+		    fprintf(stderr, "packet %lu: bad TCP checksum\n", state->pnum);
 		continue;
 	    }
 	}
 		       
         /* perform TCP packet analysis */
-	ptp = dotrace(pip,ptcp,plast, &global_state);
+	ptp = dotrace(pip,ptcp,plast, state);
 
 	/* if it wasn't "interesting", we return NULL here */
 	if (ptp == NULL)
@@ -1117,9 +1115,15 @@ for other packet types, I just don't have a place to test them\n\n");
 	    ModulesPerPacket(pip,ptp,plast);
 	}
 
+        /* TODO: this signal business doesn't seem necessary, and could */
+        /* be harmful. Why would you have an abnormal number of signals here? */
+        /* Would there be a problem if you did a ^C and the output was not */
+        /* consistent? (and why would you care about that?) */
+        /* determine why this code is here and eliminate it if possible */
+
 	/* for efficiency, only allow a signal every 1000 packets	*/
 	/* (otherwise the system call overhead will kill us)		*/
-	if (global_state.pnum % 1000 == 0) {
+	if (state->pnum % 1000 == 0) {
 	    sigset_t mask;
 
 	    sigemptyset(&mask);
