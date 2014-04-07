@@ -89,7 +89,7 @@ static tcp_pair *FindTTP(struct ip *, struct tcphdr *, int *, ptp_ptr **);
 static void MoreTcpPairs(int num_needed);
 static void ExtractContents(u_long seq, u_long tcp_data_bytes,
 			    u_long saved_data_bytes, void *pdata, tcb *ptcb);
-static Bool check_hw_dups(u_short id, seqnum seq, tcb *ptcb);
+static Bool check_hw_dups(u_short id, seqnum seq, tcb *ptcb, tcptrace_global_state *global_state);
 static u_long SeqRep(tcb *ptcb, u_long seq);
 static void UpdateConnLists(ptp_ptr *tcp_ptr, struct tcphdr *ptcp);
 static void UpdateConnList(ptp_ptr *tcp_ptr, 
@@ -1350,7 +1350,8 @@ tcp_pair *
 dotrace(
     struct ip *pip,
     struct tcphdr *ptcp,
-    void *plast)
+    void *plast,
+    tcptrace_global_state *global_state)
 {
     struct tcp_options *ptcpo;
     tcp_pair	*ptp_save;
@@ -1391,7 +1392,7 @@ dotrace(
 	if (warn_printtrunc)
 	    fprintf(stderr,
 		    "TCP packet %lu truncated too short to trace, ignored\n",
-		    pnum);
+		    global_state->pnum);
 	++ctrunc;
 	return(NULL);
     }
@@ -1595,11 +1596,12 @@ dotrace(
 
     /* now, print it if requested */
     if (printem && !printallofem) {
-	printf("Packet %lu\n", pnum);
+	printf("Packet %lu\n", global_state->pnum);
 	printpacket(0,		/* original length not available */
 		    (char *)plast - (char *)pip + 1,
 		    NULL,0,	/* physical stuff not known here */
-		    pip,plast,thisdir);
+		    pip,plast,thisdir,
+                    global_state);
     }
 
     /* grab the address from this packet */
@@ -1621,7 +1623,7 @@ dotrace(
     tlinepl      = thisdir->tline_plotter;
 
     /* check the options */
-    ptcpo = ParseOptions(ptcp,plast);
+    ptcpo = ParseOptions(ptcp,plast,global_state);
     if (ptcpo->mss != -1)
 	thisdir->mss = ptcpo->mss;
     if (ptcpo->ws != -1) {
@@ -1709,7 +1711,7 @@ dotrace(
     /* check for hardware duplicates */
     /* only works for IPv4, IPv6 has no mandatory ID field */
     if (PIP_ISV4(pip) && docheck_hw_dups)
-	hw_dup = check_hw_dups(pip->ip_id, th_seq, thisdir);
+	hw_dup = check_hw_dups(pip->ip_id, th_seq, thisdir, global_state);
 
 
     /* Kevin Lahey's ECN code */
@@ -2820,7 +2822,8 @@ get_short_opt(
 struct tcp_options *
 ParseOptions(
     struct tcphdr *ptcp,
-    void *plast)
+    void *plast,
+    tcptrace_global_state *global_state)
 {
     static struct tcp_options tcpo;
     struct sack_block *psack;
@@ -2844,12 +2847,12 @@ ParseOptions(
 	if (TH_X2(ptcp) != 0) {
 	    fprintf(stderr,
 		    "TCP packet %lu: 4 reserved bits are not zero (0x%01x)\n",
-		    pnum, TH_X2(ptcp));
+		    global_state->pnum, TH_X2(ptcp));
 	}
 	if ((ptcp->th_flags & 0xc0) != 0) {
 	    fprintf(stderr,
 		    "TCP packet %lu: upper flag bits are not zero (0x%02x)\n",
-		    pnum, ptcp->th_flags);
+		    global_state->pnum, ptcp->th_flags);
 	}
     } else {
 	static int warned = 0;
@@ -2859,7 +2862,7 @@ ParseOptions(
 	    fprintf(stderr, "\
 TCP packet %lu: reserved bits are not all zero.  \n\
 \tFurther warnings disabled, use '-w' for more info\n",
-		    pnum);
+		    global_state->pnum);
 	}
     }
 
@@ -2871,7 +2874,7 @@ TCP packet %lu: reserved bits are not all zero.  \n\
 	if ((char *)popt > (char *)plast) {
 	    if (warn_printtrunc)
 		fprintf(stderr,"\
-ParseOptions: packet %lu too short to parse remaining options\n", pnum);
+ParseOptions: packet %lu too short to parse remaining options\n", global_state->pnum);
 	    ++ctrunc;
 	    break;
 	}
@@ -2880,13 +2883,13 @@ ParseOptions: packet %lu too short to parse remaining options\n", pnum);
 	if (*plen == 0) { \
 	    if (warn_printtrunc) fprintf(stderr, "\
 ParseOptions: packet %lu %s option has length 0, skipping other options\n", \
-                                           pnum,opt); \
+                                           global_state->pnum,opt); \
 	    popt = pdata; break;} \
 	if ((char *)popt + *plen - 1 > (char *)(plast)) { \
 	    if (warn_printtrunc) \
 		fprintf(stderr, "\
 ParseOptions: packet %lu %s option truncated, skipping other options\n", \
-              pnum,opt); \
+              global_state->pnum,opt); \
 	    ++ctrunc; \
 	    popt = pdata; break;} \
 
@@ -2965,7 +2968,7 @@ ParseOptions: packet %lu %s option truncated, skipping other options\n", \
 		    if (warn_printtrunc)
 			fprintf(stderr,
 				"packet %lu: SACK block truncated\n",
-				pnum);
+				global_state->pnum);
 		    ++ctrunc;
 		    break;
 		}
@@ -3138,7 +3141,8 @@ static Bool
 check_hw_dups(
     u_short id,
     seqnum seq,
-    tcb *tcb)
+    tcb *tcb,
+    tcptrace_global_state *global_state)
 {
     int i;
     struct str_hardware_dups *pshd;
@@ -3154,7 +3158,7 @@ check_hw_dups(
 	    if (warn_printhwdups) {
 		printf("%s->%s: saw hardware duplicate of TCP seq %lu, IP ID %u (packet %lu == %lu)\n",
 		       tcb->host_letter,tcb->ptwin->host_letter,
-		       seq, id, pnum,pshd->hwdup_packnum);
+		       seq, id, global_state->pnum, pshd->hwdup_packnum);
 	    }
 	    return(TRUE);
 	}
@@ -3164,7 +3168,7 @@ check_hw_dups(
     pshd = &tcb->hardware_dups[tcb->hardware_dups_ix];
     pshd->hwdup_seq = seq;
     pshd->hwdup_id = id;
-    pshd->hwdup_packnum = pnum;
+    pshd->hwdup_packnum = global_state->pnum;
     tcb->hardware_dups_ix = (tcb->hardware_dups_ix+1) % SEGS_TO_REMEMBER;
 
     return(FALSE);
@@ -3288,7 +3292,8 @@ static u_short
 tcp_cksum(
     struct ip *pip,
     struct tcphdr *ptcp,
-    void *plast)
+    void *plast,
+    tcptrace_global_state *global_state)
 {
     u_long sum = 0;
     unsigned tcp_length = 0;
@@ -3338,7 +3343,7 @@ tcp_cksum(
         /* quick sanity check, it the packet is truncated,
 	 * pertend it is valid.
 	 */ 
-        if(gettcp(pip, &ptcp, &plast) != 0)
+        if(gettcp(pip, &ptcp, &plast, global_state) != 0)
 	 return(0);
        
         /* Forming the pseudo-header */
@@ -3360,7 +3365,7 @@ tcp_cksum(
 	   struct ipv6_ext *pipv6_ext = (struct ipv6_ext *)(pip6+1);
 
 	   /* Searching for the routing header */
-	   int ret = getroutingheader(pip, &pipv6_ext, &plast);
+	   int ret = getroutingheader(pip, &pipv6_ext, &plast, global_state);
 	   
 	   if(!ret) {  /* Found the routing header */
 	      if(pipv6_ext->ip6ext_len >= 2) { /* Sanity check */
@@ -3411,7 +3416,8 @@ static u_short
 udp_cksum(
     struct ip *pip,
     struct udphdr *pudp,
-    void *plast)
+    void *plast,
+    tcptrace_global_state *global_state)
 {
     u_long sum = 0;
     unsigned udp_length;
@@ -3453,7 +3459,7 @@ udp_cksum(
         /* quick sanity check, it the packet is truncated,
 	 * pertend it is valid.
 	 */ 
-        if(getudp(pip, &pudp, &plast) != 0)
+        if(getudp(pip, &pudp, &plast, global_state) != 0)
 	 return(0);
        
         /* Forming the pseudo-header */
@@ -3475,7 +3481,7 @@ udp_cksum(
 	   struct ipv6_ext *pipv6_ext = (struct ipv6_ext *)(pip6+1);
 
 	   /* Searching for the routing header */
-	   int ret = getroutingheader(pip, &pipv6_ext, &plast);
+	   int ret = getroutingheader(pip, &pipv6_ext, &plast, global_state);
 	   
 	   if(!ret) {  /* Found the routing header */
 	      if(pipv6_ext->ip6ext_len >= 2) { /* Sanity check */
@@ -3521,9 +3527,10 @@ Bool
 tcp_cksum_valid(
     struct ip *pip,
     struct tcphdr *ptcp,
-    void *plast)
+    void *plast,
+    tcptrace_global_state *global_state)
 {
-    return(tcp_cksum(pip,ptcp,plast) == 0);
+    return(tcp_cksum(pip,ptcp,plast,global_state) == 0);
 }
 
 
@@ -3532,14 +3539,15 @@ Bool
 udp_cksum_valid(
     struct ip *pip,
     struct udphdr *pudp,
-    void *plast)
+    void *plast,
+    tcptrace_global_state *global_state)
 {
     if (ntohs(pudp->uh_sum) == 0) {
 	/* checksum not used */
 	return(1);		/* valid */
     }
     
-    return(udp_cksum(pip,pudp,plast) == 0);
+    return(udp_cksum(pip,pudp,plast,global_state) == 0);
 }
 
 /* Did we miss any segment during packet capture? */
