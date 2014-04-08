@@ -116,7 +116,7 @@ Bool printbrief = TRUE;
 Bool printsuppress = FALSE;
 /* Bool printem = FALSE; */
 /* Bool printallofem = FALSE; */
-Bool printticks = FALSE;
+/* Bool printticks = FALSE; */
 Bool warn_ooo = FALSE;
 Bool warn_printtrunc = FALSE;
 Bool warn_printbadmbz = FALSE;
@@ -730,6 +730,7 @@ main(
     global_state.options->endpnum = 0;
     global_state.options->printem = FALSE;
     global_state.options->printallofem = FALSE;
+    global_state.options->printticks = FALSE;
 
     /* parse the flags */
     CheckArguments(&argc,argv);
@@ -782,8 +783,9 @@ main(
     }
 
     /* clean up output */
-    if (printticks)
+    if (cmd_options.printticks) {
 	printf("\n");
+    }
 
     /* get ending wallclock time */
     gettimeofday(&wallclock_finished, NULL);
@@ -955,7 +957,7 @@ That will likely confuse the program, so be careful!\n", filename);
 	/* progress counters */
 	if (!state->options->printem &&
             !state->options->printallofem &&
-            printticks) {
+            state->options->printticks) {
 	    if (CompIsCompressed())
 		location += tlen;  /* just guess... */
 	    if (((fpnum <    100) && (fpnum %    10 == 0)) ||
@@ -1569,6 +1571,8 @@ CheckArguments(
     char *rc_path = NULL;
     char *rc_buf = NULL;
 
+    tcptrace_runtime_options_t *options = global_state.options;
+
     /* remember the name of the program for errors... */
     progname = argv[0];
 
@@ -1687,14 +1691,14 @@ CheckArguments(
     /* heuristic, I set "-t" in my config file, but they don't work inside */
     /* emacs shell windows, which is a pain.  If the terminal looks like EMACS, */
     /* then turn OFF ticks! */
-    if (printticks) {
+    if (options->printticks) {
 	char *TERM = getenv("TERM");
 	/* allow emacs and Emacs */
 	if ((TERM != NULL) && 
 	    ((strstr(TERM,"emacs") != NULL) ||
 	     (strstr(TERM,"Emacs") != NULL))) {
 	    printf("Disabling ticks for EMACS shell window\n");
-	    printticks = 0;
+	    options->printticks = 0;
 	}
     }
 }
@@ -2164,7 +2168,7 @@ ParseArgs(
 		  case 'q': printsuppress = TRUE; break;
 		  case 'r': print_rtt = TRUE; break;
 		  case 's': use_short_names = TRUE; break;
-		  case 't': printticks = TRUE; break;
+		  case 't': options->printticks = TRUE; break;
 		  case 'u': do_udp = TRUE; break;
 		  case 'v': Version(); exit(0); break;
 		  case 'w':
@@ -2234,7 +2238,7 @@ ParseArgs(
 		  case 'q': printsuppress = !TRUE; break;
 		  case 'r': print_rtt = !TRUE; break;
 		  case 's': use_short_names = !TRUE; break;
-		  case 't': printticks = !TRUE; break;
+		  case 't': options->printticks = !TRUE; break;
 		  case 'u': do_udp = !TRUE; break;
 		  case 'w':
 		    warn_printtrunc = !TRUE;
@@ -2297,7 +2301,7 @@ DumpFlags(void)
     fprintf(stderr,"ignore_non_comp:  %s\n", BOOL2STR(ignore_non_comp));
     fprintf(stderr,"printem:          %s\n", BOOL2STR(options->printem));
     fprintf(stderr,"printallofem:     %s\n", BOOL2STR(options->printallofem));
-    fprintf(stderr,"printticks:       %s\n", BOOL2STR(printticks));
+    fprintf(stderr,"printticks:       %s\n", BOOL2STR(options->printticks));
     fprintf(stderr,"use_short_names:  %s\n", BOOL2STR(use_short_names));
     fprintf(stderr,"save_tcp_data:    %s\n", BOOL2STR(save_tcp_data));
     fprintf(stderr,"graph_time_zero:  %s\n", BOOL2STR(graph_time_zero));
