@@ -103,6 +103,7 @@ static char const GCC_UNUSED rcsid_tcptrace[] =
 /* packet-reading state */
 typedef struct tcptrace_state_t {
     u_long pnum;
+    u_long beginpnum;
 } tcptrace_state_t;
 
 /* raw packet, read from file */
@@ -750,7 +751,7 @@ extern u_long max_conn_num;
 
 extern int debug;
 extern int thru_interval;
-/* extern u_long pnum; */
+/* extern u_long pnum; */ /* now localized in tcptrace_state_t */
 
 /* extended variables with values */
 extern char *output_file_dir;

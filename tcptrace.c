@@ -156,7 +156,7 @@ int debug = 0;
 tcptrace_state_t global_state;
 
 /* u_long pnum = 0; */
-u_long beginpnum = 0;
+/* u_long beginpnum = 0; */
 u_long endpnum = 0;
 u_long ctrunc = 0;
 u_long bad_ip_checksums = 0;
@@ -720,6 +720,11 @@ main(
     /* let modules start first */
     LoadModules(argc,argv);
 
+    /* initialize global state */
+    /* TODO: move this into a separate function */
+    global_state.pnum = 0;
+    global_state.beginpnum = 0;
+
     /* parse the flags */
     CheckArguments(&argc,argv);
 
@@ -748,8 +753,6 @@ main(
 	   num_files,
 	   num_files>1?"s":"",
 	   filenames[0]);
-    
-
 
     if (debug>1)
 	DumpFlags();
@@ -757,9 +760,6 @@ main(
     /* knock, knock... */
     printf("%s%s\n\n", comment, VERSION);
 
-    /* initialize global state */
-    /* TODO: move this into a separate function */
-    global_state.pnum = 0;
 
     /* read each file in turn */
     numfiles = argc;
@@ -898,7 +898,9 @@ ProcessFile(
 
 
 	/* in case only a subset analysis was requested */
-	if (state->pnum < beginpnum)	continue;
+	if (state->pnum < state->beginpnum) {
+            continue;
+        }
 	if ((endpnum != 0) && (state->pnum > endpnum)) {
 	    state->pnum--;
 	    --fpnum;
@@ -2047,10 +2049,10 @@ ParseArgs(
 		    *(argv[i]+1) = '\00'; break;
 		  case 'B':
 		    if (isdigit((int)(*(argv[i]+1))))
-			beginpnum = atoi(argv[i]+1);
+			global_state.beginpnum = atoi(argv[i]+1);
 		    else
 			BadArg(argsource, "-B  number missing\n");
-		    if (beginpnum < 0)
+		    if (global_state.beginpnum < 0)
 			BadArg(argsource, "-B  must be >= 0\n");
 		    *(argv[i]+1) = '\00'; break;
 		  case 'C': colorplot = TRUE; break;
@@ -2060,7 +2062,7 @@ ParseArgs(
 			endpnum = atoi(argv[i]+1);
 		    else
 			BadArg(argsource, "-E  number missing\n");
-		    if (beginpnum < 0)
+		    if (endpnum < 0)
 			BadArg(argsource, "-E  must be >= 0\n");
 		    *(argv[i]+1) = '\00'; break;
 		  case 'F': graph_segsize = TRUE; break;
@@ -2289,7 +2291,7 @@ DumpFlags(void)
     fprintf(stderr,"save_tcp_data:    %s\n", BOOL2STR(save_tcp_data));
     fprintf(stderr,"graph_time_zero:  %s\n", BOOL2STR(graph_time_zero));
     fprintf(stderr,"graph_seq_zero:   %s\n", BOOL2STR(graph_seq_zero));
-    fprintf(stderr,"beginning pnum:   %lu\n", beginpnum);
+    fprintf(stderr,"beginning pnum:   %lu\n", global_state.beginpnum);
     fprintf(stderr,"ending pnum:      %lu\n", endpnum);
     fprintf(stderr,"throughput intvl: %d\n", thru_interval);
     fprintf(stderr,"NS simulator hdrs:%s\n", BOOL2STR(ns_hdrs));
