@@ -52,3 +52,13 @@ for other packet types, I just don't have a place to test them\n\n");
     return(TRUE);
 }
 
+/* initialize the tcptrace runtime options */
+void
+tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
+    options->beginpnum = 0;
+    options->endpnum = 0;
+    options->printem = FALSE;
+    options->printallofem = FALSE;
+    options->printticks = FALSE;
+}
+

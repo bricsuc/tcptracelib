@@ -726,11 +726,8 @@ main(
     global_state.pnum = 0;
     global_state.options = &cmd_options;
 
-    global_state.options->beginpnum = 0;
-    global_state.options->endpnum = 0;
-    global_state.options->printem = FALSE;
-    global_state.options->printallofem = FALSE;
-    global_state.options->printticks = FALSE;
+    /* initialize the runtime options */
+    tcptrace_initialize_options(global_state.options);
 
     /* parse the flags */
     CheckArguments(&argc,argv);
