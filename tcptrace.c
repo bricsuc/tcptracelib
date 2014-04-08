@@ -155,9 +155,9 @@ int debug = 0;
 /* global state (packets read across all files, etc) */
 tcptrace_state_t global_state;
 
-/* u_long pnum = 0; */
-/* u_long beginpnum = 0; */
-u_long endpnum = 0;
+/* u_long pnum = 0; */       /* now de-globalized */
+/* u_long beginpnum = 0; */  /* now de-globalized */
+/* u_long endpnum = 0; */    /* now de-globalized */
 u_long ctrunc = 0;
 u_long bad_ip_checksums = 0;
 u_long bad_tcp_checksums = 0;
@@ -724,6 +724,7 @@ main(
     /* TODO: move this into a separate function */
     global_state.pnum = 0;
     global_state.beginpnum = 0;
+    global_state.endpnum = 0;
 
     /* parse the flags */
     CheckArguments(&argc,argv);
@@ -901,7 +902,7 @@ ProcessFile(
 	if (state->pnum < state->beginpnum) {
             continue;
         }
-	if ((endpnum != 0) && (state->pnum > endpnum)) {
+	if ((state->endpnum != 0) && (state->pnum > state->endpnum)) {
 	    state->pnum--;
 	    --fpnum;
 	    break;
@@ -2059,10 +2060,10 @@ ParseArgs(
 		  case 'D': hex = FALSE; break;
 		  case 'E':
 		    if (isdigit((int)(*(argv[i]+1))))
-			endpnum = atoi(argv[i]+1);
+			global_state.endpnum = atoi(argv[i]+1);
 		    else
 			BadArg(argsource, "-E  number missing\n");
-		    if (endpnum < 0)
+		    if (global_state.endpnum < 0)
 			BadArg(argsource, "-E  must be >= 0\n");
 		    *(argv[i]+1) = '\00'; break;
 		  case 'F': graph_segsize = TRUE; break;
@@ -2292,7 +2293,7 @@ DumpFlags(void)
     fprintf(stderr,"graph_time_zero:  %s\n", BOOL2STR(graph_time_zero));
     fprintf(stderr,"graph_seq_zero:   %s\n", BOOL2STR(graph_seq_zero));
     fprintf(stderr,"beginning pnum:   %lu\n", global_state.beginpnum);
-    fprintf(stderr,"ending pnum:      %lu\n", endpnum);
+    fprintf(stderr,"ending pnum:      %lu\n", global_state.endpnum);
     fprintf(stderr,"throughput intvl: %d\n", thru_interval);
     fprintf(stderr,"NS simulator hdrs:%s\n", BOOL2STR(ns_hdrs));
     fprintf(stderr,"number modules:   %u\n", (unsigned)NUM_MODULES);

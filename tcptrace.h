@@ -104,6 +104,7 @@ static char const GCC_UNUSED rcsid_tcptrace[] =
 typedef struct tcptrace_state_t {
     u_long pnum;
     u_long beginpnum;
+    u_long endpnum;
 } tcptrace_state_t;
 
 /* raw packet, read from file */
