@@ -289,7 +289,7 @@ udpdotrace(
     }
 
     /* now, print it if requested */
-    if (printem && !printallofem) {
+    if (state->options->printem && !state->options->printallofem) {
 	printf("Packet %lu\n", state->pnum);
 	printpacket(0,		/* original length not available */
 		    (char *)plast - (char *)pip + 1,
