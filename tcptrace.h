@@ -100,23 +100,6 @@ static char const GCC_UNUSED rcsid_tcptrace[] =
 #include <stdlib.h>
 #include <math.h>
 
-/* packet-reading state */
-typedef struct tcptrace_state_t {
-    u_long pnum;
-    u_long beginpnum;
-    u_long endpnum;
-} tcptrace_state_t;
-
-/* raw packet, read from file */
-typedef struct raw_packet_t {
-    int phystype;
-    struct ip *pip;
-    struct timeval *current_time;
-} raw_packet_t;
-
-/* IPv6 support */
-#include "ipv6.h"
-
 /* dynamic string support */
 #include "dstring.h"
 
@@ -752,7 +735,27 @@ extern u_long max_conn_num;
 
 extern int debug;
 extern int thru_interval;
+
 /* extern u_long pnum; */ /* now localized in tcptrace_state_t */
+
+/* options */
+typedef struct tcptrace_runtime_options_t {
+    u_long beginpnum;
+    u_long endpnum;
+} tcptrace_runtime_options_t;
+
+/* packet-reading state */
+typedef struct tcptrace_state_t {
+    u_long pnum;
+    tcptrace_runtime_options_t *options;
+} tcptrace_state_t;
+
+/* raw packet, read from file */
+typedef struct raw_packet_t {
+    int phystype;
+    struct ip *pip;
+    struct timeval *current_time;
+} raw_packet_t;
 
 /* extended variables with values */
 extern char *output_file_dir;
@@ -1151,6 +1154,8 @@ int snprintf_vms(char *str, size_t len, const char *fmt, ...);
 #define US_PER_SEC 1000000	/* microseconds per second */
 #define MS_PER_SEC 1000		/* milliseconds per second */
 
+/* IPv6 support */
+#include "ipv6.h"
 
 /*
  * Macros to simplify access to IPv4/IPv6 header fields
