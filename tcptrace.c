@@ -114,8 +114,8 @@ Bool print_rtt = FALSE;
 Bool print_owin = FALSE;
 Bool printbrief = TRUE;
 Bool printsuppress = FALSE;
-Bool printem = FALSE;
-Bool printallofem = FALSE;
+/* Bool printem = FALSE; */
+/* Bool printallofem = FALSE; */
 Bool printticks = FALSE;
 Bool warn_ooo = FALSE;
 Bool warn_printtrunc = FALSE;
@@ -728,6 +728,8 @@ main(
 
     global_state.options->beginpnum = 0;
     global_state.options->endpnum = 0;
+    global_state.options->printem = FALSE;
+    global_state.options->printallofem = FALSE;
 
     /* parse the flags */
     CheckArguments(&argc,argv);
@@ -951,7 +953,9 @@ That will likely confuse the program, so be careful!\n", filename);
 
 
 	/* progress counters */
-	if (!printem && !printallofem && printticks) {
+	if (!state->options->printem &&
+            !state->options->printallofem &&
+            printticks) {
 	    if (CompIsCompressed())
 		location += tlen;  /* just guess... */
 	    if (((fpnum <    100) && (fpnum %    10 == 0)) ||
@@ -1034,7 +1038,7 @@ for other packet types, I just don't have a place to test them\n\n");
 	}
 
 	/* print the packet, if requested */
-	if (printallofem || dump_packet_data) {
+	if (state->options->printallofem || dump_packet_data) {
 	    printf("Packet %lu\n", state->pnum);
 	    printpacket(len,tlen,phys,phystype,pip,plast,NULL,state);
 	}
@@ -2016,6 +2020,7 @@ ParseArgs(
 {
     int i;
     int saw_i_or_o = 0;
+    tcptrace_runtime_options_t *options = global_state.options;
 
     /* parse the args */
     for (i=1; i < *pargc; ++i) {
@@ -2054,20 +2059,20 @@ ParseArgs(
 		    *(argv[i]+1) = '\00'; break;
 		  case 'B':
 		    if (isdigit((int)(*(argv[i]+1))))
-			global_state.options->beginpnum = atoi(argv[i]+1);
+			options->beginpnum = atoi(argv[i]+1);
 		    else
 			BadArg(argsource, "-B  number missing\n");
-		    if (global_state.options->beginpnum < 0)
+		    if (options->beginpnum < 0)
 			BadArg(argsource, "-B  must be >= 0\n");
 		    *(argv[i]+1) = '\00'; break;
 		  case 'C': colorplot = TRUE; break;
 		  case 'D': hex = FALSE; break;
 		  case 'E':
 		    if (isdigit((int)(*(argv[i]+1))))
-			global_state.options->endpnum = atoi(argv[i]+1);
+			options->endpnum = atoi(argv[i]+1);
 		    else
 			BadArg(argsource, "-E  number missing\n");
-		    if (global_state.options->endpnum < 0)
+		    if (options->endpnum < 0)
 			BadArg(argsource, "-E  must be >= 0\n");
 		    *(argv[i]+1) = '\00'; break;
 		  case 'F': graph_segsize = TRUE; break;
@@ -2094,7 +2099,7 @@ ParseArgs(
 			BadArg(argsource, "-Ofile requires a file name\n");
 		    }
 		    break;
-		  case 'P': printem = TRUE; break;
+		  case 'P': options->printem = TRUE; break;
 		  case 'R': graph_rtt = TRUE; break;
 		  case 'S': graph_tsg = TRUE; break;
 		  case 'T': graph_tput = TRUE; break;
@@ -2155,7 +2160,7 @@ ParseArgs(
 		        GrabOnly(argsource,argv[i]+1);
 		    }
 		    *(argv[i]+1) = '\00'; break;
-		  case 'p': printallofem = TRUE; break;
+		  case 'p': options->printallofem = TRUE; break;
 		  case 'q': printsuppress = TRUE; break;
 		  case 'r': print_rtt = TRUE; break;
 		  case 's': use_short_names = TRUE; break;
@@ -2210,7 +2215,7 @@ ParseArgs(
 		  case 'L': graph_tline = !TRUE; break;
 		  case 'M': colorplot = !FALSE; break;
 		  case 'N': graph_owin = !TRUE; break;
-		  case 'P': printem = !TRUE; break;
+		  case 'P': options->printem = !TRUE; break;
 		  case 'R': graph_rtt = !TRUE; break;
 		  case 'S': graph_tsg = !TRUE; break;
 		  case 'T': graph_tput = !TRUE; break;
@@ -2225,7 +2230,7 @@ ParseArgs(
 		    resolve_ipaddresses = !FALSE;
 		    resolve_ports = !FALSE;
 		    break;
-		  case 'p': printallofem = !TRUE; break;
+		  case 'p': options->printallofem = !TRUE; break;
 		  case 'q': printsuppress = !TRUE; break;
 		  case 'r': print_rtt = !TRUE; break;
 		  case 's': use_short_names = !TRUE; break;
@@ -2275,6 +2280,7 @@ static void
 DumpFlags(void)
 {
     int i;
+    tcptrace_runtime_options_t *options = global_state.options;
 
     fprintf(stderr,"printbrief:       %s\n", BOOL2STR(printbrief));
     fprintf(stderr,"printsuppress:    %s\n", BOOL2STR(printsuppress));
@@ -2289,15 +2295,15 @@ DumpFlags(void)
 	    colorplot?"(color)":"(b/w)");
     fprintf(stderr,"hex printing:     %s\n", BOOL2STR(hex));
     fprintf(stderr,"ignore_non_comp:  %s\n", BOOL2STR(ignore_non_comp));
-    fprintf(stderr,"printem:          %s\n", BOOL2STR(printem));
-    fprintf(stderr,"printallofem:     %s\n", BOOL2STR(printallofem));
+    fprintf(stderr,"printem:          %s\n", BOOL2STR(options->printem));
+    fprintf(stderr,"printallofem:     %s\n", BOOL2STR(options->printallofem));
     fprintf(stderr,"printticks:       %s\n", BOOL2STR(printticks));
     fprintf(stderr,"use_short_names:  %s\n", BOOL2STR(use_short_names));
     fprintf(stderr,"save_tcp_data:    %s\n", BOOL2STR(save_tcp_data));
     fprintf(stderr,"graph_time_zero:  %s\n", BOOL2STR(graph_time_zero));
     fprintf(stderr,"graph_seq_zero:   %s\n", BOOL2STR(graph_seq_zero));
-    fprintf(stderr,"beginning pnum:   %lu\n", global_state.options->beginpnum);
-    fprintf(stderr,"ending pnum:      %lu\n", global_state.options->endpnum);
+    fprintf(stderr,"beginning pnum:   %lu\n", options->beginpnum);
+    fprintf(stderr,"ending pnum:      %lu\n", options->endpnum);
     fprintf(stderr,"throughput intvl: %d\n", thru_interval);
     fprintf(stderr,"NS simulator hdrs:%s\n", BOOL2STR(ns_hdrs));
     fprintf(stderr,"number modules:   %u\n", (unsigned)NUM_MODULES);

@@ -690,8 +690,8 @@ extern Bool print_rtt;
 extern Bool print_owin;
 extern Bool printbrief;
 extern Bool printsuppress;
-extern Bool printem;
-extern Bool printallofem;
+/* extern Bool printem; */       /* de-globalized, now in runtime_options */
+/* extern Bool printallofem; */  /* de-globalized, "" */
 extern Bool printticks;
 extern Bool dump_packet_data;
 extern Bool warn_ooo;
@@ -742,6 +742,8 @@ extern int thru_interval;
 typedef struct tcptrace_runtime_options_t {
     u_long beginpnum;
     u_long endpnum;
+    Bool printem;
+    Bool printallofem;
 } tcptrace_runtime_options_t;
 
 /* packet-reading state */
