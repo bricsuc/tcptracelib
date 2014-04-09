@@ -751,6 +751,7 @@ typedef struct tcptrace_runtime_options_t {
 typedef struct tcptrace_state_t {
     u_long pnum;
     tcptrace_runtime_options_t *options;
+    timeval last_packet;
 } tcptrace_state_t;
 
 /* raw packet, read from file */
@@ -924,7 +925,7 @@ void extend_line(PLINE pline, timeval xval, int yval);
 
 /* UDP support routines */
 void udptrace_init(void);
-void udptrace_done(void);
+void udptrace_done(tcptrace_state_t *state);
 udp_pair *udpdotrace(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_state_t *state);
 
 /* filter routines */
