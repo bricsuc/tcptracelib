@@ -71,12 +71,12 @@ char *tcptrace_version = VERSION;
 
 /* local routines */
 static void Args(void);
-static void ModulesPerNonTCPUDP(struct ip *pip, void *plast);
-static void ModulesPerPacket(struct ip *pip, tcp_pair *ptp, void *plast);
-static void ModulesPerUDPPacket(struct ip *pip, udp_pair *pup, void *plast);
-static void ModulesPerConn(tcp_pair *ptp);
-static void ModulesPerUDPConn(udp_pair *pup);
-static void ModulesPerFile(char *filename);
+static void ModulesPerNonTCPUDP(tcptrace_state_t *state, struct ip *pip, void *plast);
+static void ModulesPerPacket(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast);
+static void ModulesPerUDPPacket(tcptrace_state_t *state, struct ip *pip, udp_pair *pup, void *plast);
+static void ModulesPerConn(tcptrace_state_t *state, tcp_pair *ptp);
+static void ModulesPerUDPConn(tcptrace_state_t *state, udp_pair *pup);
+static void ModulesPerFile(tcptrace_state_t *state, char *filename);
 static void DumpFlags(void);
 static void ExplainOutput(void);
 static void FinishModules(void);
@@ -197,7 +197,7 @@ struct timeval wallclock_finished;
 
 /* first and last packet timestamp */
 timeval first_packet = {0,0};
-timeval last_packet = {0,0};
+/* timeval last_packet = {0,0}; */
 
 
 /* extended boolean options */
@@ -725,6 +725,8 @@ main(
     /* TODO: move this into a separate function */
     global_state.pnum = 0;
     global_state.options = &cmd_options;
+    global_state.last_packet.tv_sec = 0;
+    global_state.last_packet.tv_usec = 0;
 
     /* initialize the runtime options */
     tcptrace_initialize_options(global_state.options);
@@ -802,14 +804,14 @@ main(
 	    (int)((double)global_state.pnum/(etime/1000000)));
 
     /* actual tracefile times */
-    etime = elapsed(first_packet,last_packet);
+    etime = elapsed(first_packet,global_state.last_packet);
     fprintf(stdout,"%strace %s elapsed time: %s\n",
 	    comment,
 	    (num_files==1)?"file":"files",
 	    elapsed2str(etime));
     if (debug) {
 	fprintf(stdout,"%s\tfirst packet:  %s\n", comment, ts2ascii(&first_packet));
-	fprintf(stdout,"%s\tlast packet:   %s\n", comment, ts2ascii(&last_packet));
+	fprintf(stdout,"%s\tlast packet:   %s\n", comment, ts2ascii(&global_state.last_packet));
     }
     if (verify_checksums) {
 	fprintf(stdout,"%sbad IP checksums:  %ld\n", comment, bad_ip_checksums);
@@ -820,7 +822,7 @@ main(
 
     /* close files, cleanup, and etc... */
     trace_done();
-    udptrace_done();
+    udptrace_done(&global_state);
 
     FinishModules();
     plotter_done();
@@ -880,7 +882,7 @@ ProcessFile(
     location = 0;
 
     /* inform the modules, if they care... */
-    ModulesPerFile(filename);
+    ModulesPerFile(state, filename);
 
     /* count the files */
     ++file_count;
@@ -917,9 +919,10 @@ ProcessFile(
         /* TODO: move pnum to working_file entirely */
         working_file.pnum = fpnum;
 
-	/* check for re-ordered packets */
-	if (!ZERO_TIME(&last_packet)) {
-	    if (elapsed(last_packet , current_time) < 0) {
+	/* check for out-of-order packets (by timestamp, not protocol) */
+        /* not sure why this first check is necessary */
+	if (!ZERO_TIME(&state->last_packet)) {
+	    if (tv_gt(state->last_packet, current_time)) {
 		/* out of order */
 		if ((file_count > 1) && (fpnum == 1)) {
 		    fprintf(stderr, "\
@@ -983,7 +986,7 @@ That will likely confuse the program, so be careful!\n", filename);
 		}
 		/* print elapsed time */
 		{
-		    double etime = elapsed(first_packet,last_packet);
+		    double etime = elapsed(first_packet,state->last_packet);
 		    fprintf(stderr," (%s)", elapsed2str(etime));
 		}
 
@@ -1046,7 +1049,7 @@ for other packet types, I just don't have a place to test them\n\n");
 	/* keep track of global times */
 	if (ZERO_TIME(&first_packet))
 	    first_packet = current_time;
-	last_packet = current_time;
+	state->last_packet = current_time;
 
 	/* verify IP checksums, if requested */
 	if (verify_checksums) {
@@ -1085,12 +1088,12 @@ for other packet types, I just don't have a place to test them\n\n");
 		       
 		/* if it's a new connection, tell the modules */
 		if (pup && pup->packets == 1)
-		    ModulesPerUDPConn(pup);
+		    ModulesPerUDPConn(state, pup);
 		/* also, pass the packet to any modules defined */
-		ModulesPerUDPPacket(pip,pup,plast);
+		ModulesPerUDPPacket(state, pip,pup,plast);
 	    } else if (ret < 0) {
 		/* neither UDP not TCP */
-		ModulesPerNonTCPUDP(pip,plast);
+		ModulesPerNonTCPUDP(state, pip,plast);
 	    }
 	    continue;
 	}
@@ -1120,10 +1123,10 @@ for other packet types, I just don't have a place to test them\n\n");
 	if (!ptp->ignore_pair) {
 	    /* if it's a new connection, tell the modules */
 	    if (ptp->packets == 1)
-		ModulesPerConn(ptp);
+		ModulesPerConn(state, ptp);
 
 	    /* also, pass the packet to any modules defined */
-	    ModulesPerPacket(pip,ptp,plast);
+	    ModulesPerPacket(state, pip,ptp,plast);
 	}
 
         /* TODO: this signal business doesn't seem necessary, and could */
@@ -1173,7 +1176,7 @@ QuitSig(
     FinishModules();
     plotter_done();
     trace_done();
-    udptrace_done();
+    udptrace_done(&global_state);
     exit(1);
 }
 
@@ -2377,13 +2380,14 @@ FinishModules(void)
 	    fprintf(stderr,"Calling cleanup for module \"%s\"\n",
 		    modules[i].module_name);
 
-	(*modules[i].module_done)();
+	(*modules[i].module_done)(&global_state);
     }
 }
 
 
 static void
 ModulesPerConn(
+    tcptrace_state_t *state,
     tcp_pair *ptp)
 {
     int i;
@@ -2439,6 +2443,7 @@ ModulesPerOldConn(
 
 static void
 ModulesPerUDPConn(
+    tcptrace_state_t *state,
     udp_pair *pup)
 {
     int i;
@@ -2470,6 +2475,7 @@ ModulesPerUDPConn(
 
 static void
 ModulesPerNonTCPUDP(
+    tcptrace_state_t *state,
     struct ip *pip,
     void *plast)
 {
@@ -2493,6 +2499,7 @@ ModulesPerNonTCPUDP(
 
 static void
 ModulesPerPacket(
+    tcptrace_state_t *state,
     struct ip *pip,
     tcp_pair *ptp,
     void *plast)
@@ -2518,6 +2525,7 @@ ModulesPerPacket(
 
 static void
 ModulesPerUDPPacket(
+    tcptrace_state_t *state,
     struct ip *pip,
     udp_pair *pup,
     void *plast)
@@ -2543,6 +2551,7 @@ ModulesPerUDPPacket(
 
 static void
 ModulesPerFile(
+    tcptrace_state_t *state,
     char *filename)
 {
     int i;
