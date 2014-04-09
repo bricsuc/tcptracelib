@@ -325,8 +325,7 @@ udpdotrace(
 
 
 void
-udptrace_done(void)
-{
+udptrace_done(tcptrace_state_t *state) {
     udp_pair *pup;
     int ix;
     double etime;
@@ -352,7 +351,7 @@ udptrace_done(void)
 	 }
 	 
 	 /* elapsed time */
-	 etime = elapsed(first_packet,last_packet);
+	 etime = elapsed(first_packet, state->last_packet);
 	 
 	 if (ctrunc > 0) {
 	      fprintf(stdout,
