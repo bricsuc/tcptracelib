@@ -897,9 +897,10 @@ ProcessFile(
 	state->pnum++;          /* global */
 	++fpnum;		/* local to this file */
 
-        /* TODO: move this stuff to read packet struct */
+        /* TODO: move this stuff to read packet struct (maybe) */
         raw_packet.current_time = &current_time;
         raw_packet.pip = pip;
+        raw_packet.phystype = phystype;
 
 
 	/* in case only a subset analysis was requested */
@@ -992,12 +993,12 @@ That will likely confuse the program, so be careful!\n", filename);
 	    fflush(stderr);
 	}
 
-
-        if (check_packet_type(&raw_packet, &working_file, state)
-            == FALSE) {
+        if (check_packet_type(&raw_packet, &working_file, state) == FALSE) {
+            /* if we don't support this packet type, skip it */
             continue;
         }
 
+/* moved to check_packet_type() (above) */
 #if 0
 	/* quick sanity check, better be an IPv4/v6 packet */
 	if (!PIP_ISV4(pip) && !PIP_ISV6(pip)) {
@@ -1015,7 +1016,6 @@ That will likely confuse the program, so be careful!\n", filename);
 			state->pnum, IP_V(pip));
 	    continue;
 	}
-#endif
 
 	/* another sanity check, only understand ETHERNET right now */
 	if (phystype != PHYS_ETHER) {
@@ -1035,6 +1035,7 @@ for other packet types, I just don't have a place to test them\n\n");
 	    } /* else, just shut up */
 	    continue;
 	}
+#endif
 
 	/* print the packet, if requested */
 	if (state->options->printallofem || dump_packet_data) {

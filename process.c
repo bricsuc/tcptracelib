@@ -28,9 +28,8 @@ check_packet_type(raw_packet_t *raw_packet,
     }
 
     /* TODO: need test for this one */
-#if 0
     /* another sanity check, only understand ETHERNET right now */
-    if (phystype != PHYS_ETHER) {
+    if (raw_packet->phystype != PHYS_ETHER) {
         static int not_ether = 0;
 
         ++not_ether;
@@ -47,7 +46,6 @@ for other packet types, I just don't have a place to test them\n\n");
         } /* else, just shut up */
         return(FALSE);
     }
-#endif
 
     return(TRUE);
 }
