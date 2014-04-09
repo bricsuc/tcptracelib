@@ -90,7 +90,7 @@ struct module {
 	void *pmodstruct);	/* module-specific structure */
 
     /* Finish up routine.  Called after tcpdump is finished printing.	*/
-    void (*module_done) (void);
+    void (*module_done) (tcptrace_state_t *state);
 
     /* Usage message additions */
     void (*module_usage)(void);
