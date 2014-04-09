@@ -1020,7 +1020,7 @@ RunAllFour(
     (*f_runme)(filename,TestRemote);
 
 }
-void tcplib_done()
+void tcplib_done(tcptrace_state_t *state)
 {
     char *filename;
     int i;

@@ -288,7 +288,7 @@ AgeSlice(
 
 
 void	
-slice_done(void)
+slice_done(tcptrace_state_t *state)
 {
     /* print the last few packets */
     AgeSlice(&current_time);

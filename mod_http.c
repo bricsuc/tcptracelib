@@ -1580,7 +1580,7 @@ connection (FINs) were not found in trace file.\n");
 }
 
 void
-http_done(void)
+http_done(tcptrace_state_t *state)
 {
     MFILE *pmf = NULL;
     struct http_info *ph;

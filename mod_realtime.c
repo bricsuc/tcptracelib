@@ -194,7 +194,7 @@ realtime_init(
 }
 
 void
-realtime_done(void)
+realtime_done(tcptrace_state_t *state)
 {
   struct protocol *pp;
  

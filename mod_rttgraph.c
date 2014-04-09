@@ -450,7 +450,7 @@ PlotOne(
 
 
 void
-rttgraph_done(void)
+rttgraph_done(tcptrace_state_t *state)
 {
     struct rttgraph_info *prttg;
 

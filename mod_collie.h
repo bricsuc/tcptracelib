@@ -57,7 +57,7 @@ static char const GCC_UNUSED rcsid_collie[] =
 
 /* header file for collie.c */
 int collie_init(int argc, char *argv[]);
-void collie_done(void);
+void collie_done(tcptrace_state_t *state);
 void collie_usage(void);
 void *collie_newconn(tcp_pair *ptp);
 void *collie_newudpconn(udp_pair *pup);

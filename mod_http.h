@@ -58,7 +58,7 @@ static char const GCC_UNUSED rcsid_http[] =
 /* header file for http.c */
 int http_init(int argc, char *argv[]);
 void http_read(struct ip *pip, tcp_pair *ptp, void *plast, void *pmod_data);
-void http_done(void);
+void http_done(tcptrace_state_t *state);
 void http_usage(void);
 void http_newfile(char *newfile, u_long filesize, Bool fcompressed);
 void *http_newconn(tcp_pair *ptp);

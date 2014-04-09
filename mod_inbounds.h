@@ -32,7 +32,7 @@
 /* header file for inbounds.c */
 int inbounds_init(int argc, char *argv[]);
 void inbounds_tcp_read(struct ip *pip, tcp_pair *ptp, void *plast, void *pmod_data);
-void inbounds_done(void);
+void inbounds_done(tcptrace_state_t *state);
 void inbounds_usage(void);
 void inbounds_udp_read(struct ip *pip, udp_pair *pup, void *plast, void *pmodstruct);
 void inbounds_nontcpudp_read(struct ip *pip, void *plast);

@@ -59,6 +59,6 @@ static char const GCC_UNUSED rcsid_slice[] =
 /* header file for slice.c */
 int slice_init(int argc, char *argv[]);
 void slice_read(struct ip *pip, tcp_pair *ptp, void *plast, void *pmod_data);
-void slice_done(void);
+void slice_done(tcptrace_state_t *state);
 void slice_usage(void);
 void *slice_newconn(tcp_pair *ptp);

@@ -306,7 +306,7 @@ int
 
 
 void
-     inbounds_done(void)
+     inbounds_done(tcptrace_state_t *state)
 {
      struct protocol *pp;
      

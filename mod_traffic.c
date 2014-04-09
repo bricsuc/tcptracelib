@@ -977,11 +977,11 @@ AgeTraffic(void)
 
 
 void	
-traffic_done(void)
+traffic_done(tcptrace_state_t *state)
 {
     struct traffic_info *pti;
     struct conn_info *pci;
-    double etime = elapsed(first_packet,last_packet);
+    double etime = elapsed(first_packet, state->last_packet);
     int etime_secs = etime / 1000000.0;
     MFILE *pmf;
     int i;

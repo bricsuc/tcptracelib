@@ -57,7 +57,7 @@ static char const GCC_UNUSED rcsid_realtime[] =
 /* header file for mod_realtime.c */
 int realtime_init(int argc, char *argv[]);
 void realtime_read(struct ip *pip, tcp_pair *ptp, void *plast, void *pmod_data);
-void realtime_done(void);
+void realtime_done(tcptrace_state_t *state);
 void realtime_usage(void);
 void realtime_udp_read(struct ip *pip, udp_pair *pup, void *plast, void *pmodstruct);
 void realtime_nontcpudp_read(struct ip *pip, void *plast);

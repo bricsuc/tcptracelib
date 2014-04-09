@@ -210,7 +210,7 @@ MakeUDPConnRec(void)
 
 
 void	
-collie_done(void)
+collie_done(tcptrace_state_t *state)
 {
     struct conn_info *pci;
     struct uconn_info *upci;
@@ -235,7 +235,7 @@ collie_done(void)
 	   collie_time(&first_packet));
     printf("%s%s\n",
 	   LABEL("Last packet: "),
-	   collie_time(&last_packet));
+	   collie_time(&state->last_packet));
 
     /* print out the TCP connections */
     if (print_labels)
