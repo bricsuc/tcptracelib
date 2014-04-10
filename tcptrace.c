@@ -160,10 +160,11 @@ tcptrace_state_t global_state;
 /* u_long endpnum = 0; */    /* now de-globalized */
 /* struct timeval current_time; */
 
-u_long ctrunc = 0;
-u_long bad_ip_checksums = 0;
-u_long bad_tcp_checksums = 0;
-u_long bad_udp_checksums = 0;
+/* the following have also been de-globalized */
+/* u_long ctrunc = 0; */
+/* u_long bad_ip_checksums = 0; */
+/* u_long bad_tcp_checksums = 0; */
+/* u_long bad_udp_checksums = 0; */
 
 /* extended variables with values */
 char *output_file_dir = NULL;
@@ -816,10 +817,11 @@ main(
 	fprintf(stdout,"%s\tlast packet:   %s\n", comment, ts2ascii(&global_state.last_packet));
     }
     if (verify_checksums) {
-	fprintf(stdout,"%sbad IP checksums:  %ld\n", comment, bad_ip_checksums);
-	fprintf(stdout,"%sbad TCP checksums: %ld\n", comment, bad_tcp_checksums);
-	if (do_udp)
-	    fprintf(stdout,"%sbad UDP checksums: %ld\n", comment, bad_udp_checksums);
+	fprintf(stdout,"%sbad IP checksums:  %ld\n", comment, global_state.bad_ip_checksums);
+	fprintf(stdout,"%sbad TCP checksums: %ld\n", comment, global_state.bad_tcp_checksums);
+	if (do_udp) {
+	    fprintf(stdout,"%sbad UDP checksums: %ld\n", comment, global_state.bad_udp_checksums);
+        }
     }
 
     /* close files, cleanup, and etc... */
@@ -1057,7 +1059,7 @@ for other packet types, I just don't have a place to test them\n\n");
 	/* verify IP checksums, if requested */
 	if (verify_checksums) {
 	    if (!ip_cksum_valid(pip,plast)) {
-		++bad_ip_checksums;
+		state->bad_ip_checksums++;
 		if (warn_printbadcsum)
 		    fprintf(stderr, "packet %lu: bad IP checksum\n", state->pnum);
 		continue;
@@ -1076,15 +1078,16 @@ for other packet types, I just don't have a place to test them\n\n");
 	    ret = getudp(pip, &pudp, &plast, state);
 
 	    if (do_udp && (ret == 0)) {
-		pup = udpdotrace(pip,pudp,plast, state);
+		pup = udpdotrace(state, pip, pudp, plast);
 
 		/* verify UDP checksums, if requested */
 		if (verify_checksums) {
-		    if (!udp_cksum_valid(pip,pudp,plast,state)) {
-			++bad_udp_checksums;
-			if (warn_printbadcsum)
+		    if (!udp_cksum_valid(pip,pudp,plast, state)) {
+			state->bad_udp_checksums++;
+			if (warn_printbadcsum) {
 			    fprintf(stderr, "packet %lu: bad UDP checksum\n",
 				    state->pnum);
+                        }
 			continue;
 		    }
 		}
@@ -1106,16 +1109,17 @@ for other packet types, I just don't have a place to test them\n\n");
 
 	/* verify TCP checksums, if requested */
 	if (verify_checksums) {
-	    if (!tcp_cksum_valid(pip,ptcp,plast,state)) {
-		++bad_tcp_checksums;
-		if (warn_printbadcsum) 
+	    if (!tcp_cksum_valid(pip,ptcp,plast, state)) {
+		state->bad_tcp_checksums++;
+		if (warn_printbadcsum) {
 		    fprintf(stderr, "packet %lu: bad TCP checksum\n", state->pnum);
+                }
 		continue;
 	    }
 	}
 		       
         /* perform TCP packet analysis */
-	ptp = dotrace(pip,ptcp,plast, state);
+	ptp = dotrace(state, pip, ptcp, plast);
 
 	/* if it wasn't "interesting", we return NULL here */
 	if (ptp == NULL)

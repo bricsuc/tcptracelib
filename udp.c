@@ -232,10 +232,10 @@ OnlyUDPConn(
 
 udp_pair *
 udpdotrace(
+    tcptrace_state_t *state,
     struct ip *pip,
     struct udphdr *pudp,
-    void *plast,
-    tcptrace_state_t *state)
+    void *plast)
 {
     udp_pair	*pup_save;
     ucb		*thisdir;
@@ -252,7 +252,7 @@ udpdotrace(
 	    fprintf(stderr,
 		    "UDP packet %lu truncated too short to trace, ignored\n",
 		    state->pnum);
-	++ctrunc;
+	state->ctrunc++;
 	return(NULL);
     }
 
@@ -353,10 +353,10 @@ udptrace_done(tcptrace_state_t *state) {
 	 /* elapsed time */
 	 etime = elapsed(state->first_packet, state->last_packet);
 	 
-	 if (ctrunc > 0) {
+	 if (state->ctrunc > 0) {
 	      fprintf(stdout,
 		      "*** %lu packets were too short to process at some point\n",
-		      ctrunc);
+		      state->ctrunc);
 	      if (!warn_printtrunc)
 		   fprintf(stdout,"\t(use -w option to show details)\n");
 	 }

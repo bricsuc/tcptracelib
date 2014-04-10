@@ -754,6 +754,10 @@ typedef struct tcptrace_state_t {
     timeval first_packet;
     timeval last_packet;
     timeval current_time;
+    u_long bad_ip_checksums;
+    u_long bad_tcp_checksums;
+    u_long bad_udp_checksums;
+    u_long ctrunc;
 } tcptrace_state_t;
 
 /* raw packet, read from file */
@@ -776,13 +780,15 @@ extern char *sp;       /* Separator used for long output with <SP>-separated-val
  */
 extern char *comment;
 
+/* these are no longer global
 extern u_long ctrunc;
 extern timeval current_time;
-extern char *output_filename;
-
-/* first and last packet timestamp */
 extern timeval first_packet;
 extern timeval last_packet;
+*/
+/* first and last packet timestamp */
+
+extern char *output_filename;
 
 
 #define MAX_NAME 20
@@ -790,7 +796,7 @@ extern timeval last_packet;
 
 
 /* external routine decls */
-double sqrt(double x);
+double sqrt(double x);  /* TODO: isn't this supposed to be in math.h? */
 void free(void *);
 int finite(double);
 
@@ -832,7 +838,7 @@ void plotter_nothing(PLOTTER, timeval);
 void plotter_invisible(PLOTTER, timeval, u_long);
 void plotter_switch_axis(PLOTTER, Bool);
 void plot_init(void);
-tcp_pair *dotrace(struct ip *, struct tcphdr *ptcp, void *plast, tcptrace_state_t *state);
+tcp_pair *dotrace(tcptrace_state_t *state, struct ip *, struct tcphdr *ptcp, void *plast);
 void PrintRawData(char *label, void *pfirst, void *plast, Bool octal);
 void PrintRawDataHex(char *label, void *pfirst, void *plast);
 void PrintTrace(tcp_pair *);
@@ -928,7 +934,7 @@ void extend_line(PLINE pline, timeval xval, int yval);
 /* UDP support routines */
 void udptrace_init(void);
 void udptrace_done(tcptrace_state_t *state);
-udp_pair *udpdotrace(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_state_t *state);
+udp_pair *udpdotrace(tcptrace_state_t *state, struct ip *pip, struct udphdr *pudp, void *plast);
 
 /* filter routines */
 void HelpFilter(void);

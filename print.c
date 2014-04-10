@@ -66,12 +66,12 @@ static char const GCC_UNUSED rcsid[] =
 
 /* local routines */
 static void printeth_packet(struct ether_header *);
-static void printip_packet(struct ip *, void *plast);
+static void printip_packet(tcptrace_state_t *state, struct ip *, void *plast);
 static void printtcp_packet(struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
 static void printudp_packet(struct ip *, void *plast, tcptrace_state_t *state);
 static char *ParenServiceName(portnum);
 static char *ParenHostName(struct ipaddr addr);
-static void printipv4(struct ip *pip, void *plast);
+static void printipv4(tcptrace_state_t *state, struct ip *pip, void *plast);
 static void printipv6(struct ipv6 *pipv6, void *plast);
 static char *ipv6addr2str(struct in6_addr addr);
 static void printipv4_opt_addrs(char *popt, int ptr, int len);
@@ -153,6 +153,7 @@ printeth_packet(
 
 static void
 printip_packet(
+    tcptrace_state_t *state,
     struct ip *pip,
     void *plast)
 {
@@ -161,7 +162,7 @@ printip_packet(
 	if ((char *)pip+sizeof(struct ipv6)-1 > (char *)plast) {
 	    if (warn_printtrunc)
 		printf("\t[packet truncated too short for IP details]\n");
-	    ++ctrunc;
+	    state->ctrunc++;
 	    return;
 	}
 	printipv6((struct ipv6 *)pip, plast);
@@ -173,10 +174,10 @@ printip_packet(
 	if ((char *)pip+sizeof(struct ip)-1 > (char *)plast) {
 	    if (warn_printtrunc)
 		printf("\t[packet truncated too short for IP details]\n");
-	    ++ctrunc;
+	    state->ctrunc++;
 	    return;
 	}
-	printipv4(pip, plast);
+	printipv4(state, pip, plast);
 	return;
     }
 
@@ -188,6 +189,7 @@ printip_packet(
 
 static void
 printipv4(
+    tcptrace_state_t *state,
     struct ip *pip,
     void *plast)
 {
@@ -198,7 +200,7 @@ printipv4(
     if ((char *)pip+sizeof(struct ip)-1 > (char *)plast) {
 	if (warn_printtrunc)
 	    printf("\t[packet truncated too short for IP details]\n");
-	++ctrunc;
+	state->ctrunc++;
 	return;
     }
 
@@ -367,7 +369,7 @@ printtcp_packet(
     if ((char *)ptcp+sizeof(struct tcphdr)-1 > (char *)plast) {
 	if (warn_printtrunc)
 	    printf("\t[packet truncated too short for TCP details]\n");
-	++ctrunc;
+	state->ctrunc++;
 	return;
     }
 
@@ -529,7 +531,7 @@ printudp_packet(
     if ((char *)pudp+sizeof(struct udphdr)-1 > (char *)plast) {
 	if (warn_printtrunc)
 	    printf("\t[packet truncated too short for UDP details]\n");
-	++ctrunc;
+	state->ctrunc++;
 	return;
     }
 
@@ -596,7 +598,7 @@ printpacket(
     }
 
     /* it's always supposed to be an IP packet */
-    printip_packet(pip,plast);
+    printip_packet(state, pip,plast);
 
 
     /* this will fail if it's not TCP */

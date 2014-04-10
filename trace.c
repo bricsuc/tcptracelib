@@ -871,7 +871,7 @@ FindTTP(
 		if (0 && SYN_SET(ptcp)) {
 		    /* better keep this debugging around, it keeps breaking */
 		    printf("elapsed: %f sec\n",
-			   elapsed(ptp->last_time,current_time)/1000000);
+			   elapsed(ptp->last_time, state->current_time)/1000000);
 		    printf("SYN_SET: %d\n", SYN_SET(ptcp));
 		    printf("a2b.fin_count: %d\n", ptp->a2b.fin_count);
 		    printf("b2a.fin_count: %d\n", ptp->b2a.fin_count);
@@ -1361,10 +1361,10 @@ RemoveTcpPair(
 
 tcp_pair *
 dotrace(
+    tcptrace_state_t *state,
     struct ip *pip,
     struct tcphdr *ptcp,
-    void *plast,
-    tcptrace_state_t *state)
+    void *plast)
 {
     struct tcp_options *ptcpo;
     tcp_pair	*ptp_save;
@@ -1406,7 +1406,7 @@ dotrace(
 	    fprintf(stderr,
 		    "TCP packet %lu truncated too short to trace, ignored\n",
 		    state->pnum);
-	++ctrunc;
+	state->ctrunc++;
 	return(NULL);
     }
 
@@ -2513,11 +2513,11 @@ trace_done(tcptrace_state_t *state)
 		comment,
 		num_tcp_pairs + 1,
 		num_tcp_pairs==0?"connection":"connections");
-    if (ctrunc > 0) {
+    if (state->ctrunc > 0) {
 	fprintf(stdout,
 		"%s*** %lu packets were too short to process at some point\n",
 		comment,
-		ctrunc);
+		state->ctrunc);
 	if (!warn_printtrunc)
 	    fprintf(stdout,"%s\t(use -w option to show details)\n", comment);
     }
@@ -2888,7 +2888,7 @@ TCP packet %lu: reserved bits are not all zero.  \n\
 	    if (warn_printtrunc)
 		fprintf(stderr,"\
 ParseOptions: packet %lu too short to parse remaining options\n", state->pnum);
-	    ++ctrunc;
+	    state->ctrunc++;
 	    break;
 	}
 
@@ -2903,7 +2903,7 @@ ParseOptions: packet %lu %s option has length 0, skipping other options\n", \
 		fprintf(stderr, "\
 ParseOptions: packet %lu %s option truncated, skipping other options\n", \
               state->pnum,opt); \
-	    ++ctrunc; \
+	    state->ctrunc++; \
 	    popt = pdata; break;} \
 
 
@@ -2982,7 +2982,7 @@ ParseOptions: packet %lu %s option truncated, skipping other options\n", \
 			fprintf(stderr,
 				"packet %lu: SACK block truncated\n",
 				state->pnum);
-		    ++ctrunc;
+		    state->ctrunc++;
 		    break;
 		}
 		++tcpo.sack_count;
