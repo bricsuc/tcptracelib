@@ -487,6 +487,7 @@ static dyn_counter ReadOldFile(char *filename, int bucketsize,
  * 
  ****************************************************************************/
 int tcplib_init(
+    tcptrace_state_t *state,
     int argc,      /* Number of command line arguments */
     char *argv[]   /* Command line arguments */
     )
@@ -1219,6 +1220,7 @@ void tcplib_done(tcptrace_state_t *state)
  * 
  ****************************************************************************/
 void tcplib_read(
+    tcptrace_state_t *state,
     struct ip *pip,    /* The packet */
     tcp_pair *ptp,     /* The pair of hosts - basically the conversation */
     void *plast,       /* Unused here */
@@ -1595,6 +1597,7 @@ NewModuleConn()
  ****************************************************************************/
 void *
 tcplib_newconn(
+    tcptrace_state_t *state,
     tcp_pair *ptp)   /* This conversation */
 {
     int btype;			/* breakdown type */

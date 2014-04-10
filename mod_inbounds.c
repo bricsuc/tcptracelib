@@ -254,9 +254,10 @@ void
 }
 
 int
-     inbounds_init(
-		   int argc,
-		   char *argv[])
+inbounds_init(
+   tcptrace_state_t *state,
+   int argc,
+   char *argv[])
 {
      int i, fd;
      int enable=0;
@@ -353,8 +354,9 @@ void
 /* for a new TCP connection */
 
 void *
-     inbounds_tcp_newconn( 
-		       tcp_pair *ptp)
+inbounds_tcp_newconn( 
+    tcptrace_state_t *state,
+    tcp_pair *ptp)
 {
      itcinfo *newConn = Makeitcinfo();
      
@@ -442,6 +444,7 @@ void
 
 void
      inbounds_tcp_read(
+                   tcptrace_state_t *state,
 		   struct ip *pip,	/* the packet */
 		   tcp_pair *ptp,	/* info I have about this connection */
 		   void *plast,	        /* past byte in the packet */

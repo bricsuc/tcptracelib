@@ -118,6 +118,7 @@ static u_long slice_number = 1;	/* while slice interval are we in? */
 /* Set things up */
 int
 slice_init(
+    tcptrace_state_t *state,
     int argc,
     char *argv[])
 {
@@ -168,6 +169,7 @@ slice_init(
 
 void
 slice_read(
+    tcptrace_state_t *state,
     struct ip *pip,		/* the packet */
     tcp_pair *ptp,		/* info I have about this connection */
     void *plast,		/* past byte in the packet */
@@ -180,12 +182,12 @@ slice_read(
 
     /* if this is the first packet, determine the END of the slice */
     if (ZERO_TIME(&next_time)) {
-	next_time = current_time;
+	next_time = state->current_time;
 	tv_add(&next_time, tv_slice_interval);
     }
 
     /* if we've gone over our interval, print out data so far */
-    while (tv_ge(current_time,next_time)) {
+    while (tv_ge(state->current_time, next_time)) {
 	/* output a line */
 	AgeSlice(&next_time);
 
@@ -291,7 +293,7 @@ void
 slice_done(tcptrace_state_t *state)
 {
     /* print the last few packets */
-    AgeSlice(&current_time);
+    AgeSlice(&state->current_time);
 }
 
 
@@ -299,6 +301,7 @@ slice_done(tcptrace_state_t *state)
 
 void *
 slice_newconn(
+    tcptrace_state_t *state,
     tcp_pair *ptp)
 {
     struct conn_info *pci;
