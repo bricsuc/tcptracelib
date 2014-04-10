@@ -56,9 +56,9 @@ static char const GCC_UNUSED rcsid_collie[] =
     "@(#)$Header: /usr/local/cvs/tcptrace/mod_collie.h,v 5.4 2003/11/19 14:38:07 sdo Exp $";
 
 /* header file for collie.c */
-int collie_init(int argc, char *argv[]);
+int collie_init(tcptrace_state_t *state, int argc, char *argv[]);
 void collie_done(tcptrace_state_t *state);
 void collie_usage(void);
-void *collie_newconn(tcp_pair *ptp);
+void *collie_newconn(tcptrace_state_t *state, tcp_pair *ptp);
 void *collie_newudpconn(udp_pair *pup);
 void collie_newfile(char *newfile, u_long filesize, Bool fcompressed);

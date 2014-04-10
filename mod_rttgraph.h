@@ -56,8 +56,8 @@ static char const GCC_UNUSED rcsid_rttgraph[] =
     "@(#)$Header: /usr/local/cvs/tcptrace/mod_rttgraph.h,v 5.4 2003/11/19 14:38:07 sdo Exp $";
 
 /* header file for rttgraph.c */
-int rttgraph_init(int argc, char *argv[]);
-void rttgraph_read(struct ip *pip, tcp_pair *ptp, void *plast, void *pmod_data);
+int rttgraph_init(tcptrace_state_t *state, int argc, char *argv[]);
+void rttgraph_read(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast, void *pmod_data);
 void rttgraph_done(tcptrace_state_t *state);
 void rttgraph_usage(void);
-void *rttgraph_newconn(tcp_pair *ptp);
+void *rttgraph_newconn(tcptrace_state_t *state, tcp_pair *ptp);

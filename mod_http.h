@@ -56,9 +56,9 @@ static char const GCC_UNUSED rcsid_http[] =
     "@(#)$Header: /usr/local/cvs/tcptrace/mod_http.h,v 5.4 2003/11/19 14:38:07 sdo Exp $";
 
 /* header file for http.c */
-int http_init(int argc, char *argv[]);
-void http_read(struct ip *pip, tcp_pair *ptp, void *plast, void *pmod_data);
+int http_init(tcptrace_state_t *state, int argc, char *argv[]);
+void http_read(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast, void *pmod_data);
 void http_done(tcptrace_state_t *state);
 void http_usage(void);
 void http_newfile(char *newfile, u_long filesize, Bool fcompressed);
-void *http_newconn(tcp_pair *ptp);
+void *http_newconn(tcptrace_state_t *state, tcp_pair *ptp);
