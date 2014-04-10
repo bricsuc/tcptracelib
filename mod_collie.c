@@ -100,6 +100,7 @@ static void ParseArgs(char *argstring);
 /* Set it up */
 int
 collie_init(
+    tcptrace_state_t *state,
     int argc,
     char *argv[])
 {
@@ -282,6 +283,7 @@ collie_usage(void)
 
 void *
 collie_newconn(
+    tcptrace_state_t *state,
     tcp_pair *ptp)
 {
     struct conn_info *pci;
