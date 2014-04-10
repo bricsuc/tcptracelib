@@ -253,8 +253,7 @@ typedef struct mfile MFILE;
 extern char **filenames;	/* all the files on the cmd line */
 extern char *cur_filename;	/* the current file */
 
-/* first and last packet timestamp */
-/* now deglobalized */
+/* first and last packet timestamp */ /* (now deglobalized) */
 /* extern timeval first_packet; */
 /* extern timeval last_packet; */
 
@@ -754,13 +753,14 @@ typedef struct tcptrace_state_t {
     tcptrace_runtime_options_t *options;
     timeval first_packet;
     timeval last_packet;
+    timeval current_time;
 } tcptrace_state_t;
 
 /* raw packet, read from file */
 typedef struct raw_packet_t {
     int phystype;
     struct ip *pip;
-    struct timeval *current_time;
+    struct timeval *timestamp;
 } raw_packet_t;
 
 /* extended variables with values */
@@ -803,7 +803,7 @@ char *Ether_Ntoa(struct ether_addr *e);
 void *MallocZ(int);
 void *ReallocZ(void *oldptr, int obytes, int nbytes);
 void trace_init(void);
-void trace_done(void);
+void trace_done(tcptrace_state_t *state);
 void seglist_init(tcb *);
 void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
 void plotter_vtick(PLOTTER, timeval, u_long);
@@ -864,10 +864,10 @@ char *NextHostLetter(void);
 char *EndpointName(ipaddr,portnum);
 PLOTTER new_plotter(tcb *plast, char *filename, char *title,
 		    char *xlabel, char *ylabel, char *suffix);
-int rexmit(tcb *, seqnum, seglen, Bool *);
-enum t_ack ack_in(tcb *, seqnum, unsigned tcp_data_length, u_long eff_win);
+int rexmit(tcptrace_state_t *state, tcb *, seqnum, seglen, Bool *);
+enum t_ack ack_in(tcptrace_state_t *state, tcb *, seqnum, unsigned tcp_data_length, u_long eff_win);
 Bool IsRTO(tcb *ptcb, seqnum s);
-void DoThru(tcb *ptcb, int nbytes);
+void DoThru(tcptrace_state_t *state, tcb *ptcb, int nbytes);
 struct mfile *Mfopen(char *fname, char *mode);
 void Minit(void);
 int Mfileno(MFILE *pmf);
@@ -887,7 +887,7 @@ void CompFormats(void);
 int CompIsCompressed(void);
 Bool FileIsStdin(char *filename);
 struct tcb *ptp2ptcb(tcp_pair *ptp, struct ip *pip, struct tcphdr *ptcp);
-void PcapSavePacket(char *filename, struct ip *pip, void *plast);
+void PcapSavePacket(tcptrace_state_t *state, char *filename, struct ip *pip, void *plast);
 void StringToArgv(char *buf, int *pargc, char ***pargv);
 void CopyAddr(tcp_pair_addrblock *, struct ip *pip,portnum,portnum);
 int WhichDir(tcp_pair_addrblock *, tcp_pair_addrblock *);

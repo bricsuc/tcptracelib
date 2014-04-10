@@ -84,7 +84,7 @@ static void Help(char *harg);
 static void Hints(void);
 static void ListModules(void);
 static void UsageModules(void);
-static void LoadModules(int argc, char *argv[]);
+static void LoadModules(tcptrace_state_t *state, int argc, char *argv[]);
 static void CheckArguments(int *pargc, char *argv[]);
 static void ParseArgs(char *argsource, int *pargc, char *argv[]);
 static int  ParseExtendedOpt(char *argsource, char *arg);
@@ -158,6 +158,8 @@ tcptrace_state_t global_state;
 /* u_long pnum = 0; */       /* now de-globalized */
 /* u_long beginpnum = 0; */  /* now de-globalized */
 /* u_long endpnum = 0; */    /* now de-globalized */
+/* struct timeval current_time; */
+
 u_long ctrunc = 0;
 u_long bad_ip_checksums = 0;
 u_long bad_tcp_checksums = 0;
@@ -170,7 +172,6 @@ char *xplot_title_prefix = NULL;
 char *xplot_args = NULL;
 char *sv = NULL;
 /* globals */
-struct timeval current_time;
 int num_modules = 0;
 char *ColorNames[NCOLORS] =
 {"green", "red", "blue", "yellow", "purple", "orange", "magenta", "pink"};
@@ -719,7 +720,7 @@ main(
     plot_init();
 
     /* let modules start first */
-    LoadModules(argc,argv);
+    LoadModules(&global_state, argc, argv);
 
     /* initialize global state */
     tcptrace_initialize_state(&global_state);
@@ -822,7 +823,7 @@ main(
     }
 
     /* close files, cleanup, and etc... */
-    trace_done();
+    trace_done(&global_state);
     udptrace_done(&global_state);
 
     FinishModules();
@@ -893,7 +894,7 @@ ProcessFile(
     /* read each packet */
     while (1) {
         /* read the next packet */
-	ret = (*ppread)(&current_time,&len,&tlen,&phys,&phystype,&pip,&plast);
+	ret = (*ppread)(&state->current_time,&len,&tlen,&phys,&phystype,&pip,&plast);
 	if (ret == 0) /* EOF */
 	    break;
 
@@ -902,7 +903,9 @@ ProcessFile(
 	working_file.pnum++;	/* local to this file */
 
         /* TODO: move this stuff to read packet struct (maybe) */
-        raw_packet.current_time = &current_time;
+        /* not sure if current_time is necessary in raw_packet */
+        /* (though it's the "correct" place for it) */
+        raw_packet.timestamp = &state->current_time;
         raw_packet.pip = pip;
         raw_packet.phystype = phystype;
 
@@ -921,7 +924,7 @@ ProcessFile(
 	/* check for out-of-order packets (by timestamp, not protocol) */
         /* not sure why this first check is necessary */
 	if (!ZERO_TIME(&state->last_packet)) {
-	    if (tv_gt(state->last_packet, current_time)) {
+	    if (tv_gt(state->last_packet, state->current_time)) {
 		/* out of order */
 		if ((file_count > 1) && (working_file.pnum == 1)) {
 		    fprintf(stderr, "\
@@ -1047,9 +1050,9 @@ for other packet types, I just don't have a place to test them\n\n");
 
 	/* keep track of global times */
 	if (ZERO_TIME(&state->first_packet)) {
-	    state->first_packet = current_time;
+	    state->first_packet = state->current_time;
         }
-	state->last_packet = current_time;
+	state->last_packet = state->current_time;
 
 	/* verify IP checksums, if requested */
 	if (verify_checksums) {
@@ -1175,7 +1178,7 @@ QuitSig(
     printf("Partial result after processing %lu packets:\n\n\n", global_state.pnum);
     FinishModules();
     plotter_done();
-    trace_done();
+    trace_done(&global_state);
     udptrace_done(&global_state);
     exit(1);
 }
@@ -2335,6 +2338,7 @@ DumpFlags(void)
 
 static void
 LoadModules(
+    tcptrace_state_t *state,
     int argc,
     char *argv[])
 {
@@ -2346,7 +2350,7 @@ LoadModules(
 	if (debug)
 	    fprintf(stderr,"Initializing module \"%s\"\n",
 		    modules[i].module_name);
-	enable = (*modules[i].module_init)(argc,argv);
+	enable = (*modules[i].module_init)(state, argc, argv);
 	if (enable) {
 	    if (debug)
 		fprintf(stderr,"Module \"%s\" enabled\n",
@@ -2404,7 +2408,7 @@ ModulesPerConn(
 	    fprintf(stderr,"Calling newconn routine for module \"%s\"\n",
 		    modules[i].module_name);
 
-	pmodstruct = (*modules[i].module_newconn)(ptp);
+	pmodstruct = (*modules[i].module_newconn)(state, ptp);
 	if (pmodstruct) {
 	    /* make sure the array is there */
 	    if (!ptp->pmod_info) {
@@ -2517,7 +2521,7 @@ ModulesPerPacket(
 	    fprintf(stderr,"Calling read routine for module \"%s\"\n",
 		    modules[i].module_name);
 
-	(*modules[i].module_read)(pip,ptp,plast,
+	(*modules[i].module_read)(state, pip,ptp,plast,
 				  ptp->pmod_info?ptp->pmod_info[i]:NULL);
     }
 }

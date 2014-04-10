@@ -582,7 +582,7 @@ printpacket(
     else
         printf("\tPacket Length: %d (saved length %d)\n", len,tlen);
 
-    printf("\tCollected: %s\n", ts2ascii(&current_time));
+    printf("\tCollected: %s\n", ts2ascii(&state->current_time));
 
     if (phys) {
 	switch(phystype) {

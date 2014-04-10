@@ -58,6 +58,8 @@ tcptrace_initialize_state(tcptrace_state_t *state) {
     state->last_packet.tv_usec = 0;
     state->first_packet.tv_sec = 0;
     state->first_packet.tv_usec = 0;
+    state->current_time.tv_sec = 0;
+    state->current_time.tv_usec = 0;
 }
 
 /* initialize the tcptrace runtime options */

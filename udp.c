@@ -275,9 +275,9 @@ udpdotrace(
 
     /* do time stats */
     if (ZERO_TIME(&pup_save->first_time)) {
-	pup_save->first_time = current_time;
+	pup_save->first_time = state->current_time;
     }
-    pup_save->last_time = current_time;
+    pup_save->last_time = state->current_time;
 
     // Lets not waste any more CPU cycles if we are ignoring this connection.
     if (pup_save->ignore_pair)
@@ -285,7 +285,7 @@ udpdotrace(
      
     /* save to a file if requested */
     if (output_filename) {
-	PcapSavePacket(output_filename,pip,plast);
+	PcapSavePacket(state, output_filename,pip,plast);
     }
 
     /* now, print it if requested */
