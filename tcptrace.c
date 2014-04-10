@@ -849,11 +849,9 @@ ProcessFile(
     void *plast;
     struct stat str_stat;
     long int location = 0;
-    u_long fpnum = 0;
     Bool is_stdin = 0;
     static int file_count = 0;
 
-    tcptrace_load_status_t status;
 
     tcptrace_state_t *state = &global_state;
 
@@ -865,16 +863,20 @@ ProcessFile(
     cur_filename = filename;
 
     /* load the file */
-    status = tcptrace_load_file(filename, &working_file);
-    if (status != TCPTRACE_LOAD_SUCCESS) {
-        exit(1);
-        /* could use different exit codes depending on status */
-        /* could also move some error reporting here */
+    {
+        tcptrace_load_status_t status;
+        status = tcptrace_load_file(filename, &working_file);
+        if (status != TCPTRACE_LOAD_SUCCESS) {
+            exit(1);
+            /* could use different exit codes depending on status */
+            /* could also move some error reporting here */
+        }
     }
 
     ppread = working_file.reader_function;
     filesize = working_file.filesize;
     is_stdin = working_file.is_stdin;
+    working_file.pnum = 0;
 
     if (debug) {
         printf("Trace file size: %lu bytes\n", working_file.filesize);
@@ -888,7 +890,6 @@ ProcessFile(
     /* count the files */
     ++file_count;
 
-
     /* read each packet */
     while (1) {
         /* read the next packet */
@@ -898,7 +899,7 @@ ProcessFile(
 
 	/* update global and per-file packet counters */
 	state->pnum++;          /* global */
-	++fpnum;		/* local to this file */
+	working_file.pnum++;	/* local to this file */
 
         /* TODO: move this stuff to read packet struct (maybe) */
         raw_packet.current_time = &current_time;
@@ -913,19 +914,16 @@ ProcessFile(
 	if ((state->options->endpnum != 0) &&
             (state->pnum > state->options->endpnum)) {
 	    state->pnum--;
-	    --fpnum;
+	    working_file.pnum--;
 	    break;
         }
-
-        /* TODO: move pnum to working_file entirely */
-        working_file.pnum = fpnum;
 
 	/* check for out-of-order packets (by timestamp, not protocol) */
         /* not sure why this first check is necessary */
 	if (!ZERO_TIME(&state->last_packet)) {
 	    if (tv_gt(state->last_packet, current_time)) {
 		/* out of order */
-		if ((file_count > 1) && (fpnum == 1)) {
+		if ((file_count > 1) && (working_file.pnum == 1)) {
 		    fprintf(stderr, "\
 Warning, first packet in file %s comes BEFORE the last packet\n\
 in the previous file.  That will likely confuse the program, please\n\
@@ -937,7 +935,7 @@ order the files in time if you have trouble\n", filename);
 			fprintf(stderr, "\
 Warning, packet %ld in file %s comes BEFORE the previous packet\n\
 That will likely confuse the program, so be careful!\n",
-				fpnum, filename);
+				working_file.pnum, filename);
 		    } else if (!warned) {
 			fprintf(stderr, "\
 Packets in file %s are out of order.\n\
@@ -951,7 +949,7 @@ That will likely confuse the program, so be careful!\n", filename);
 	
 
 	/* install signal handler */
-	if (fpnum == 1) {
+	if (working_file.pnum == 1) {
 	    signal(SIGINT,QuitSig);
 	}
 
@@ -962,28 +960,28 @@ That will likely confuse the program, so be careful!\n", filename);
             state->options->printticks) {
 	    if (CompIsCompressed())
 		location += tlen;  /* just guess... */
-	    if (((fpnum <    100) && (fpnum %    10 == 0)) ||
-		((fpnum <   1000) && (fpnum %   100 == 0)) ||
-		((fpnum <  10000) && (fpnum %  1000 == 0)) ||
-		((fpnum >= 10000) && (fpnum % 10000 == 0))) {
+	    if (((working_file.pnum <    100) && (working_file.pnum %    10 == 0)) ||
+		((working_file.pnum <   1000) && (working_file.pnum %   100 == 0)) ||
+		((working_file.pnum <  10000) && (working_file.pnum %  1000 == 0)) ||
+		((working_file.pnum >= 10000) && (working_file.pnum % 10000 == 0))) {
 
 		unsigned frac;
 
 		if (debug)
 		    fprintf(stderr, "%s: ", cur_filename);
 		if (is_stdin) {
-		    fprintf(stderr ,"%lu", fpnum);
+		    fprintf(stderr ,"%lu", working_file.pnum);
 		} else if (CompIsCompressed()) {
 		    frac = location/(filesize/100);
 		    if (frac <= 100)
-			fprintf(stderr ,"%lu ~%u%% (compressed)", fpnum, frac);
+			fprintf(stderr ,"%lu ~%u%% (compressed)", working_file.pnum, frac);
 		    else
-			fprintf(stderr ,"%lu ~100%% + %u%% (compressed)", fpnum, frac-100);
+			fprintf(stderr ,"%lu ~100%% + %u%% (compressed)", working_file.pnum, frac-100);
 		} else {
 		    location = ftell(stdin);
 		    frac = location/(filesize/100);
 
-		    fprintf(stderr ,"%lu %u%%", fpnum, frac);
+		    fprintf(stderr ,"%lu %u%%", working_file.pnum, frac);
 		}
 		/* print elapsed time */
 		{
