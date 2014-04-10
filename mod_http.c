@@ -187,10 +187,11 @@ static void HttpGather(struct http_info *ph);
 static struct http_info *MakeHttpRec(void);
 static struct get_info *MakeGetRec(struct http_info *ph);
 static u_long DataOffset(tcb *tcb, seqnum seq);
-static void AddGetTS(struct http_info *ph, u_long position);
-static void AddDataTS(struct http_info *ph, u_long position);
-static void AddAckTS(struct http_info *ph, u_long position);
-static void AddTS(struct time_stamp *phead, struct time_stamp *ptail,
+static void AddGetTS(tcptrace_state_t *state, struct http_info *ph, u_long position);
+static void AddDataTS(tcptrace_state_t *state, struct http_info *ph, u_long position);
+static void AddAckTS(tcptrace_state_t *state, struct http_info *ph, u_long position);
+static void AddTS(tcptrace_state_t *state,
+                  struct time_stamp *phead, struct time_stamp *ptail,
 		  u_long position);
 static double ts2d(timeval *pt);
 static void HttpPrintone(MFILE *pmf, struct http_info *ph);
@@ -206,6 +207,7 @@ static struct client_info *FindClient(char *clientname);
 /* Mostly as a module example, here's a plug in that records HTTP info */
 int
 http_init(
+    tcptrace_state_t *state,
     int argc,
     char *argv[])
 {
@@ -328,29 +330,32 @@ MakeHttpRec()
 
 static void
 AddGetTS(
+    tcptrace_state_t *state,
     struct http_info *ph,
     u_long position)
 {
-    AddTS(&ph->get_head,&ph->get_tail,position);
+    AddTS(state, &ph->get_head,&ph->get_tail,position);
 }
 
 
 
 static void
 AddDataTS(
+    tcptrace_state_t *state,
     struct http_info *ph,
     u_long position)
 {
-    AddTS(&ph->data_head,&ph->data_tail,position);
+    AddTS(state, &ph->data_head,&ph->data_tail,position);
 }
 
 
 static void
 AddAckTS(
+    tcptrace_state_t *state,
     struct http_info *ph,
     u_long position)
 {
-    AddTS(&ph->ack_head,&ph->ack_tail,position);
+    AddTS(state, &ph->ack_head,&ph->ack_tail,position);
 }
 
 
@@ -359,6 +364,7 @@ AddAckTS(
 /* TAIL points to the largest position numbers */
 static void
 AddTS(
+    tcptrace_state_t *state,
     struct time_stamp *phead,
     struct time_stamp *ptail,
     u_long position)
@@ -367,7 +373,7 @@ AddTS(
     struct time_stamp *pts_new;
 
     pts_new = MallocZ(sizeof(struct time_stamp));
-    pts_new->thetime = current_time;
+    pts_new->thetime = state->current_time;
     pts_new->position = position;
 
     for (pts = ptail->prev; pts != NULL; pts = pts->prev) {
@@ -414,6 +420,7 @@ FindClient(
 
 void
 http_read(
+    tcptrace_state_t *state,
     struct ip *pip,		/* the packet */
     tcp_pair *ptp,		/* info I have about this connection */
     void *plast,		/* past byte in the packet */
@@ -440,19 +447,19 @@ http_read(
     /* for client, record both ACKs and DATA time stamps */
     if (ph && IS_CLIENT(ptcp)) {
 	if (tcp_data_length > 0) {
-	    AddGetTS(ph,DataOffset(ph->tcb_client,ntohl(ptcp->th_seq)));
+	    AddGetTS(state, ph,DataOffset(ph->tcb_client,ntohl(ptcp->th_seq)));
 	}
 	if (ACK_SET(ptcp)) {
 	    if (debug > 4)
 		printf("Client acks %ld\n", DataOffset(ph->tcb_server,ntohl(ptcp->th_ack)));	    
-	    AddAckTS(ph,DataOffset(ph->tcb_server,ntohl(ptcp->th_ack)));
+	    AddAckTS(state, ph,DataOffset(ph->tcb_server,ntohl(ptcp->th_ack)));
 	}
     }
 
     /* for server, record DATA time stamps */
     if (ph && IS_SERVER(ptcp)) {
 	if (tcp_data_length > 0) {
-	    AddDataTS(ph,DataOffset(ph->tcb_server,ntohl(ptcp->th_seq)));
+	    AddDataTS(state, ph,DataOffset(ph->tcb_server,ntohl(ptcp->th_seq)));
 	    if (debug > 5) {
 		printf("Server sends %ld thru %ld\n",
 		       DataOffset(ph->tcb_server,ntohl(ptcp->th_seq)),
@@ -467,11 +474,11 @@ http_read(
 	if (IS_SERVER(ptcp)) {
 	    /* server */
 	    if (ZERO_TIME(&(ph->s_fin_time)))
-		ph->s_fin_time = current_time;
+		ph->s_fin_time = state->current_time;
 	} else {
 	    /* client */
 	    if (ZERO_TIME(&ph->c_fin_time))
-		ph->c_fin_time = current_time;
+		ph->c_fin_time = state->current_time;
 	}
     }
 
@@ -480,11 +487,11 @@ http_read(
 	if (IS_SERVER(ptcp)) {
 	    /* server */
 	    if (ZERO_TIME(&ph->s_syn_time))
-		ph->s_syn_time = current_time;
+		ph->s_syn_time = state->current_time;
 	} else {
 	    /* client */
 	    if (ZERO_TIME(&ph->c_syn_time))
-		ph->c_syn_time = current_time;
+		ph->c_syn_time = state->current_time;
 	}
     }
 }
@@ -1632,6 +1639,7 @@ http_newfile(
 
 void *
 http_newconn(
+    tcptrace_state_t *state,
     tcp_pair *ptp)
 {
     struct http_info *ph;

@@ -116,6 +116,7 @@ static void PlotOne(struct rttgraph_info *prttg);
 /* Mostly as a module example, here's a plug in that records RTTGRAPH info */
 int
 rttgraph_init(
+    tcptrace_state_t *state,
     int argc,
     char *argv[])
 {
@@ -236,6 +237,7 @@ MakeRttgraphRec()
 
 void
 rttgraph_read(
+    tcptrace_state_t *state,
     struct ip *pip,		/* the packet */
     tcp_pair *ptp,		/* info I have about this connection */
     void *plast,		/* past byte in the packet */
@@ -469,6 +471,7 @@ rttgraph_usage(void)
 
 void *
 rttgraph_newconn(
+    tcptrace_state_t *state,
     tcp_pair *ptp)
 {
     struct rttgraph_info *prttg;
