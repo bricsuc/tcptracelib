@@ -232,7 +232,7 @@ collie_done(tcptrace_state_t *state)
 	   collie_date(statbuf.st_mtime));
     printf("%s%s\n",
 	   LABEL("First packet: "),
-	   collie_time(&first_packet));
+	   collie_time(&state->first_packet));
     printf("%s%s\n",
 	   LABEL("Last packet: "),
 	   collie_time(&state->last_packet));
@@ -241,15 +241,15 @@ collie_done(tcptrace_state_t *state)
     if (print_labels)
 	printf("\nTCP Connections\n");
     for (pci=connhead; pci; pci=pci->next) {
-	DESCR(pci->ptp)
-	    }
+        DESCR(pci->ptp)
+    }
 
     /* print out the UDP connections */
     if (print_labels)
 	printf("\nUDP Connections\n");
     for (upci=uconnhead; upci; upci=upci->next) {
-	DESCR(upci->pup)
-	    }
+        DESCR(upci->pup)
+    }
 }
 
 

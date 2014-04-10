@@ -196,7 +196,7 @@ struct timeval wallclock_finished;
 
 
 /* first and last packet timestamp */
-timeval first_packet = {0,0};
+/* timeval first_packet = {0,0}; */
 /* timeval last_packet = {0,0}; */
 
 
@@ -722,11 +722,12 @@ main(
     LoadModules(argc,argv);
 
     /* initialize global state */
-    /* TODO: move this into a separate function */
-    global_state.pnum = 0;
+    tcptrace_initialize_state(&global_state);
+    // global_state.pnum = 0;
+    // global_state.last_packet.tv_sec = 0;
+    // global_state.last_packet.tv_usec = 0;
+
     global_state.options = &cmd_options;
-    global_state.last_packet.tv_sec = 0;
-    global_state.last_packet.tv_usec = 0;
 
     /* initialize the runtime options */
     tcptrace_initialize_options(global_state.options);
@@ -804,13 +805,13 @@ main(
 	    (int)((double)global_state.pnum/(etime/1000000)));
 
     /* actual tracefile times */
-    etime = elapsed(first_packet,global_state.last_packet);
+    etime = elapsed(global_state.first_packet,global_state.last_packet);
     fprintf(stdout,"%strace %s elapsed time: %s\n",
 	    comment,
 	    (num_files==1)?"file":"files",
 	    elapsed2str(etime));
     if (debug) {
-	fprintf(stdout,"%s\tfirst packet:  %s\n", comment, ts2ascii(&first_packet));
+	fprintf(stdout,"%s\tfirst packet:  %s\n", comment, ts2ascii(&global_state.first_packet));
 	fprintf(stdout,"%s\tlast packet:   %s\n", comment, ts2ascii(&global_state.last_packet));
     }
     if (verify_checksums) {
@@ -986,7 +987,7 @@ That will likely confuse the program, so be careful!\n", filename);
 		}
 		/* print elapsed time */
 		{
-		    double etime = elapsed(first_packet,state->last_packet);
+		    double etime = elapsed(state->first_packet,state->last_packet);
 		    fprintf(stderr," (%s)", elapsed2str(etime));
 		}
 
@@ -1047,8 +1048,9 @@ for other packet types, I just don't have a place to test them\n\n");
 	}
 
 	/* keep track of global times */
-	if (ZERO_TIME(&first_packet))
-	    first_packet = current_time;
+	if (ZERO_TIME(&state->first_packet)) {
+	    state->first_packet = current_time;
+        }
 	state->last_packet = current_time;
 
 	/* verify IP checksums, if requested */

@@ -254,8 +254,9 @@ extern char **filenames;	/* all the files on the cmd line */
 extern char *cur_filename;	/* the current file */
 
 /* first and last packet timestamp */
-extern timeval first_packet;
-extern timeval last_packet;
+/* now deglobalized */
+/* extern timeval first_packet; */
+/* extern timeval last_packet; */
 
 /* counters */
 extern u_long tcp_trace_count;
@@ -751,6 +752,7 @@ typedef struct tcptrace_runtime_options_t {
 typedef struct tcptrace_state_t {
     u_long pnum;
     tcptrace_runtime_options_t *options;
+    timeval first_packet;
     timeval last_packet;
 } tcptrace_state_t;
 

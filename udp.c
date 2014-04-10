@@ -351,7 +351,7 @@ udptrace_done(tcptrace_state_t *state) {
 	 }
 	 
 	 /* elapsed time */
-	 etime = elapsed(first_packet, state->last_packet);
+	 etime = elapsed(state->first_packet, state->last_packet);
 	 
 	 if (ctrunc > 0) {
 	      fprintf(stdout,
