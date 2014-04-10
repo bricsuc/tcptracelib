@@ -76,7 +76,7 @@ static void ModulesPerPacket(tcptrace_state_t *state, struct ip *pip, tcp_pair *
 static void ModulesPerUDPPacket(tcptrace_state_t *state, struct ip *pip, udp_pair *pup, void *plast);
 static void ModulesPerConn(tcptrace_state_t *state, tcp_pair *ptp);
 static void ModulesPerUDPConn(tcptrace_state_t *state, udp_pair *pup);
-static void ModulesPerFile(tcptrace_state_t *state, char *filename);
+static void ModulesPerFile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename);
 static void DumpFlags(void);
 static void ExplainOutput(void);
 static void FinishModules(void);
@@ -155,16 +155,20 @@ int debug = 0;
 /* global state (packets read across all files, etc) */
 tcptrace_state_t global_state;
 
-/* u_long pnum = 0; */       /* now de-globalized */
-/* u_long beginpnum = 0; */  /* now de-globalized */
-/* u_long endpnum = 0; */    /* now de-globalized */
+/* the following have been de-globalized */
+/* u_long pnum = 0; */
+/* u_long beginpnum = 0; */
+/* u_long endpnum = 0; */
 /* struct timeval current_time; */
 
-/* the following have also been de-globalized */
 /* u_long ctrunc = 0; */
 /* u_long bad_ip_checksums = 0; */
 /* u_long bad_tcp_checksums = 0; */
 /* u_long bad_udp_checksums = 0; */
+
+/* first and last packet timestamp */
+/* timeval first_packet = {0,0}; */
+/* timeval last_packet = {0,0}; */
 
 /* extended variables with values */
 char *output_file_dir = NULL;
@@ -172,14 +176,15 @@ char *output_file_prefix = NULL;
 char *xplot_title_prefix = NULL;
 char *xplot_args = NULL;
 char *sv = NULL;
+
 /* globals */
 int num_modules = 0;
 char *ColorNames[NCOLORS] =
 {"green", "red", "blue", "yellow", "purple", "orange", "magenta", "pink"};
-char *comment;
+/* char *comment; */
 
 /* locally global variables */
-static u_long filesize = 0;
+/* static u_long filesize = 0; */
 char **filenames = NULL;
 int num_files = 0;
 u_int numfiles;
@@ -195,11 +200,6 @@ static char *closed_conn_interval_st = NULL;
 /* for elapsed processing time */
 struct timeval wallclock_start;
 struct timeval wallclock_finished;
-
-
-/* first and last packet timestamp */
-/* timeval first_packet = {0,0}; */
-/* timeval last_packet = {0,0}; */
 
 
 /* extended boolean options */
@@ -711,6 +711,7 @@ main(
     int i;
     double etime;
     tcptrace_runtime_options_t cmd_options;
+    char *comment;
    
     if (argc == 1)
 	Help(NULL);
@@ -740,11 +741,15 @@ main(
     /* Used with <SP>-separated-values,
      * prints a '#' before each header line if --csv/--tsv is requested.
      */
-   comment = (char *)malloc(sizeof(char *) * 2);
-   memset(comment, 0, sizeof(comment));
-   if(csv || tsv || (sv != NULL))
-     snprintf(comment, sizeof(comment), "#");
 
+    /* (this is admittedly dumb, but less dumb than what was here before) */
+    comment = global_state.comment_prefix;
+    if (csv || tsv || (sv != NULL)) {
+        strncpy(comment, "# ", __TCPTRACE_COMMENT_PREFIX_MAX);
+        comment[__TCPTRACE_COMMENT_PREFIX_MAX - 1] = '\0';
+    }
+
+    /* TODO: delete this commented-out code, it happens elsewhere */
     /* optional UDP */
 //    if (do_udp)
 //	udptrace_init();
@@ -763,7 +768,7 @@ main(
 	   num_files>1?"s":"",
 	   filenames[0]);
 
-    if (debug>1)
+    if (debug > 1)
 	DumpFlags();
 
     /* knock, knock... */
@@ -877,7 +882,7 @@ ProcessFile(
     }
 
     ppread = working_file.reader_function;
-    filesize = working_file.filesize;
+    /* filesize = working_file.filesize; */
     is_stdin = working_file.is_stdin;
     working_file.pnum = 0;
 
@@ -888,7 +893,7 @@ ProcessFile(
     location = 0;
 
     /* inform the modules, if they care... */
-    ModulesPerFile(state, filename);
+    ModulesPerFile(state, &working_file, filename);
 
     /* count the files */
     ++file_count;
@@ -977,14 +982,14 @@ That will likely confuse the program, so be careful!\n", filename);
 		if (is_stdin) {
 		    fprintf(stderr ,"%lu", working_file.pnum);
 		} else if (CompIsCompressed()) {
-		    frac = location/(filesize/100);
+		    frac = location/(working_file.filesize/100);
 		    if (frac <= 100)
 			fprintf(stderr ,"%lu ~%u%% (compressed)", working_file.pnum, frac);
 		    else
 			fprintf(stderr ,"%lu ~100%% + %u%% (compressed)", working_file.pnum, frac-100);
 		} else {
 		    location = ftell(stdin);
-		    frac = location/(filesize/100);
+		    frac = location/(working_file.filesize/100);
 
 		    fprintf(stderr ,"%lu %u%%", working_file.pnum, frac);
 		}
@@ -2559,7 +2564,10 @@ ModulesPerUDPPacket(
 
 static void
 ModulesPerFile(
+    /* TODO: these arguments are sort of redundant, possibly streamline
+     * into "state" */
     tcptrace_state_t *state,
+    tcptrace_working_file *working_file,
     char *filename)
 {
     int i;
@@ -2575,7 +2583,7 @@ ModulesPerFile(
 	    fprintf(stderr,"Calling newfile routine for module \"%s\"\n",
 		    modules[i].module_name);
 
-	(*modules[i].module_newfile)(filename,filesize,CompIsCompressed());
+	(*modules[i].module_newfile)(filename, working_file->filesize, CompIsCompressed());
     }
 }
 

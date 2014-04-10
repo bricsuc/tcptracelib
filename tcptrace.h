@@ -747,6 +747,8 @@ typedef struct tcptrace_runtime_options_t {
     Bool printticks;
 } tcptrace_runtime_options_t;
 
+#define __TCPTRACE_COMMENT_PREFIX_MAX 5
+
 /* packet-reading state */
 typedef struct tcptrace_state_t {
     u_long pnum;
@@ -758,6 +760,10 @@ typedef struct tcptrace_state_t {
     u_long bad_tcp_checksums;
     u_long bad_udp_checksums;
     u_long ctrunc;
+
+    /* see tcptrace.c/main() for explanation of this comment stuff */
+    char comment_prefix[__TCPTRACE_COMMENT_PREFIX_MAX];
+
 } tcptrace_state_t;
 
 /* raw packet, read from file */
@@ -778,7 +784,7 @@ extern char *sp;       /* Separator used for long output with <SP>-separated-val
 /* Used to comment out header lines of the long output
  * when <SP>-separated-values is requested
  */
-extern char *comment;
+/* extern char *comment; */
 
 /* these are no longer global
 extern u_long ctrunc;

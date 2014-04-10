@@ -2497,7 +2497,9 @@ trace_done(tcptrace_state_t *state)
   int ix;
   static int count = 0;
   Bool incomplete_pkt_capture = FALSE;
+  char *comment;
   
+  comment = state->comment_prefix;
   if (!run_continuously) {
     if (!printsuppress) {
 	if (tcp_trace_count == 0) {
