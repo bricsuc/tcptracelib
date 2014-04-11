@@ -747,6 +747,7 @@ typedef struct tcptrace_runtime_options_t {
     Bool printticks;
 
     Bool verify_checksums;
+    Bool warn_printbadcsum;
 
 } tcptrace_runtime_options_t;
 
