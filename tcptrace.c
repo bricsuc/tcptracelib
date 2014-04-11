@@ -64,6 +64,8 @@ static char const GCC_UNUSED rcsid[] =
 #include "modules.h"
 #include "version.h"
 
+#include <stddef.h>
+
 
 /* version information */
 char *tcptrace_version = VERSION;
@@ -136,7 +138,7 @@ Bool show_rwinline = TRUE;
 Bool do_udp = FALSE;
 Bool resolve_ipaddresses = TRUE;
 Bool resolve_ports = TRUE;
-Bool verify_checksums = FALSE;
+/* Bool verify_checksums = FALSE; */
 Bool triple_dupack_allows_data = FALSE;
 Bool run_continuously = FALSE;
 Bool xplot_all_files = FALSE;
@@ -206,73 +208,74 @@ struct timeval wallclock_finished;
 static struct ext_bool_op {
     char *bool_optname;
     Bool *bool_popt;
+    unsigned long runtime_struct_offset;
     Bool bool_default;
     char *bool_descr;
 } extended_bools[] = {
-    {"showsacks", &show_sacks,  TRUE,
+    {"showsacks", &show_sacks, 0, TRUE,
      "show SACK blocks on time sequence graphs"},
-    {"showrexmit", &show_rexmit,  TRUE,
+    {"showrexmit", &show_rexmit, 0, TRUE,
      "mark retransmits on time sequence graphs"},
-    {"showoutorder", &show_out_order,  TRUE,
+    {"showoutorder", &show_out_order, 0, TRUE,
      "mark out-of-order on time sequence graphs"},
-    {"showzerowindow", &show_zero_window,  TRUE,
+    {"showzerowindow", &show_zero_window, 0, TRUE,
      "mark zero windows on time sequence graphs"},
-    {"showurg", &show_urg,  TRUE,
+    {"showurg", &show_urg, 0, TRUE,
      "mark packets with URGENT bit set on the time sequence graphs"},
-    {"showrttdongles", &show_rtt_dongles,  TRUE,
+    {"showrttdongles", &show_rtt_dongles, 0,  TRUE,
      "mark non-RTT-generating ACKs with special symbols"},
-    {"showdupack3", &show_triple_dupack,  TRUE,
+    {"showdupack3", &show_triple_dupack, 0,  TRUE,
      "mark triple dupacks on time sequence graphs"},
-    {"showzerolensegs", &graph_zero_len_pkts,  TRUE,
+    {"showzerolensegs", &graph_zero_len_pkts, 0,  TRUE,
      "show zero length packets on time sequence graphs"},
-    {"showzwndprobes", &show_zwnd_probes, TRUE,
+    {"showzwndprobes", &show_zwnd_probes, 0, TRUE,
      "show zero window probe packets on time sequence graphs"},
-    {"showtitle", &show_title,  TRUE,
+    {"showtitle", &show_title, 0, TRUE,
      "show title on the graphs"},
-    {"showrwinline", &show_rwinline,  TRUE,
+    {"showrwinline", &show_rwinline, 0, TRUE,
      "show yellow receive-window line in owin graphs"},
-    {"res_addr", &resolve_ipaddresses,  TRUE,
+    {"res_addr", &resolve_ipaddresses, 0, TRUE,
      "resolve IP addresses into names (may be slow)"},
-    {"res_port", &resolve_ports,  TRUE,
+    {"res_port", &resolve_ports, 0, TRUE,
      "resolve port numbers into names"},
-    {"checksum", &verify_checksums,  TRUE,
+    {"checksum", NULL, offsetof(tcptrace_runtime_options_t, verify_checksums), TRUE,
      "verify IP and TCP checksums"},
-    {"dupack3_data", &triple_dupack_allows_data, TRUE,
+    {"dupack3_data", &triple_dupack_allows_data, 0, TRUE,
      "count a duplicate ACK carrying data as a triple dupack"},
-    {"check_hwdups", &docheck_hw_dups, TRUE,
+    {"check_hwdups", &docheck_hw_dups, 0, TRUE,
      "check for 'hardware' dups"},
-    {"warn_ooo", &warn_ooo,  TRUE,
+    {"warn_ooo", &warn_ooo, 0, TRUE,
      "print warnings when packets timestamps are out of order"},
-    {"warn_printtrunc", &warn_printtrunc,  TRUE,
+    {"warn_printtrunc", &warn_printtrunc, 0, TRUE,
      "print warnings when packets are too short to analyze"},
-    {"warn_printbadmbz", &warn_printbadmbz, TRUE,
+    {"warn_printbadmbz", &warn_printbadmbz, 0, TRUE,
      "print warnings when MustBeZero TCP fields are NOT 0"},
-    {"warn_printhwdups", &warn_printhwdups, TRUE,
+    {"warn_printhwdups", &warn_printhwdups, 0, TRUE,
      "print warnings for hardware duplicates"},
-    {"warn_printbadcsum", &warn_printbadcsum, TRUE,
+    {"warn_printbadcsum", &warn_printbadcsum, 0, TRUE,
      "print warnings when packets with bad checksums"},
-    {"warn_printbad_syn_fin_seq", &warn_printbad_syn_fin_seq, TRUE,
+    {"warn_printbad_syn_fin_seq", &warn_printbad_syn_fin_seq, 0, TRUE,
      "print warnings when SYNs or FINs rexmitted with different sequence numbers"},
-    {"dump_packet_data", &dump_packet_data, TRUE,
+    {"dump_packet_data", &dump_packet_data, 0, TRUE,
      "print all packets AND dump the TCP/UDP data"},
-    {"continuous", &run_continuously, TRUE,
+    {"continuous", &run_continuously, 0, TRUE,
      "run continuously and don't provide a summary"},
-    {"print_seq_zero", &print_seq_zero, TRUE,
+    {"print_seq_zero", &print_seq_zero, 0, TRUE,
      "print sequence numbers as offset from initial sequence number"},
-    {"limit_conn_num", &conn_num_threshold, TRUE,
+    {"limit_conn_num", &conn_num_threshold, 0, TRUE,
      "limit the maximum number of connections kept at a time in real-time mode"},
-    {"xplot_all_files", &xplot_all_files, TRUE,
+    {"xplot_all_files", &xplot_all_files, 0, TRUE,
      "display all generated xplot files at the end"},
-    {"ns_hdrs", &ns_hdrs, TRUE,
+    {"ns_hdrs", &ns_hdrs, 0, TRUE,
      "assume that ns has the useHeaders_flag true (uses IP+TCP headers)"},
-    {"csv", &csv, TRUE,
+    {"csv", &csv, 0, TRUE,
      "display the long output as comma separated values"},
-    {"tsv", &tsv, TRUE,
+    {"tsv", &tsv, 0, TRUE,
      "display the long output as tab separated values"},
-    {"turn_off_BSD_dupack", &dup_ack_handling, FALSE,
-     "turn of the BSD version of the duplicate ack handling"},
-
+    {"turn_off_BSD_dupack", &dup_ack_handling, 0, FALSE,
+     "turn off the BSD version of the duplicate ack handling"},
 };
+
 #define NUM_EXTENDED_BOOLS (sizeof(extended_bools) / sizeof(struct ext_bool_op))
 
 
@@ -821,7 +824,7 @@ main(
 	fprintf(stdout,"%s\tfirst packet:  %s\n", comment, ts2ascii(&global_state.first_packet));
 	fprintf(stdout,"%s\tlast packet:   %s\n", comment, ts2ascii(&global_state.last_packet));
     }
-    if (verify_checksums) {
+    if (global_state.options->verify_checksums) {
 	fprintf(stdout,"%sbad IP checksums:  %ld\n", comment, global_state.bad_ip_checksums);
 	fprintf(stdout,"%sbad TCP checksums: %ld\n", comment, global_state.bad_tcp_checksums);
 	if (do_udp) {
@@ -1062,7 +1065,7 @@ for other packet types, I just don't have a place to test them\n\n");
 	state->last_packet = state->current_time;
 
 	/* verify IP checksums, if requested */
-	if (verify_checksums) {
+	if (state->options->verify_checksums) {
 	    if (!ip_cksum_valid(pip,plast)) {
 		state->bad_ip_checksums++;
 		if (warn_printbadcsum)
@@ -1086,7 +1089,7 @@ for other packet types, I just don't have a place to test them\n\n");
 		pup = udpdotrace(state, pip, pudp, plast);
 
 		/* verify UDP checksums, if requested */
-		if (verify_checksums) {
+		if (state->options->verify_checksums) {
 		    if (!udp_cksum_valid(pip,pudp,plast, state)) {
 			state->bad_udp_checksums++;
 			if (warn_printbadcsum) {
@@ -1113,7 +1116,7 @@ for other packet types, I just don't have a place to test them\n\n");
         }
 
 	/* verify TCP checksums, if requested */
-	if (verify_checksums) {
+	if (state->options->verify_checksums) {
 	    if (!tcp_cksum_valid(pip,ptcp,plast, state)) {
 		state->bad_tcp_checksums++;
 		if (warn_printbadcsum) {
@@ -1764,6 +1767,7 @@ ParseExtendedOpt(
 }
 
 
+/* TODO: replace this mess with GNU getopt or something */
 /* these extended boolean options are table driven, to make it easier to
    add more later without messing them up */
 static void
@@ -1825,13 +1829,32 @@ ParseExtendedBool(
 
     /* either exact match or good prefix, do it */
     if (pbop_found != NULL) {
-	if (negative_arg_prefix)
-	    *pbop_found->bool_popt = !pbop_found->bool_default;
-	else
-	    *pbop_found->bool_popt = pbop_found->bool_default;
+        Bool *option_location;
+
+        option_location = pbop_found->bool_popt;
+
+        /* If the location for the option setting isn't directly in
+           the struct, then it might be at an offset into
+           global_state.options. Check that. */
+        if (option_location == NULL) {
+            if (pbop_found->runtime_struct_offset != 0) {
+                /* if this is an offset, find the actual location */
+                option_location = (Bool *) global_state.options;
+                option_location += pbop_found->runtime_struct_offset;
+            } else {
+                fprintf(stderr, "Warning: could not find storage location for %s option\n", arg);
+                return;
+            }
+        }
+
+	if (negative_arg_prefix) {
+	    *option_location = !pbop_found->bool_default;
+	} else {
+	    *option_location = pbop_found->bool_default;
+        }
 	if (debug>2)
 	    fprintf(stderr,"Set boolean variable '%s' to '%s'\n",
-		    argtext, BOOL2STR(*pbop_found->bool_popt));
+		    argtext, BOOL2STR(*option_location));
 	return;
     }
 

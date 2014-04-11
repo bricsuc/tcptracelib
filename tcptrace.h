@@ -251,7 +251,7 @@ typedef struct mfile MFILE;
 
 /* file name information */
 extern char **filenames;	/* all the files on the cmd line */
-extern char *cur_filename;	/* the current file */
+/* extern char *cur_filename; */	/* the current file */
 
 /* first and last packet timestamp */ /* (now deglobalized) */
 /* extern timeval first_packet; */
@@ -685,7 +685,7 @@ extern Bool ignore_non_comp;
 extern Bool resolve_ipaddresses;
 extern Bool resolve_ports;
 extern Bool triple_dupack_allows_data;
-extern Bool verify_checksums;
+/* extern Bool verify_checksums; */ /* de-globalized, now in runtime_options */
 extern Bool print_rtt;
 extern Bool print_owin;
 extern Bool printbrief;
@@ -745,6 +745,9 @@ typedef struct tcptrace_runtime_options_t {
     Bool printem;
     Bool printallofem;
     Bool printticks;
+
+    Bool verify_checksums;
+
 } tcptrace_runtime_options_t;
 
 #define __TCPTRACE_COMMENT_PREFIX_MAX 5
