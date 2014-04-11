@@ -123,7 +123,7 @@ Bool warn_ooo = FALSE;
 Bool warn_printtrunc = FALSE;
 Bool warn_printbadmbz = FALSE;
 Bool warn_printhwdups = FALSE;
-Bool warn_printbadcsum = FALSE;
+/* Bool warn_printbadcsum = FALSE; */
 Bool warn_printbad_syn_fin_seq = FALSE;
 Bool docheck_hw_dups = TRUE;
 Bool save_tcp_data = FALSE;
@@ -203,7 +203,6 @@ static char *closed_conn_interval_st = NULL;
 struct timeval wallclock_start;
 struct timeval wallclock_finished;
 
-
 /* extended boolean options */
 static struct ext_bool_op {
     char *bool_optname;
@@ -252,7 +251,7 @@ static struct ext_bool_op {
      "print warnings when MustBeZero TCP fields are NOT 0"},
     {"warn_printhwdups", &warn_printhwdups, 0, TRUE,
      "print warnings for hardware duplicates"},
-    {"warn_printbadcsum", &warn_printbadcsum, 0, TRUE,
+    {"warn_printbadcsum", NULL, offsetof(tcptrace_runtime_options_t, warn_printbadcsum), TRUE,
      "print warnings when packets with bad checksums"},
     {"warn_printbad_syn_fin_seq", &warn_printbad_syn_fin_seq, 0, TRUE,
      "print warnings when SYNs or FINs rexmitted with different sequence numbers"},
@@ -275,6 +274,8 @@ static struct ext_bool_op {
     {"turn_off_BSD_dupack", &dup_ack_handling, 0, FALSE,
      "turn off the BSD version of the duplicate ack handling"},
 };
+
+static Bool *find_option_location(struct ext_bool_op *bopt);
 
 #define NUM_EXTENDED_BOOLS (sizeof(extended_bools) / sizeof(struct ext_bool_op))
 
@@ -562,6 +563,25 @@ Stuff arguments that you always use into either the tcptrace resource file\n\
 ", TCPTRACE_RC_FILE, TCPTRACE_ENVARIABLE);
 }
 
+/* try to find an option's runtime location */
+static Bool *find_option_location(struct ext_bool_op *bopt) {
+    Bool *option_location;
+    option_location = bopt->bool_popt;
+
+    /* If the location for the option setting isn't directly in
+       the struct, then it might be at an offset into
+       global_state.options. Check that. */
+    if (option_location == NULL) {
+        if (bopt->runtime_struct_offset != 0) {
+            /* if this is an offset, find the actual location */
+            option_location = (Bool *) global_state.options;
+            option_location += bopt->runtime_struct_offset;
+        } else {
+            return(NULL);
+        }
+    }
+    return(option_location);
+}
 
 static void
 Args(void)
@@ -634,13 +654,22 @@ Dump File Names\n\
     fprintf(stderr,"\nExtended boolean options\n");
     fprintf(stderr," (unambiguous prefixes also work)\n");
     for (i=0; i < NUM_EXTENDED_BOOLS; ++i) {
+        Bool *option_location;
 	struct ext_bool_op *pbop = &extended_bools[i];
+
+        option_location = find_option_location(pbop);
+
+        if (option_location == NULL) {
+            fprintf(stderr, "Warning: could not find storage location for option --%s\n", pbop->bool_optname);
+            continue;
+        }
+
 	fprintf(stderr,"  --%-20s %s %s\n",
 		pbop->bool_optname, pbop->bool_descr,
-		(*pbop->bool_popt == pbop->bool_default)?"(default)":"");
+		(*option_location == pbop->bool_default)?"(default)":"");
 	fprintf(stderr,"  --no%-18s DON'T %s %s\n",
 		pbop->bool_optname, pbop->bool_descr,
-		(*pbop->bool_popt != pbop->bool_default)?"(default)":"");
+		(*option_location != pbop->bool_default)?"(default)":"");
     }
 
     fprintf(stderr,"\nExtended variable options\n");
@@ -1068,7 +1097,7 @@ for other packet types, I just don't have a place to test them\n\n");
 	if (state->options->verify_checksums) {
 	    if (!ip_cksum_valid(pip,plast)) {
 		state->bad_ip_checksums++;
-		if (warn_printbadcsum)
+		if (state->options->warn_printbadcsum)
 		    fprintf(stderr, "packet %lu: bad IP checksum\n", state->pnum);
 		continue;
 	    }
@@ -1092,7 +1121,7 @@ for other packet types, I just don't have a place to test them\n\n");
 		if (state->options->verify_checksums) {
 		    if (!udp_cksum_valid(pip,pudp,plast, state)) {
 			state->bad_udp_checksums++;
-			if (warn_printbadcsum) {
+			if (state->options->warn_printbadcsum) {
 			    fprintf(stderr, "packet %lu: bad UDP checksum\n",
 				    state->pnum);
                         }
@@ -1119,7 +1148,7 @@ for other packet types, I just don't have a place to test them\n\n");
 	if (state->options->verify_checksums) {
 	    if (!tcp_cksum_valid(pip,ptcp,plast, state)) {
 		state->bad_tcp_checksums++;
-		if (warn_printbadcsum) {
+		if (state->options->warn_printbadcsum) {
 		    fprintf(stderr, "packet %lu: bad TCP checksum\n", state->pnum);
                 }
 		continue;
@@ -1831,20 +1860,11 @@ ParseExtendedBool(
     if (pbop_found != NULL) {
         Bool *option_location;
 
-        option_location = pbop_found->bool_popt;
+        option_location = find_option_location(pbop_found);
 
-        /* If the location for the option setting isn't directly in
-           the struct, then it might be at an offset into
-           global_state.options. Check that. */
         if (option_location == NULL) {
-            if (pbop_found->runtime_struct_offset != 0) {
-                /* if this is an offset, find the actual location */
-                option_location = (Bool *) global_state.options;
-                option_location += pbop_found->runtime_struct_offset;
-            } else {
-                fprintf(stderr, "Warning: could not find storage location for %s option\n", arg);
-                return;
-            }
+            fprintf(stderr, "Warning: could not find storage location for option %s\n", arg);
+            return;
         }
 
 	if (negative_arg_prefix) {
@@ -2215,7 +2235,7 @@ ParseArgs(
 		    warn_printtrunc = TRUE;
 		    warn_printbadmbz = TRUE;
 		    warn_printhwdups = TRUE;
-		    warn_printbadcsum = TRUE;
+		    global_state.options->warn_printbadcsum = TRUE;
 		    warn_printbad_syn_fin_seq = TRUE;
 		    warn_ooo = TRUE;
 		    break;
@@ -2284,7 +2304,7 @@ ParseArgs(
 		    warn_printtrunc = !TRUE;
 		    warn_printbadmbz = !TRUE;
 		    warn_printhwdups = !TRUE;
-		    warn_printbadcsum = !TRUE;
+		    global_state.options->warn_printbadcsum = !TRUE;
 		    warn_ooo = !TRUE;
 		    break;
 		  case 'y': plot_tput_instant = !plot_tput_instant; break;
