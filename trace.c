@@ -721,7 +721,7 @@ NewTTP(
     ptp->a2b.ss = MakeSeqspace();
     ptp->b2a.ss = MakeSeqspace();
 
-    ptp->filename = cur_filename;
+    ptp->filename = state->current_filename;
 
     return(ptp);
 }

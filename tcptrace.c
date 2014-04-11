@@ -188,7 +188,7 @@ char *ColorNames[NCOLORS] =
 char **filenames = NULL;
 int num_files = 0;
 u_int numfiles;
-char *cur_filename;
+/* char *cur_filename; */
 static char *progname;
 char *output_filename = NULL;
 static char *update_interval_st = NULL;
@@ -867,8 +867,8 @@ ProcessFile(
     tcptrace_working_file working_file;
     raw_packet_t raw_packet;
 
-    /* share the current file name */
-    cur_filename = filename;
+    /* set the current file name */
+    state->current_filename = filename;
 
     /* load the file */
     {
@@ -910,7 +910,7 @@ ProcessFile(
 	working_file.pnum++;	/* local to this file */
 
         /* TODO: move this stuff to read packet struct (maybe) */
-        /* not sure if current_time is necessary in raw_packet */
+        /* not sure if timestamp is necessary in raw_packet */
         /* (though it's the "correct" place for it) */
         raw_packet.timestamp = &state->current_time;
         raw_packet.pip = pip;
@@ -978,7 +978,7 @@ That will likely confuse the program, so be careful!\n", filename);
 		unsigned frac;
 
 		if (debug)
-		    fprintf(stderr, "%s: ", cur_filename);
+		    fprintf(stderr, "%s: ", state->current_filename);
 		if (is_stdin) {
 		    fprintf(stderr ,"%lu", working_file.pnum);
 		} else if (CompIsCompressed()) {
@@ -1173,8 +1173,12 @@ for other packet types, I just don't have a place to test them\n\n");
 	signal(SIGINT,SIG_DFL);
     }
 
+    /* unset current filename */
+    state->current_filename = NULL;
+
     /* close the input file */
     CompCloseFile(filename);
+
 }
 
 
@@ -2692,9 +2696,18 @@ ExpandFormat(const char *format)
 
     while (*format) {
 	if (strncmp(format,"%f",2) == 0) {
-	    /* basename of current file (after the last slash) */
-	    char *filename = cur_filename;
+            char *filename;
 	    char *ptr;
+
+            /* TODO: current_filename is going to be a problem later on. */
+            /* need to parameterize this somehow */
+
+	    /* basename of current file (after the last slash) */
+            if (global_state.current_filename != NULL) {
+                char *filename = global_state.current_filename;
+            } else {
+                char *filename = "";
+            }
 
 	    /* find the last '/' in the file */
 	    ptr = strrchr(filename,'/');

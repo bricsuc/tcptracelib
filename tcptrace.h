@@ -761,6 +761,8 @@ typedef struct tcptrace_state_t {
     u_long bad_udp_checksums;
     u_long ctrunc;
 
+    char *current_filename;
+
     /* see tcptrace.c/main() for explanation of this comment stuff */
     char comment_prefix[__TCPTRACE_COMMENT_PREFIX_MAX];
 

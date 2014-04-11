@@ -76,8 +76,8 @@ u_long udp_trace_count = 0;
 
 
 /* local routine definitions */
-static udp_pair *NewUTP(struct ip *, struct udphdr *);
-static udp_pair *FindUTP(struct ip *, struct udphdr *, int *);
+static udp_pair *NewUTP(tcptrace_state_t *state, struct ip *, struct udphdr *);
+static udp_pair *FindUTP(tcptrace_state_t *state, struct ip *, struct udphdr *, int *);
 static void MoreUdpPairs(int num_needed);
 
 
@@ -85,6 +85,7 @@ static void MoreUdpPairs(int num_needed);
 
 static udp_pair *
 NewUTP(
+    tcptrace_state_t *state,
     struct ip *pip,
     struct udphdr *pudp)
 {
@@ -129,7 +130,7 @@ NewUTP(
 	strdup(EndpointName(pup->addr_pair.b_address,
 			    pup->addr_pair.b_port));
 
-    pup->filename = cur_filename;
+    pup->filename = state->current_filename;
 
     return(pup);
 }
@@ -141,6 +142,7 @@ NewUTP(
 #define HASH_TABLE_SIZE 1021  /* oughta be prime */
 static udp_pair *
 FindUTP(
+    tcptrace_state_t *state,
     struct ip *pip,
     struct udphdr *pudp,
     int *pdir)
@@ -179,7 +181,7 @@ FindUTP(
     }
 
     /* Didn't find it, make a new one, if possible */
-    pup = NewUTP(pip,pudp);
+    pup = NewUTP(state, pip, pudp);
 
     /* put at the head of the access list */
     if (pup) {
@@ -263,7 +265,7 @@ udpdotrace(
     uh_ulen = ntohs(pudp->uh_ulen);
 
     /* make sure this is one of the connections we want */
-    pup_save = FindUTP(pip,pudp,&dir);
+    pup_save = FindUTP(state, pip,pudp,&dir);
 
     ++packet_count;
 

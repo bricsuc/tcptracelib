@@ -70,6 +70,8 @@ tcptrace_initialize_state(tcptrace_state_t *state) {
 
     state->comment_prefix[0] = '\0';   /* no comment prefix by default */
 
+    state->current_filename = NULL;
+
 }
 
 /* initialize the tcptrace runtime options */
