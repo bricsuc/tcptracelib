@@ -227,7 +227,7 @@ printipv4(
     printf("\t     LEN: %d\n", ntohs(pip->ip_len));
     printf("\t      ID: %d\n", ntohs(pip->ip_id));
     printf("\t   CKSUM: 0x%04x", ntohs(pip->ip_sum));
-    if (verify_checksums)
+    if (state->options->verify_checksums)
 	printf(" (%s)", ip_cksum_valid(pip,plast)?"CORRECT":"WRONG");
     printf("\n");
 
@@ -419,7 +419,7 @@ printtcp_packet(
     }
     printf("\t   CKSUM: 0x%04x", ntohs(ptcp->th_sum));
     pdata = (u_char *)ptcp + TH_OFF(ptcp)*4;
-    if (verify_checksums) {
+    if (state->options->verify_checksums) {
 	if ((char *)pdata + tcp_data_length > ((char *)plast+1))
 	    printf(" (too short to verify)");
 	else
@@ -546,7 +546,7 @@ printudp_packet(
     udp_data_length = udp_length - sizeof(struct udphdr);
     printf("\t  UCKSUM: 0x%04x", ntohs(pudp->uh_sum));
     pdata = (u_char *)pudp + sizeof(struct udphdr);
-    if (verify_checksums) {
+    if (state->options->verify_checksums) {
 	if ((char *)pdata + udp_data_length > ((char *)plast+1))
 	    printf(" (too short to verify)");
 	else

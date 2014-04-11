@@ -82,5 +82,6 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->printem = FALSE;
     options->printallofem = FALSE;
     options->printticks = FALSE;
+    options->verify_checksums = FALSE;
 }
 
