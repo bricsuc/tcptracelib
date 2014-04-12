@@ -78,7 +78,7 @@ static void ModulesPerPacket(tcptrace_state_t *state, struct ip *pip, tcp_pair *
 static void ModulesPerUDPPacket(tcptrace_state_t *state, struct ip *pip, udp_pair *pup, void *plast);
 static void ModulesPerConn(tcptrace_state_t *state, tcp_pair *ptp);
 static void ModulesPerUDPConn(tcptrace_state_t *state, udp_pair *pup);
-static void ModulesPerFile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename);
+/* static void ModulesPerFile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename); */
 static void DumpFlags(void);
 static void ExplainOutput(void);
 static void FinishModules(void);
@@ -92,7 +92,7 @@ static void ParseArgs(char *argsource, int *pargc, char *argv[]);
 static int  ParseExtendedOpt(char *argsource, char *arg);
 static void ParseExtendedBool(char *argsource, char *arg);
 static void ParseExtendedVar(char *argsource, char *arg);
-static void ProcessFile(char *filename);
+static void ProcessFile(tcptrace_state_t *state, char *filename);
 static void QuitSig(int signum);
 static void Usage(void);
 static void BadArg(char *argsource, char *format, ...);
@@ -812,7 +812,7 @@ main(
 	}
 
 	/* do the real work */
-	ProcessFile(filenames[i]);
+	ProcessFile(state, filenames[i]);
     }
 
     /* clean up output */
@@ -869,6 +869,7 @@ main(
 
 static void
 ProcessFile(
+    tcptrace_state_t *state,
     char *filename)
 {
     pread_f *ppread;
@@ -886,9 +887,6 @@ ProcessFile(
     long int location = 0;
     Bool is_stdin = 0;
     static int file_count = 0;
-
-
-    tcptrace_state_t *state = &global_state;
 
     /* storage for current working files and packets */
     tcptrace_working_file working_file;
@@ -920,7 +918,7 @@ ProcessFile(
     location = 0;
 
     /* inform the modules, if they care... */
-    ModulesPerFile(state, &working_file, filename);
+    tcptrace_modules_all_newfile(state, &working_file, filename);
 
     /* count the files */
     ++file_count;
@@ -2605,8 +2603,10 @@ ModulesPerUDPPacket(
 }
 
 
-static void
-ModulesPerFile(
+/* TODO: remove this and activate the one in modules.c, after fixing
+ * modules.h */
+void
+tcptrace_modules_all_newfile (
     /* TODO: these arguments are sort of redundant, possibly streamline
      * into "state" */
     tcptrace_state_t *state,

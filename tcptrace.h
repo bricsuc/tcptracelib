@@ -754,6 +754,18 @@ typedef struct tcptrace_runtime_options_t {
 
 } tcptrace_runtime_options_t;
 
+/* the type for a packet reading routine */
+typedef int pread_f(struct timeval *, int *, int *, void **,
+		   int *, struct ip **, void **);
+
+typedef struct tcptrace_working_file {
+    pread_f *reader_function;
+    u_long filesize;
+    Bool is_stdin;
+    u_long pnum;       /* number of packets read in file */
+} tcptrace_working_file;
+
+
 #define __TCPTRACE_COMMENT_PREFIX_MAX 5
 
 /* packet-reading state */
@@ -823,10 +835,16 @@ char *Ether_Ntoa(struct ether_addr *e);
 /* global routine decls */
 void *MallocZ(int);
 void *ReallocZ(void *oldptr, int obytes, int nbytes);
+
 void trace_init(void);
 void trace_done(tcptrace_state_t *state);
+
 void seglist_init(tcb *);
+
+void tcptrace_modules_all_newfile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename);
+
 void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
+
 void plotter_vtick(PLOTTER, timeval, u_long);
 void plotter_utick(PLOTTER, timeval, u_long);
 void plotter_uarrow(PLOTTER, timeval, u_long);
@@ -853,7 +871,9 @@ void plotter_nothing(PLOTTER, timeval);
 void plotter_invisible(PLOTTER, timeval, u_long);
 void plotter_switch_axis(PLOTTER, Bool);
 void plot_init(void);
+
 tcp_pair *dotrace(tcptrace_state_t *state, struct ip *, struct tcphdr *ptcp, void *plast);
+
 void PrintRawData(char *label, void *pfirst, void *plast, Bool octal);
 void PrintRawDataHex(char *label, void *pfirst, void *plast);
 void PrintTrace(tcp_pair *);
@@ -865,6 +885,7 @@ void OnlyConn(int);
 void IgnoreConn(int);
 void OnlyUDPConn(int);
 void IgnoreUDPConn(int);
+
 double elapsed(timeval, timeval);
 void tv_sub(struct timeval *plhs, struct timeval rhs);
 void tv_add(struct timeval *plhs, struct timeval rhs);
@@ -1126,9 +1147,6 @@ struct tcp_options {
 #define TCPTRACE_ENVARIABLE "TCPTRACEOPTS"
 
 /* packet-reading options... */
-/* the type for a packet reading routine */
-typedef int pread_f(struct timeval *, int *, int *, void **,
-		   int *, struct ip **, void **);
 
 /* give the prototypes for the is_GLORP() routines supported */
 #ifdef GROK_SNOOP
