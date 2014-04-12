@@ -782,6 +782,8 @@ typedef struct tcptrace_state_t {
 
     char *current_filename;
 
+    int num_modules;
+
     /* see tcptrace.c/main() for explanation of this comment stuff */
     char comment_prefix[__TCPTRACE_COMMENT_PREFIX_MAX];
 
@@ -841,7 +843,9 @@ void trace_done(tcptrace_state_t *state);
 
 void seglist_init(tcb *);
 
+/* module routines */
 void tcptrace_modules_all_newfile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename);
+void tcptrace_modules_newconn_udp(tcptrace_state_t *state, udp_pair *pup);
 
 void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
 

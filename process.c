@@ -68,6 +68,8 @@ tcptrace_initialize_state(tcptrace_state_t *state) {
     state->bad_tcp_checksums = 0;
     state->bad_udp_checksums = 0;
 
+    state->num_modules = 0;
+
     state->comment_prefix[0] = '\0';   /* no comment prefix by default */
 
     state->current_filename = NULL;

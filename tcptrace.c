@@ -180,7 +180,7 @@ char *xplot_args = NULL;
 char *sv = NULL;
 
 /* globals */
-int num_modules = 0;
+/* int num_modules = 0; */  /* deglobalized */
 char *ColorNames[NCOLORS] =
 {"green", "red", "blue", "yellow", "purple", "orange", "magenta", "pink"};
 /* char *comment; */
@@ -1123,8 +1123,9 @@ for other packet types, I just don't have a place to test them\n\n");
 		}
 		       
 		/* if it's a new connection, tell the modules */
-		if (pup && pup->packets == 1)
-		    ModulesPerUDPConn(state, pup);
+		if (pup && pup->packets == 1) {
+		    tcptrace_modules_newconn_udp(state, pup);
+                }
 		/* also, pass the packet to any modules defined */
 		ModulesPerUDPPacket(state, pip,pup,plast);
 	    } else if (ret < 0) {
@@ -2396,7 +2397,7 @@ LoadModules(
     int enable;
 
     for (i=0; i < NUM_MODULES; ++i) {
-	++num_modules;
+	state->num_modules++;
 	if (debug)
 	    fprintf(stderr,"Initializing module \"%s\"\n",
 		    tcptrace_modules[i].module_name);
@@ -2462,7 +2463,7 @@ ModulesPerConn(
 	if (pmodstruct) {
 	    /* make sure the array is there */
 	    if (!ptp->pmod_info) {
-		ptp->pmod_info = MallocZ(num_modules * sizeof(void *));
+		ptp->pmod_info = MallocZ(global_state.num_modules * sizeof(void *));
 	    }
 
 	    /* remember this structure */
@@ -2494,7 +2495,7 @@ ModulesPerOldConn(
     }
 }
 
-
+#if 0
 static void
 ModulesPerUDPConn(
     tcptrace_state_t *state,
@@ -2526,6 +2527,7 @@ ModulesPerUDPConn(
 	}
     }
 }
+#endif
 
 static void
 ModulesPerNonTCPUDP(
