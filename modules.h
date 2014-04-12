@@ -141,7 +141,7 @@ struct module {
 
 
 /* module-specific header files (provides prototypes for the routines
- * referenced in module_list.c / tcptrace_modules  ) */
+ * referenced in module_list.c / tcptrace_modules) */
 
 #ifdef LOAD_MODULE_HTTP
 #include "mod_http.h"		/* for the HTTP package */
