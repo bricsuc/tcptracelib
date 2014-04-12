@@ -712,10 +712,10 @@ ListModules(void)
     fprintf(stderr,"Included Modules:\n");
     for (i=0; i < NUM_MODULES; ++i) {
 	fprintf(stderr,"  %-15s  %s\n",
-		modules[i].module_name, modules[i].module_descr);
-/* 	if (modules[i].module_usage) { */
+		tcptrace_modules[i].module_name, tcptrace_modules[i].module_descr);
+/* 	if (tcptrace_modules[i].module_usage) { */
 /* 	    fprintf(stderr,"    usage:\n"); */
-/* 	    (*modules[i].module_usage)(); */
+/* 	    (*tcptrace_modules[i].module_usage)(); */
 /* 	} */
     }
 }
@@ -727,10 +727,10 @@ UsageModules(void)
     int i;
 
     for (i=0; i < NUM_MODULES; ++i) {
-	fprintf(stderr," Module %s:\n", modules[i].module_name);
-	if (modules[i].module_usage) {
+	fprintf(stderr," Module %s:\n", tcptrace_modules[i].module_name);
+	if (tcptrace_modules[i].module_usage) {
 	    fprintf(stderr,"    usage:\n");
-	    (*modules[i].module_usage)();
+	    (*tcptrace_modules[i].module_usage)();
 	}
     }
 }
@@ -2399,18 +2399,18 @@ LoadModules(
 	++num_modules;
 	if (debug)
 	    fprintf(stderr,"Initializing module \"%s\"\n",
-		    modules[i].module_name);
-	enable = (*modules[i].module_init)(state, argc, argv);
+		    tcptrace_modules[i].module_name);
+	enable = (*tcptrace_modules[i].module_init)(state, argc, argv);
 	if (enable) {
 	    if (debug)
 		fprintf(stderr,"Module \"%s\" enabled\n",
-			modules[i].module_name);
-	    modules[i].module_inuse = TRUE;
+			tcptrace_modules[i].module_name);
+	    tcptrace_modules[i].module_inuse = TRUE;
 	} else {
 	    if (debug)
 		fprintf(stderr,"Module \"%s\" not active\n",
-			modules[i].module_name);
-	    modules[i].module_inuse = FALSE;
+			tcptrace_modules[i].module_name);
+	    tcptrace_modules[i].module_inuse = FALSE;
 	}
     }
 
@@ -2424,17 +2424,17 @@ FinishModules(void)
     int i;
 
     for (i=0; i < NUM_MODULES; ++i) {
-	if (!modules[i].module_inuse)
+	if (!tcptrace_modules[i].module_inuse)
 	    continue;  /* might be disabled */
 
-	if (modules[i].module_done == NULL)
+	if (tcptrace_modules[i].module_done == NULL)
 	    continue;  /* might not have a cleanup */
 
 	if (debug)
 	    fprintf(stderr,"Calling cleanup for module \"%s\"\n",
-		    modules[i].module_name);
+		    tcptrace_modules[i].module_name);
 
-	(*modules[i].module_done)(&global_state);
+	(*tcptrace_modules[i].module_done)(&global_state);
     }
 }
 
@@ -2448,17 +2448,17 @@ ModulesPerConn(
     void *pmodstruct;
 
     for (i=0; i < NUM_MODULES; ++i) {
-	if (!modules[i].module_inuse)
+	if (!tcptrace_modules[i].module_inuse)
 	    continue;  /* might be disabled */
 
-	if (modules[i].module_newconn == NULL)
+	if (tcptrace_modules[i].module_newconn == NULL)
 	    continue;  /* they might not care */
 
 	if (debug>3)
 	    fprintf(stderr,"Calling newconn routine for module \"%s\"\n",
-		    modules[i].module_name);
+		    tcptrace_modules[i].module_name);
 
-	pmodstruct = (*modules[i].module_newconn)(state, ptp);
+	pmodstruct = (*tcptrace_modules[i].module_newconn)(state, ptp);
 	if (pmodstruct) {
 	    /* make sure the array is there */
 	    if (!ptp->pmod_info) {
@@ -2479,17 +2479,17 @@ ModulesPerOldConn(
     int i;
 
     for (i=0; i < NUM_MODULES; ++i) {
-	if (!modules[i].module_inuse)
+	if (!tcptrace_modules[i].module_inuse)
 	    continue;  /* might be disabled */
 
-	if (modules[i].module_deleteconn == NULL)
+	if (tcptrace_modules[i].module_deleteconn == NULL)
 	    continue;  /* they might not care */
 
 	if (debug>3)
 	    fprintf(stderr,"Calling delete conn routine for module \"%s\"\n",
-		    modules[i].module_name);
+		    tcptrace_modules[i].module_name);
 
-	(*modules[i].module_deleteconn)(ptp,
+	(*tcptrace_modules[i].module_deleteconn)(ptp,
 					ptp->pmod_info?ptp->pmod_info[i]:NULL);
     }
 }
@@ -2504,17 +2504,17 @@ ModulesPerUDPConn(
     void *pmodstruct;
 
     for (i=0; i < NUM_MODULES; ++i) {
-	if (!modules[i].module_inuse)
+	if (!tcptrace_modules[i].module_inuse)
 	    continue;  /* might be disabled */
 
-	if (modules[i].module_udp_newconn == NULL)
+	if (tcptrace_modules[i].module_udp_newconn == NULL)
 	    continue;  /* they might not care */
 
 	if (debug>3)
 	    fprintf(stderr,"Calling UDP newconn routine for module \"%s\"\n",
-		    modules[i].module_name);
+		    tcptrace_modules[i].module_name);
 
-	pmodstruct = (*modules[i].module_udp_newconn)(pup);
+	pmodstruct = (*tcptrace_modules[i].module_udp_newconn)(pup);
 	if (pmodstruct) {
 	    /* make sure the array is there */
 	    if (!pup->pmod_info) {
@@ -2536,17 +2536,17 @@ ModulesPerNonTCPUDP(
     int i;
 
     for (i=0; i < NUM_MODULES; ++i) {
-	if (!modules[i].module_inuse)
+	if (!tcptrace_modules[i].module_inuse)
 	    continue;  /* might be disabled */
 
-	if (modules[i].module_nontcpudp_read == NULL)
+	if (tcptrace_modules[i].module_nontcpudp_read == NULL)
 	    continue;  /* they might not care */
 
 	if (debug>3)
 	    fprintf(stderr,"Calling nontcp routine for module \"%s\"\n",
-		    modules[i].module_name);
+		    tcptrace_modules[i].module_name);
 
-	(*modules[i].module_nontcpudp_read)(pip,plast);
+	(*tcptrace_modules[i].module_nontcpudp_read)(pip,plast);
     }
 }
 
@@ -2561,17 +2561,17 @@ ModulesPerPacket(
     int i;
 
     for (i=0; i < NUM_MODULES; ++i) {
-	if (!modules[i].module_inuse)
+	if (!tcptrace_modules[i].module_inuse)
 	    continue;  /* might be disabled */
 
-	if (modules[i].module_read == NULL)
+	if (tcptrace_modules[i].module_read == NULL)
 	    continue;  /* they might not care */
 
 	if (debug>3)
 	    fprintf(stderr,"Calling read routine for module \"%s\"\n",
-		    modules[i].module_name);
+		    tcptrace_modules[i].module_name);
 
-	(*modules[i].module_read)(state, pip,ptp,plast,
+	(*tcptrace_modules[i].module_read)(state, pip,ptp,plast,
 				  ptp->pmod_info?ptp->pmod_info[i]:NULL);
     }
 }
@@ -2587,46 +2587,18 @@ ModulesPerUDPPacket(
     int i;
 
     for (i=0; i < NUM_MODULES; ++i) {
-	if (!modules[i].module_inuse)
+	if (!tcptrace_modules[i].module_inuse)
 	    continue;  /* might be disabled */
 
-	if (modules[i].module_udp_read == NULL)
+	if (tcptrace_modules[i].module_udp_read == NULL)
 	    continue;  /* they might not care */
 
 	if (debug>3)
 	    fprintf(stderr,"Calling read routine for module \"%s\"\n",
-		    modules[i].module_name);
+		    tcptrace_modules[i].module_name);
 
-	(*modules[i].module_udp_read)(pip,pup,plast,
+	(*tcptrace_modules[i].module_udp_read)(pip,pup,plast,
 				      pup->pmod_info?pup->pmod_info[i]:NULL);
-    }
-}
-
-
-/* TODO: remove this and activate the one in modules.c, after fixing
- * modules.h */
-void
-tcptrace_modules_all_newfile (
-    /* TODO: these arguments are sort of redundant, possibly streamline
-     * into "state" */
-    tcptrace_state_t *state,
-    tcptrace_working_file *working_file,
-    char *filename)
-{
-    int i;
-
-    for (i=0; i < NUM_MODULES; ++i) {
-	if (!modules[i].module_inuse)
-	    continue;  /* might be disabled */
-
-	if (modules[i].module_newfile == NULL)
-	    continue;  /* they might not care */
-
-	if (debug>3)
-	    fprintf(stderr,"Calling newfile routine for module \"%s\"\n",
-		    modules[i].module_name);
-
-	(*modules[i].module_newfile)(filename, working_file->filesize, CompIsCompressed());
     }
 }
 

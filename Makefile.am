@@ -27,8 +27,9 @@ tcptrace_LDADD = libtcptrace.la @LEXLIB@
 tcptrace_CPPFLAGS =
 
 lib_LTLIBRARIES = libtcptrace.la
-libtcptrace_la_SOURCES = ipv6.c file_load.c process.c modules.c
-libtcptrace_la_CPPFLAGS =
+libtcptrace_la_SOURCES = \
+    ipv6.c file_load.c process.c modules.c modules_list.c
+libtcptrace_la_CPPFLAGS = 
 
 # Input format options
 # Have to fix these includes, probably
@@ -70,37 +71,45 @@ endif
 
 if MOD_HTTP
     tcptrace_CPPFLAGS += -DLOAD_MODULE_HTTP -DHTTP_SAFE -DHTTP_DUMP_TIMES
-    tcptrace_SOURCES += mod_http.c
+    libtcptrace_la_CPPFLAGS += -DLOAD_MODULE_HTTP -DHTTP_SAFE -DHTTP_DUMP_TIMES
+    libtcptrace_la_SOURCES += mod_http.c
 endif
 if MOD_TRAFFIC
     tcptrace_CPPFLAGS += -DLOAD_MODULE_TRAFFIC
-    tcptrace_SOURCES += mod_traffic.c
+    libtcptrace_la_CPPFLAGS += -DLOAD_MODULE_TRAFFIC
+    libtcptrace_la_SOURCES += mod_traffic.c
 endif
 if MOD_SLICE
     tcptrace_CPPFLAGS += -DLOAD_MODULE_SLICE
-    tcptrace_SOURCES += mod_slice.c
+    libtcptrace_la_CPPFLAGS += -DLOAD_MODULE_SLICE
+    libtcptrace_la_SOURCES += mod_slice.c
 endif
 if MOD_RTT
     tcptrace_CPPFLAGS += -DLOAD_MODULE_RTTGRAPH
-    tcptrace_SOURCES += mod_rttgraph.c
+    libtcptrace_la_CPPFLAGS += -DLOAD_MODULE_RTTGRAPH
+    libtcptrace_la_SOURCES += mod_rttgraph.c
 endif
 if MOD_COLLIE
     tcptrace_CPPFLAGS += -DLOAD_MODULE_COLLIE
-    tcptrace_SOURCES += mod_collie.c
+    libtcptrace_la_CPPFLAGS += -DLOAD_MODULE_COLLIE
+    libtcptrace_la_SOURCES += mod_collie.c
 endif
 if MOD_REALTIME
     tcptrace_CPPFLAGS += -DLOAD_MODULE_REALTIME
-    tcptrace_SOURCES += mod_realtime.c
+    libtcptrace_la_CPPFLAGS += -DLOAD_MODULE_REALTIME
+    libtcptrace_la_SOURCES += mod_realtime.c
 endif
 
 # modules disabled by default
 if MOD_INBOUNDS
     tcptrace_CPPFLAGS += -DLOAD_MODULE_INBOUNDS
-    tcptrace_SOURCES += mod_inbounds.c
+    libtcptrace_la_CPPFLAGS += -DLOAD_MODULE_INBOUNDS
+    libtcptrace_la_SOURCES += mod_inbounds.c
 endif
 if MOD_TCPLIB
     tcptrace_CPPFLAGS += -DLOAD_MODULE_TCPLIB
-    tcptrace_SOURCES += mod_tcplib.c
+    libtcptrace_la_CPPFLAGS += -DLOAD_MODULE_TCPLIB
+    libtcptrace_la_SOURCES += mod_tcplib.c
 endif
 
 # decompression options

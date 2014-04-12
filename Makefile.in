@@ -58,27 +58,35 @@ bin_PROGRAMS = tcptrace$(EXEEXT)
 
 # Module options
 @MOD_HTTP_TRUE@am__append_17 = -DLOAD_MODULE_HTTP -DHTTP_SAFE -DHTTP_DUMP_TIMES
-@MOD_HTTP_TRUE@am__append_18 = mod_http.c
-@MOD_TRAFFIC_TRUE@am__append_19 = -DLOAD_MODULE_TRAFFIC
-@MOD_TRAFFIC_TRUE@am__append_20 = mod_traffic.c
-@MOD_SLICE_TRUE@am__append_21 = -DLOAD_MODULE_SLICE
-@MOD_SLICE_TRUE@am__append_22 = mod_slice.c
-@MOD_RTT_TRUE@am__append_23 = -DLOAD_MODULE_RTTGRAPH
-@MOD_RTT_TRUE@am__append_24 = mod_rttgraph.c
-@MOD_COLLIE_TRUE@am__append_25 = -DLOAD_MODULE_COLLIE
-@MOD_COLLIE_TRUE@am__append_26 = mod_collie.c
-@MOD_REALTIME_TRUE@am__append_27 = -DLOAD_MODULE_REALTIME
-@MOD_REALTIME_TRUE@am__append_28 = mod_realtime.c
+@MOD_HTTP_TRUE@am__append_18 = -DLOAD_MODULE_HTTP -DHTTP_SAFE -DHTTP_DUMP_TIMES
+@MOD_HTTP_TRUE@am__append_19 = mod_http.c
+@MOD_TRAFFIC_TRUE@am__append_20 = -DLOAD_MODULE_TRAFFIC
+@MOD_TRAFFIC_TRUE@am__append_21 = -DLOAD_MODULE_TRAFFIC
+@MOD_TRAFFIC_TRUE@am__append_22 = mod_traffic.c
+@MOD_SLICE_TRUE@am__append_23 = -DLOAD_MODULE_SLICE
+@MOD_SLICE_TRUE@am__append_24 = -DLOAD_MODULE_SLICE
+@MOD_SLICE_TRUE@am__append_25 = mod_slice.c
+@MOD_RTT_TRUE@am__append_26 = -DLOAD_MODULE_RTTGRAPH
+@MOD_RTT_TRUE@am__append_27 = -DLOAD_MODULE_RTTGRAPH
+@MOD_RTT_TRUE@am__append_28 = mod_rttgraph.c
+@MOD_COLLIE_TRUE@am__append_29 = -DLOAD_MODULE_COLLIE
+@MOD_COLLIE_TRUE@am__append_30 = -DLOAD_MODULE_COLLIE
+@MOD_COLLIE_TRUE@am__append_31 = mod_collie.c
+@MOD_REALTIME_TRUE@am__append_32 = -DLOAD_MODULE_REALTIME
+@MOD_REALTIME_TRUE@am__append_33 = -DLOAD_MODULE_REALTIME
+@MOD_REALTIME_TRUE@am__append_34 = mod_realtime.c
 
 # modules disabled by default
-@MOD_INBOUNDS_TRUE@am__append_29 = -DLOAD_MODULE_INBOUNDS
-@MOD_INBOUNDS_TRUE@am__append_30 = mod_inbounds.c
-@MOD_TCPLIB_TRUE@am__append_31 = -DLOAD_MODULE_TCPLIB
-@MOD_TCPLIB_TRUE@am__append_32 = mod_tcplib.c
+@MOD_INBOUNDS_TRUE@am__append_35 = -DLOAD_MODULE_INBOUNDS
+@MOD_INBOUNDS_TRUE@am__append_36 = -DLOAD_MODULE_INBOUNDS
+@MOD_INBOUNDS_TRUE@am__append_37 = mod_inbounds.c
+@MOD_TCPLIB_TRUE@am__append_38 = -DLOAD_MODULE_TCPLIB
+@MOD_TCPLIB_TRUE@am__append_39 = -DLOAD_MODULE_TCPLIB
+@MOD_TCPLIB_TRUE@am__append_40 = mod_tcplib.c
 
 # decompression options
-@COMPRESS_GZIP_TRUE@am__append_33 = -DGUNZIP=\"gunzip\"
-@COMPRESS_BZIP2_TRUE@am__append_34 = -DBUNZIP2=\"bunzip2\"
+@COMPRESS_GZIP_TRUE@am__append_41 = -DGUNZIP=\"gunzip\"
+@COMPRESS_BZIP2_TRUE@am__append_42 = -DBUNZIP2=\"bunzip2\"
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure COPYING INSTALL \
@@ -124,26 +132,26 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libtcptrace_la_LIBADD =
+am__libtcptrace_la_SOURCES_DIST = ipv6.c file_load.c process.c \
+	modules.c modules_list.c mod_http.c mod_traffic.c mod_slice.c \
+	mod_rttgraph.c mod_collie.c mod_realtime.c mod_inbounds.c \
+	mod_tcplib.c
+@MOD_HTTP_TRUE@am__objects_1 = libtcptrace_la-mod_http.lo
+@MOD_TRAFFIC_TRUE@am__objects_2 = libtcptrace_la-mod_traffic.lo
+@MOD_SLICE_TRUE@am__objects_3 = libtcptrace_la-mod_slice.lo
+@MOD_RTT_TRUE@am__objects_4 = libtcptrace_la-mod_rttgraph.lo
+@MOD_COLLIE_TRUE@am__objects_5 = libtcptrace_la-mod_collie.lo
+@MOD_REALTIME_TRUE@am__objects_6 = libtcptrace_la-mod_realtime.lo
+@MOD_INBOUNDS_TRUE@am__objects_7 = libtcptrace_la-mod_inbounds.lo
+@MOD_TCPLIB_TRUE@am__objects_8 = libtcptrace_la-mod_tcplib.lo
 am_libtcptrace_la_OBJECTS = libtcptrace_la-ipv6.lo \
 	libtcptrace_la-file_load.lo libtcptrace_la-process.lo \
-	libtcptrace_la-modules.lo
+	libtcptrace_la-modules.lo libtcptrace_la-modules_list.lo \
+	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
+	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
+	$(am__objects_7) $(am__objects_8)
 libtcptrace_la_OBJECTS = $(am_libtcptrace_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
-am__tcptrace_SOURCES_DIST = avl.c compress.c erf.c etherpeek.c \
-	gcache.c mfiles.c names.c netm.c output.c plotter.c print.c \
-	rexmit.c snoop.c nlanr.c tcpdump.c tcptrace.c thruput.c \
-	trace.c filter.c udp.c ns.c netscout.c version.c pool.c \
-	poolaccess.c dstring.c filt_parser.y filt_scanner.l mod_http.c \
-	mod_traffic.c mod_slice.c mod_rttgraph.c mod_collie.c \
-	mod_realtime.c mod_inbounds.c mod_tcplib.c
-@MOD_HTTP_TRUE@am__objects_1 = tcptrace-mod_http.$(OBJEXT)
-@MOD_TRAFFIC_TRUE@am__objects_2 = tcptrace-mod_traffic.$(OBJEXT)
-@MOD_SLICE_TRUE@am__objects_3 = tcptrace-mod_slice.$(OBJEXT)
-@MOD_RTT_TRUE@am__objects_4 = tcptrace-mod_rttgraph.$(OBJEXT)
-@MOD_COLLIE_TRUE@am__objects_5 = tcptrace-mod_collie.$(OBJEXT)
-@MOD_REALTIME_TRUE@am__objects_6 = tcptrace-mod_realtime.$(OBJEXT)
-@MOD_INBOUNDS_TRUE@am__objects_7 = tcptrace-mod_inbounds.$(OBJEXT)
-@MOD_TCPLIB_TRUE@am__objects_8 = tcptrace-mod_tcplib.$(OBJEXT)
 am_tcptrace_OBJECTS = tcptrace-avl.$(OBJEXT) \
 	tcptrace-compress.$(OBJEXT) tcptrace-erf.$(OBJEXT) \
 	tcptrace-etherpeek.$(OBJEXT) tcptrace-gcache.$(OBJEXT) \
@@ -158,10 +166,7 @@ am_tcptrace_OBJECTS = tcptrace-avl.$(OBJEXT) \
 	tcptrace-netscout.$(OBJEXT) tcptrace-version.$(OBJEXT) \
 	tcptrace-pool.$(OBJEXT) tcptrace-poolaccess.$(OBJEXT) \
 	tcptrace-dstring.$(OBJEXT) tcptrace-filt_parser.$(OBJEXT) \
-	tcptrace-filt_scanner.$(OBJEXT) $(am__objects_1) \
-	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
-	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
-	$(am__objects_8)
+	tcptrace-filt_scanner.$(OBJEXT)
 tcptrace_OBJECTS = $(am_tcptrace_OBJECTS)
 tcptrace_DEPENDENCIES = libtcptrace.la
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -185,7 +190,7 @@ YACCCOMPILE = $(YACC) $(AM_YFLAGS) $(YFLAGS)
 LTYACCCOMPILE = $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(YACC) $(AM_YFLAGS) $(YFLAGS)
 SOURCES = $(libtcptrace_la_SOURCES) $(tcptrace_SOURCES)
-DIST_SOURCES = $(libtcptrace_la_SOURCES) $(am__tcptrace_SOURCES_DIST)
+DIST_SOURCES = $(am__libtcptrace_la_SOURCES_DIST) $(tcptrace_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -334,26 +339,34 @@ AM_YFLAGS = -d -p filtyy
 # need to rename token prefix in lex, too, but also need to keep the
 # output file the same, due to automake's ylwrap program
 AM_LFLAGS = -P filtyy -o lex.yy.c
-tcptrace_SOURCES = avl.c compress.c erf.c etherpeek.c gcache.c \
-	mfiles.c names.c netm.c output.c plotter.c print.c rexmit.c \
-	snoop.c nlanr.c tcpdump.c tcptrace.c thruput.c trace.c \
-	filter.c udp.c ns.c netscout.c version.c pool.c poolaccess.c \
-	dstring.c filt_parser.y filt_scanner.l $(am__append_18) \
-	$(am__append_20) $(am__append_22) $(am__append_24) \
-	$(am__append_26) $(am__append_28) $(am__append_30) \
-	$(am__append_32)
+tcptrace_SOURCES = \
+    avl.c compress.c erf.c etherpeek.c gcache.c mfiles.c names.c \
+    netm.c output.c plotter.c print.c rexmit.c snoop.c nlanr.c \
+    tcpdump.c tcptrace.c thruput.c trace.c \
+    filter.c udp.c \
+    ns.c netscout.c version.c pool.c poolaccess.c \
+    dstring.c \
+    filt_parser.y \
+    filt_scanner.l
+
 tcptrace_LDADD = libtcptrace.la @LEXLIB@
 tcptrace_CPPFLAGS = $(am__append_1) $(am__append_3) $(am__append_5) \
 	$(am__append_7) $(am__append_9) $(am__append_11) \
 	$(am__append_13) $(am__append_15) $(am__append_17) \
-	$(am__append_19) $(am__append_21) $(am__append_23) \
-	$(am__append_25) $(am__append_27) $(am__append_29) \
-	$(am__append_31) $(am__append_33) $(am__append_34)
+	$(am__append_20) $(am__append_23) $(am__append_26) \
+	$(am__append_29) $(am__append_32) $(am__append_35) \
+	$(am__append_38) $(am__append_41) $(am__append_42)
 lib_LTLIBRARIES = libtcptrace.la
-libtcptrace_la_SOURCES = ipv6.c file_load.c process.c modules.c
+libtcptrace_la_SOURCES = ipv6.c file_load.c process.c modules.c \
+	modules_list.c $(am__append_19) $(am__append_22) \
+	$(am__append_25) $(am__append_28) $(am__append_31) \
+	$(am__append_34) $(am__append_37) $(am__append_40)
 libtcptrace_la_CPPFLAGS = $(am__append_2) $(am__append_4) \
 	$(am__append_6) $(am__append_8) $(am__append_10) \
-	$(am__append_12) $(am__append_14) $(am__append_16)
+	$(am__append_12) $(am__append_14) $(am__append_16) \
+	$(am__append_18) $(am__append_21) $(am__append_24) \
+	$(am__append_27) $(am__append_30) $(am__append_33) \
+	$(am__append_36) $(am__append_39)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -484,7 +497,16 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-file_load.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-ipv6.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-mod_collie.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-mod_http.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-mod_inbounds.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-mod_realtime.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-mod_rttgraph.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-mod_slice.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-mod_tcplib.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-mod_traffic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-modules.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-modules_list.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-process.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-avl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-compress.Po@am__quote@
@@ -496,14 +518,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-gcache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-mfiles.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-mod_collie.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-mod_http.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-mod_inbounds.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-mod_realtime.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-mod_rttgraph.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-mod_slice.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-mod_tcplib.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-mod_traffic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-names.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-netm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-netscout.Po@am__quote@
@@ -571,6 +585,69 @@ libtcptrace_la-modules.lo: modules.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='modules.c' object='libtcptrace_la-modules.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-modules.lo `test -f 'modules.c' || echo '$(srcdir)/'`modules.c
+
+libtcptrace_la-modules_list.lo: modules_list.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-modules_list.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-modules_list.Tpo -c -o libtcptrace_la-modules_list.lo `test -f 'modules_list.c' || echo '$(srcdir)/'`modules_list.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-modules_list.Tpo $(DEPDIR)/libtcptrace_la-modules_list.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='modules_list.c' object='libtcptrace_la-modules_list.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-modules_list.lo `test -f 'modules_list.c' || echo '$(srcdir)/'`modules_list.c
+
+libtcptrace_la-mod_http.lo: mod_http.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-mod_http.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-mod_http.Tpo -c -o libtcptrace_la-mod_http.lo `test -f 'mod_http.c' || echo '$(srcdir)/'`mod_http.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-mod_http.Tpo $(DEPDIR)/libtcptrace_la-mod_http.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_http.c' object='libtcptrace_la-mod_http.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-mod_http.lo `test -f 'mod_http.c' || echo '$(srcdir)/'`mod_http.c
+
+libtcptrace_la-mod_traffic.lo: mod_traffic.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-mod_traffic.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-mod_traffic.Tpo -c -o libtcptrace_la-mod_traffic.lo `test -f 'mod_traffic.c' || echo '$(srcdir)/'`mod_traffic.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-mod_traffic.Tpo $(DEPDIR)/libtcptrace_la-mod_traffic.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_traffic.c' object='libtcptrace_la-mod_traffic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-mod_traffic.lo `test -f 'mod_traffic.c' || echo '$(srcdir)/'`mod_traffic.c
+
+libtcptrace_la-mod_slice.lo: mod_slice.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-mod_slice.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-mod_slice.Tpo -c -o libtcptrace_la-mod_slice.lo `test -f 'mod_slice.c' || echo '$(srcdir)/'`mod_slice.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-mod_slice.Tpo $(DEPDIR)/libtcptrace_la-mod_slice.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_slice.c' object='libtcptrace_la-mod_slice.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-mod_slice.lo `test -f 'mod_slice.c' || echo '$(srcdir)/'`mod_slice.c
+
+libtcptrace_la-mod_rttgraph.lo: mod_rttgraph.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-mod_rttgraph.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-mod_rttgraph.Tpo -c -o libtcptrace_la-mod_rttgraph.lo `test -f 'mod_rttgraph.c' || echo '$(srcdir)/'`mod_rttgraph.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-mod_rttgraph.Tpo $(DEPDIR)/libtcptrace_la-mod_rttgraph.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_rttgraph.c' object='libtcptrace_la-mod_rttgraph.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-mod_rttgraph.lo `test -f 'mod_rttgraph.c' || echo '$(srcdir)/'`mod_rttgraph.c
+
+libtcptrace_la-mod_collie.lo: mod_collie.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-mod_collie.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-mod_collie.Tpo -c -o libtcptrace_la-mod_collie.lo `test -f 'mod_collie.c' || echo '$(srcdir)/'`mod_collie.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-mod_collie.Tpo $(DEPDIR)/libtcptrace_la-mod_collie.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_collie.c' object='libtcptrace_la-mod_collie.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-mod_collie.lo `test -f 'mod_collie.c' || echo '$(srcdir)/'`mod_collie.c
+
+libtcptrace_la-mod_realtime.lo: mod_realtime.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-mod_realtime.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-mod_realtime.Tpo -c -o libtcptrace_la-mod_realtime.lo `test -f 'mod_realtime.c' || echo '$(srcdir)/'`mod_realtime.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-mod_realtime.Tpo $(DEPDIR)/libtcptrace_la-mod_realtime.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_realtime.c' object='libtcptrace_la-mod_realtime.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-mod_realtime.lo `test -f 'mod_realtime.c' || echo '$(srcdir)/'`mod_realtime.c
+
+libtcptrace_la-mod_inbounds.lo: mod_inbounds.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-mod_inbounds.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-mod_inbounds.Tpo -c -o libtcptrace_la-mod_inbounds.lo `test -f 'mod_inbounds.c' || echo '$(srcdir)/'`mod_inbounds.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-mod_inbounds.Tpo $(DEPDIR)/libtcptrace_la-mod_inbounds.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_inbounds.c' object='libtcptrace_la-mod_inbounds.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-mod_inbounds.lo `test -f 'mod_inbounds.c' || echo '$(srcdir)/'`mod_inbounds.c
+
+libtcptrace_la-mod_tcplib.lo: mod_tcplib.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-mod_tcplib.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-mod_tcplib.Tpo -c -o libtcptrace_la-mod_tcplib.lo `test -f 'mod_tcplib.c' || echo '$(srcdir)/'`mod_tcplib.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-mod_tcplib.Tpo $(DEPDIR)/libtcptrace_la-mod_tcplib.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_tcplib.c' object='libtcptrace_la-mod_tcplib.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-mod_tcplib.lo `test -f 'mod_tcplib.c' || echo '$(srcdir)/'`mod_tcplib.c
 
 tcptrace-avl.o: avl.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-avl.o -MD -MP -MF $(DEPDIR)/tcptrace-avl.Tpo -c -o tcptrace-avl.o `test -f 'avl.c' || echo '$(srcdir)/'`avl.c
@@ -963,118 +1040,6 @@ tcptrace-filt_scanner.obj: filt_scanner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='filt_scanner.c' object='tcptrace-filt_scanner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-filt_scanner.obj `if test -f 'filt_scanner.c'; then $(CYGPATH_W) 'filt_scanner.c'; else $(CYGPATH_W) '$(srcdir)/filt_scanner.c'; fi`
-
-tcptrace-mod_http.o: mod_http.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_http.o -MD -MP -MF $(DEPDIR)/tcptrace-mod_http.Tpo -c -o tcptrace-mod_http.o `test -f 'mod_http.c' || echo '$(srcdir)/'`mod_http.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_http.Tpo $(DEPDIR)/tcptrace-mod_http.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_http.c' object='tcptrace-mod_http.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_http.o `test -f 'mod_http.c' || echo '$(srcdir)/'`mod_http.c
-
-tcptrace-mod_http.obj: mod_http.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_http.obj -MD -MP -MF $(DEPDIR)/tcptrace-mod_http.Tpo -c -o tcptrace-mod_http.obj `if test -f 'mod_http.c'; then $(CYGPATH_W) 'mod_http.c'; else $(CYGPATH_W) '$(srcdir)/mod_http.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_http.Tpo $(DEPDIR)/tcptrace-mod_http.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_http.c' object='tcptrace-mod_http.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_http.obj `if test -f 'mod_http.c'; then $(CYGPATH_W) 'mod_http.c'; else $(CYGPATH_W) '$(srcdir)/mod_http.c'; fi`
-
-tcptrace-mod_traffic.o: mod_traffic.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_traffic.o -MD -MP -MF $(DEPDIR)/tcptrace-mod_traffic.Tpo -c -o tcptrace-mod_traffic.o `test -f 'mod_traffic.c' || echo '$(srcdir)/'`mod_traffic.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_traffic.Tpo $(DEPDIR)/tcptrace-mod_traffic.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_traffic.c' object='tcptrace-mod_traffic.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_traffic.o `test -f 'mod_traffic.c' || echo '$(srcdir)/'`mod_traffic.c
-
-tcptrace-mod_traffic.obj: mod_traffic.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_traffic.obj -MD -MP -MF $(DEPDIR)/tcptrace-mod_traffic.Tpo -c -o tcptrace-mod_traffic.obj `if test -f 'mod_traffic.c'; then $(CYGPATH_W) 'mod_traffic.c'; else $(CYGPATH_W) '$(srcdir)/mod_traffic.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_traffic.Tpo $(DEPDIR)/tcptrace-mod_traffic.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_traffic.c' object='tcptrace-mod_traffic.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_traffic.obj `if test -f 'mod_traffic.c'; then $(CYGPATH_W) 'mod_traffic.c'; else $(CYGPATH_W) '$(srcdir)/mod_traffic.c'; fi`
-
-tcptrace-mod_slice.o: mod_slice.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_slice.o -MD -MP -MF $(DEPDIR)/tcptrace-mod_slice.Tpo -c -o tcptrace-mod_slice.o `test -f 'mod_slice.c' || echo '$(srcdir)/'`mod_slice.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_slice.Tpo $(DEPDIR)/tcptrace-mod_slice.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_slice.c' object='tcptrace-mod_slice.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_slice.o `test -f 'mod_slice.c' || echo '$(srcdir)/'`mod_slice.c
-
-tcptrace-mod_slice.obj: mod_slice.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_slice.obj -MD -MP -MF $(DEPDIR)/tcptrace-mod_slice.Tpo -c -o tcptrace-mod_slice.obj `if test -f 'mod_slice.c'; then $(CYGPATH_W) 'mod_slice.c'; else $(CYGPATH_W) '$(srcdir)/mod_slice.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_slice.Tpo $(DEPDIR)/tcptrace-mod_slice.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_slice.c' object='tcptrace-mod_slice.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_slice.obj `if test -f 'mod_slice.c'; then $(CYGPATH_W) 'mod_slice.c'; else $(CYGPATH_W) '$(srcdir)/mod_slice.c'; fi`
-
-tcptrace-mod_rttgraph.o: mod_rttgraph.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_rttgraph.o -MD -MP -MF $(DEPDIR)/tcptrace-mod_rttgraph.Tpo -c -o tcptrace-mod_rttgraph.o `test -f 'mod_rttgraph.c' || echo '$(srcdir)/'`mod_rttgraph.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_rttgraph.Tpo $(DEPDIR)/tcptrace-mod_rttgraph.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_rttgraph.c' object='tcptrace-mod_rttgraph.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_rttgraph.o `test -f 'mod_rttgraph.c' || echo '$(srcdir)/'`mod_rttgraph.c
-
-tcptrace-mod_rttgraph.obj: mod_rttgraph.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_rttgraph.obj -MD -MP -MF $(DEPDIR)/tcptrace-mod_rttgraph.Tpo -c -o tcptrace-mod_rttgraph.obj `if test -f 'mod_rttgraph.c'; then $(CYGPATH_W) 'mod_rttgraph.c'; else $(CYGPATH_W) '$(srcdir)/mod_rttgraph.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_rttgraph.Tpo $(DEPDIR)/tcptrace-mod_rttgraph.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_rttgraph.c' object='tcptrace-mod_rttgraph.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_rttgraph.obj `if test -f 'mod_rttgraph.c'; then $(CYGPATH_W) 'mod_rttgraph.c'; else $(CYGPATH_W) '$(srcdir)/mod_rttgraph.c'; fi`
-
-tcptrace-mod_collie.o: mod_collie.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_collie.o -MD -MP -MF $(DEPDIR)/tcptrace-mod_collie.Tpo -c -o tcptrace-mod_collie.o `test -f 'mod_collie.c' || echo '$(srcdir)/'`mod_collie.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_collie.Tpo $(DEPDIR)/tcptrace-mod_collie.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_collie.c' object='tcptrace-mod_collie.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_collie.o `test -f 'mod_collie.c' || echo '$(srcdir)/'`mod_collie.c
-
-tcptrace-mod_collie.obj: mod_collie.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_collie.obj -MD -MP -MF $(DEPDIR)/tcptrace-mod_collie.Tpo -c -o tcptrace-mod_collie.obj `if test -f 'mod_collie.c'; then $(CYGPATH_W) 'mod_collie.c'; else $(CYGPATH_W) '$(srcdir)/mod_collie.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_collie.Tpo $(DEPDIR)/tcptrace-mod_collie.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_collie.c' object='tcptrace-mod_collie.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_collie.obj `if test -f 'mod_collie.c'; then $(CYGPATH_W) 'mod_collie.c'; else $(CYGPATH_W) '$(srcdir)/mod_collie.c'; fi`
-
-tcptrace-mod_realtime.o: mod_realtime.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_realtime.o -MD -MP -MF $(DEPDIR)/tcptrace-mod_realtime.Tpo -c -o tcptrace-mod_realtime.o `test -f 'mod_realtime.c' || echo '$(srcdir)/'`mod_realtime.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_realtime.Tpo $(DEPDIR)/tcptrace-mod_realtime.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_realtime.c' object='tcptrace-mod_realtime.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_realtime.o `test -f 'mod_realtime.c' || echo '$(srcdir)/'`mod_realtime.c
-
-tcptrace-mod_realtime.obj: mod_realtime.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_realtime.obj -MD -MP -MF $(DEPDIR)/tcptrace-mod_realtime.Tpo -c -o tcptrace-mod_realtime.obj `if test -f 'mod_realtime.c'; then $(CYGPATH_W) 'mod_realtime.c'; else $(CYGPATH_W) '$(srcdir)/mod_realtime.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_realtime.Tpo $(DEPDIR)/tcptrace-mod_realtime.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_realtime.c' object='tcptrace-mod_realtime.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_realtime.obj `if test -f 'mod_realtime.c'; then $(CYGPATH_W) 'mod_realtime.c'; else $(CYGPATH_W) '$(srcdir)/mod_realtime.c'; fi`
-
-tcptrace-mod_inbounds.o: mod_inbounds.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_inbounds.o -MD -MP -MF $(DEPDIR)/tcptrace-mod_inbounds.Tpo -c -o tcptrace-mod_inbounds.o `test -f 'mod_inbounds.c' || echo '$(srcdir)/'`mod_inbounds.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_inbounds.Tpo $(DEPDIR)/tcptrace-mod_inbounds.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_inbounds.c' object='tcptrace-mod_inbounds.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_inbounds.o `test -f 'mod_inbounds.c' || echo '$(srcdir)/'`mod_inbounds.c
-
-tcptrace-mod_inbounds.obj: mod_inbounds.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_inbounds.obj -MD -MP -MF $(DEPDIR)/tcptrace-mod_inbounds.Tpo -c -o tcptrace-mod_inbounds.obj `if test -f 'mod_inbounds.c'; then $(CYGPATH_W) 'mod_inbounds.c'; else $(CYGPATH_W) '$(srcdir)/mod_inbounds.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_inbounds.Tpo $(DEPDIR)/tcptrace-mod_inbounds.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_inbounds.c' object='tcptrace-mod_inbounds.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_inbounds.obj `if test -f 'mod_inbounds.c'; then $(CYGPATH_W) 'mod_inbounds.c'; else $(CYGPATH_W) '$(srcdir)/mod_inbounds.c'; fi`
-
-tcptrace-mod_tcplib.o: mod_tcplib.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_tcplib.o -MD -MP -MF $(DEPDIR)/tcptrace-mod_tcplib.Tpo -c -o tcptrace-mod_tcplib.o `test -f 'mod_tcplib.c' || echo '$(srcdir)/'`mod_tcplib.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_tcplib.Tpo $(DEPDIR)/tcptrace-mod_tcplib.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_tcplib.c' object='tcptrace-mod_tcplib.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_tcplib.o `test -f 'mod_tcplib.c' || echo '$(srcdir)/'`mod_tcplib.c
-
-tcptrace-mod_tcplib.obj: mod_tcplib.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-mod_tcplib.obj -MD -MP -MF $(DEPDIR)/tcptrace-mod_tcplib.Tpo -c -o tcptrace-mod_tcplib.obj `if test -f 'mod_tcplib.c'; then $(CYGPATH_W) 'mod_tcplib.c'; else $(CYGPATH_W) '$(srcdir)/mod_tcplib.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-mod_tcplib.Tpo $(DEPDIR)/tcptrace-mod_tcplib.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mod_tcplib.c' object='tcptrace-mod_tcplib.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-mod_tcplib.obj `if test -f 'mod_tcplib.c'; then $(CYGPATH_W) 'mod_tcplib.c'; else $(CYGPATH_W) '$(srcdir)/mod_tcplib.c'; fi`
 
 .l.c:
 	$(am__skiplex) $(SHELL) $(YLWRAP) $< $(LEX_OUTPUT_ROOT).c $@ -- $(LEXCOMPILE)

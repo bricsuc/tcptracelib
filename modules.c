@@ -1,11 +1,9 @@
+/* module action interface */
 
 #include "tcptrace.h"
-/* #include "modules.h" */
+#include "modules.h"
 
-/* in order for this to be moved into this file, the vars in modules.h
- * need to move here */
-
-#if 0
+/* inform all modules of a new file */
 void
 tcptrace_modules_all_newfile(
     /* TODO: these arguments are sort of redundant, possibly streamline
@@ -15,6 +13,7 @@ tcptrace_modules_all_newfile(
     char *filename)
 {
     int i;
+    struct module *modules = tcptrace_modules;
 
     for (i=0; i < NUM_MODULES; ++i) {
 	if (!modules[i].module_inuse)
@@ -32,5 +31,4 @@ tcptrace_modules_all_newfile(
 	(*modules[i].module_newfile)(filename, working_file->filesize, CompIsCompressed());
     }
 }
-#endif
 
