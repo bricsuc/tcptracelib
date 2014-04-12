@@ -332,7 +332,7 @@ udptrace_done(tcptrace_state_t *state) {
     int ix;
     double etime;
 
-    if(do_udp) { // Just a quick sanity check to make sure if we need to do 
+    if (state->options->do_udp) { // Just a quick sanity check to make sure if we need to do 
 	         // anything at all..
 	 if(!run_continuously) {
 	      if (!printsuppress) {

@@ -131,7 +131,7 @@ collie_init(
     printsuppress = TRUE;
 
     /* please also include UDP packets */
-    do_udp = TRUE;
+    state->options->do_udp = TRUE;
 
     return(1);	/* TRUE means call collie_read and collie_done later */
 }

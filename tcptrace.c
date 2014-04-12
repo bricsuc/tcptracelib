@@ -135,7 +135,7 @@ Bool plot_tput_instant = TRUE;
 Bool filter_output = FALSE;
 Bool show_title = TRUE;
 Bool show_rwinline = TRUE;
-Bool do_udp = FALSE;
+/* Bool do_udp = FALSE; */
 Bool resolve_ipaddresses = TRUE;
 Bool resolve_ports = TRUE;
 /* Bool verify_checksums = FALSE; */
@@ -783,15 +783,6 @@ main(
         comment[__TCPTRACE_COMMENT_PREFIX_MAX - 1] = '\0';
     }
 
-    /* TODO: delete this commented-out code, it happens elsewhere */
-    /* optional UDP */
-//    if (do_udp)
-//	udptrace_init();
-
-  //  if (run_continuously) {
-    //  trace_init();
-    //}
-
     /* get starting wallclock time */
     gettimeofday(&wallclock_start, NULL);
 
@@ -834,8 +825,9 @@ main(
     /* general output */
     fprintf(stdout, "%s%lu packets seen, %lu TCP packets traced",
 	    comment, global_state.pnum, tcp_trace_count);
-    if (do_udp)
+    if (global_state.options->do_udp) {
 	fprintf(stdout,", %lu UDP packets traced", udp_trace_count);
+    }
     fprintf(stdout,"\n");
 
     /* processing time */
@@ -858,7 +850,7 @@ main(
     if (global_state.options->verify_checksums) {
 	fprintf(stdout,"%sbad IP checksums:  %ld\n", comment, global_state.bad_ip_checksums);
 	fprintf(stdout,"%sbad TCP checksums: %ld\n", comment, global_state.bad_tcp_checksums);
-	if (do_udp) {
+	if (global_state.options->do_udp) {
 	    fprintf(stdout,"%sbad UDP checksums: %ld\n", comment, global_state.bad_udp_checksums);
         }
     }
@@ -1116,7 +1108,7 @@ for other packet types, I just don't have a place to test them\n\n");
 	    /* look for a UDP header */
 	    ret = getudp(pip, &pudp, &plast, state);
 
-	    if (do_udp && (ret == 0)) {
+	    if (state->options->do_udp && (ret == 0)) {
 		pup = udpdotrace(state, pip, pudp, plast);
 
 		/* verify UDP checksums, if requested */
@@ -1179,6 +1171,7 @@ for other packet types, I just don't have a place to test them\n\n");
         /* be harmful. Why would you have an abnormal number of signals here? */
         /* Would there be a problem if you did a ^C and the output was not */
         /* consistent? (and why would you care about that?) */
+        /* can we trap signals in state, return, then die gracefully? */
         /* determine why this code is here and eliminate it if possible */
 
 	/* for efficiency, only allow a signal every 1000 packets	*/
@@ -2231,7 +2224,7 @@ ParseArgs(
 		  case 'r': print_rtt = TRUE; break;
 		  case 's': use_short_names = TRUE; break;
 		  case 't': options->printticks = TRUE; break;
-		  case 'u': do_udp = TRUE; break;
+		  case 'u': options->do_udp = TRUE; break;
 		  case 'v': Version(); exit(0); break;
 		  case 'w':
 		    warn_printtrunc = TRUE;
@@ -2301,7 +2294,7 @@ ParseArgs(
 		  case 'r': print_rtt = !TRUE; break;
 		  case 's': use_short_names = !TRUE; break;
 		  case 't': options->printticks = !TRUE; break;
-		  case 'u': do_udp = !TRUE; break;
+		  case 'u': options->do_udp = !TRUE; break;
 		  case 'w':
 		    warn_printtrunc = !TRUE;
 		    warn_printbadmbz = !TRUE;

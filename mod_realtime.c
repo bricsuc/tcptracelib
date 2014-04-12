@@ -189,7 +189,7 @@ realtime_init(
      max_conn_num = 20000;
    */
   
-  do_udp = TRUE;
+  state->options->do_udp = TRUE;
 
   return(1);	/* TRUE means call other realtime routines later */
 }

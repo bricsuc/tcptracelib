@@ -715,7 +715,7 @@ extern Bool print_seq_zero;
 extern Bool graph_zero_len_pkts;
 extern Bool plot_tput_instant;
 extern Bool filter_output;
-extern Bool do_udp;
+/* extern Bool do_udp; */ /* de-globalized, now in runtime_options */
 extern Bool show_title;
 extern Bool show_rwinline;
 extern Bool docheck_hw_dups;
@@ -742,6 +742,9 @@ extern int thru_interval;
 typedef struct tcptrace_runtime_options_t {
     u_long beginpnum;
     u_long endpnum;
+
+    Bool do_udp;
+
     Bool printem;
     Bool printallofem;
     Bool printticks;
