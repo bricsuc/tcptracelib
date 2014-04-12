@@ -1035,7 +1035,7 @@ That will likely confuse the program, so be careful!\n", filename);
             continue;
         }
 
-/* moved to check_packet_type() (above) */
+        /* moved to check_packet_type() (above) */
 #if 0
 	/* quick sanity check, better be an IPv4/v6 packet */
 	if (!PIP_ISV4(pip) && !PIP_ISV6(pip)) {
@@ -1097,7 +1097,7 @@ for other packet types, I just don't have a place to test them\n\n");
 	}
 		       
 	/* find the start of the TCP header */
-	ret = gettcp (pip, &ptcp, &plast, state);
+	ret = gettcp(state, pip, &ptcp, &plast);
 
 	/* if that failed, it's not TCP */
 	if (ret < 0) {

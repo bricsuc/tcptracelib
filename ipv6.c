@@ -301,10 +301,10 @@ getroutingheader(
  */
 int
 gettcp(
+    tcptrace_state_t *state,
     struct ip *pip,
     struct tcphdr **pptcp,
-    void **pplast,
-    tcptrace_state_t *state)
+    void **pplast)
 {
     int ret_val = findheader(IPPROTO_TCP, pip, (void **)pptcp, pplast, state);
     return (ret_val);

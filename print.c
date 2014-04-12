@@ -362,8 +362,9 @@ printtcp_packet(
     tcb *otherdir = NULL;
 
     /* find the tcp header */
-    if (gettcp(pip, &ptcp, &plast, state))
-      return;		/* not TCP or bad TCP packet */
+    if (gettcp(state, pip, &ptcp, &plast)) {
+        return;		/* not TCP or bad TCP packet */
+    }
 
     /* make sure we have enough of the packet */
     if ((char *)ptcp+sizeof(struct tcphdr)-1 > (char *)plast) {

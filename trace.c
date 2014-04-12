@@ -3358,7 +3358,7 @@ tcp_cksum(
         /* quick sanity check, it the packet is truncated,
 	 * pertend it is valid.
 	 */ 
-        if(gettcp(pip, &ptcp, &plast, state) != 0)
+        if (gettcp(state, pip, &ptcp, &plast) != 0)
 	 return(0);
        
         /* Forming the pseudo-header */
