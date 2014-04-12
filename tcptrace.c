@@ -203,6 +203,8 @@ static char *closed_conn_interval_st = NULL;
 struct timeval wallclock_start;
 struct timeval wallclock_finished;
 
+#define __T_OPTIONS_OFFSET(field) offsetof(tcptrace_runtime_options_t,field)
+
 /* extended boolean options */
 static struct ext_bool_op {
     char *bool_optname;
@@ -237,7 +239,7 @@ static struct ext_bool_op {
      "resolve IP addresses into names (may be slow)"},
     {"res_port", &resolve_ports, 0, TRUE,
      "resolve port numbers into names"},
-    {"checksum", NULL, offsetof(tcptrace_runtime_options_t, verify_checksums), TRUE,
+    {"checksum", NULL, __T_OPTIONS_OFFSET(verify_checksums), TRUE,
      "verify IP and TCP checksums"},
     {"dupack3_data", &triple_dupack_allows_data, 0, TRUE,
      "count a duplicate ACK carrying data as a triple dupack"},
@@ -251,7 +253,7 @@ static struct ext_bool_op {
      "print warnings when MustBeZero TCP fields are NOT 0"},
     {"warn_printhwdups", &warn_printhwdups, 0, TRUE,
      "print warnings for hardware duplicates"},
-    {"warn_printbadcsum", NULL, offsetof(tcptrace_runtime_options_t, warn_printbadcsum), TRUE,
+    {"warn_printbadcsum", NULL, __T_OPTIONS_OFFSET(warn_printbadcsum), TRUE,
      "print warnings when packets with bad checksums"},
     {"warn_printbad_syn_fin_seq", &warn_printbad_syn_fin_seq, 0, TRUE,
      "print warnings when SYNs or FINs rexmitted with different sequence numbers"},
