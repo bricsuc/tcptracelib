@@ -744,9 +744,21 @@ main(
 {
     int i;
     double etime;
-    tcptrace_runtime_options_t cmd_options;
+    tcptrace_runtime_options_t cmd_options, *options;
+    tcptrace_state_t *state;
     char *comment;
    
+    state = &global_state;
+    options = &cmd_options;
+
+    state->options = options;
+
+    /* initialize global state */
+    tcptrace_initialize_state(state);
+
+    /* initialize the runtime options */
+    tcptrace_initialize_options(options);
+
     if (argc == 1)
 	Help(NULL);
 
@@ -756,18 +768,7 @@ main(
     plot_init();
 
     /* let modules start first */
-    LoadModules(&global_state, argc, argv);
-
-    /* initialize global state */
-    tcptrace_initialize_state(&global_state);
-    // global_state.pnum = 0;
-    // global_state.last_packet.tv_sec = 0;
-    // global_state.last_packet.tv_usec = 0;
-
-    global_state.options = &cmd_options;
-
-    /* initialize the runtime options */
-    tcptrace_initialize_options(global_state.options);
+    LoadModules(state, argc, argv);
 
     /* parse the flags */
     CheckArguments(&argc,argv);
@@ -777,7 +778,7 @@ main(
      */
 
     /* (this is admittedly dumb, but less dumb than what was here before) */
-    comment = global_state.comment_prefix;
+    comment = state->comment_prefix;
     if (csv || tsv || (sv != NULL)) {
         strncpy(comment, "# ", __TCPTRACE_COMMENT_PREFIX_MAX);
         comment[__TCPTRACE_COMMENT_PREFIX_MAX - 1] = '\0';
@@ -824,8 +825,8 @@ main(
 
     /* general output */
     fprintf(stdout, "%s%lu packets seen, %lu TCP packets traced",
-	    comment, global_state.pnum, tcp_trace_count);
-    if (global_state.options->do_udp) {
+	    comment, state->pnum, tcp_trace_count);
+    if (options->do_udp) {
 	fprintf(stdout,", %lu UDP packets traced", udp_trace_count);
     }
     fprintf(stdout,"\n");
@@ -835,29 +836,29 @@ main(
     fprintf(stdout, "%selapsed wallclock time: %s, %d pkts/sec analyzed\n",
 	    comment,
 	    elapsed2str(etime),
-	    (int)((double)global_state.pnum/(etime/1000000)));
+	    (int)((double)state->pnum/(etime/1000000)));
 
     /* actual tracefile times */
-    etime = elapsed(global_state.first_packet,global_state.last_packet);
+    etime = elapsed(state->first_packet, state->last_packet);
     fprintf(stdout,"%strace %s elapsed time: %s\n",
 	    comment,
 	    (num_files==1)?"file":"files",
 	    elapsed2str(etime));
     if (debug) {
-	fprintf(stdout,"%s\tfirst packet:  %s\n", comment, ts2ascii(&global_state.first_packet));
-	fprintf(stdout,"%s\tlast packet:   %s\n", comment, ts2ascii(&global_state.last_packet));
+	fprintf(stdout,"%s\tfirst packet:  %s\n", comment, ts2ascii(&state->first_packet));
+	fprintf(stdout,"%s\tlast packet:   %s\n", comment, ts2ascii(&state->last_packet));
     }
-    if (global_state.options->verify_checksums) {
-	fprintf(stdout,"%sbad IP checksums:  %ld\n", comment, global_state.bad_ip_checksums);
-	fprintf(stdout,"%sbad TCP checksums: %ld\n", comment, global_state.bad_tcp_checksums);
-	if (global_state.options->do_udp) {
-	    fprintf(stdout,"%sbad UDP checksums: %ld\n", comment, global_state.bad_udp_checksums);
+    if (options->verify_checksums) {
+	fprintf(stdout,"%sbad IP checksums:  %ld\n", comment, state->bad_ip_checksums);
+	fprintf(stdout,"%sbad TCP checksums: %ld\n", comment, state->bad_tcp_checksums);
+	if (options->do_udp) {
+	    fprintf(stdout,"%sbad UDP checksums: %ld\n", comment, state->bad_udp_checksums);
         }
     }
 
     /* close files, cleanup, and etc... */
-    trace_done(&global_state);
-    udptrace_done(&global_state);
+    trace_done(state);
+    udptrace_done(state);
 
     FinishModules();
     plotter_done();
