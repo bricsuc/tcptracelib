@@ -74,16 +74,8 @@ char *tcptrace_version = VERSION;
 /* local routines */
 static void Args(void);
 
-/* static void ModulesPerNonTCPUDP(tcptrace_state_t *state, struct ip *pip, void *plast); */
-/* static void ModulesPerPacket(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast); */
-/* static void ModulesPerUDPPacket(tcptrace_state_t *state, struct ip *pip, * udp_pair *pup, void *plast); */
-/* static void ModulesPerConn(tcptrace_state_t *state, tcp_pair *ptp); */
-/* static void ModulesPerUDPConn(tcptrace_state_t *state, udp_pair *pup); */
-/* static void ModulesPerFile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename); */
-
 static void DumpFlags(void);
 static void ExplainOutput(void);
-static void FinishModules(void);
 static void Help(char *harg);
 static void Hints(void);
 static void ListModules(void);
@@ -862,7 +854,7 @@ main(
     trace_done(state);
     udptrace_done(state);
 
-    FinishModules();
+    tcptrace_modules_finish(state);
     plotter_done();
 
     exit(0);
@@ -1216,13 +1208,17 @@ static void
 QuitSig(
     int signum)
 {
+    tcptrace_state_t *state;
+
+    state = &global_state;
+
     printf("%c\n\n", 7);  /* BELL */
     printf("Terminating processing early on signal %d\n", signum);
     printf("Partial result after processing %lu packets:\n\n\n", global_state.pnum);
-    FinishModules();
+    tcptrace_modules_finish(state);
     plotter_done();
-    trace_done(&global_state);
-    udptrace_done(&global_state);
+    trace_done(state);
+    udptrace_done(state);
     exit(1);
 }
 
@@ -2419,200 +2415,6 @@ LoadModules(
     }
 
 }
-
-
-
-static void
-FinishModules(void)
-{
-    int i;
-
-    for (i=0; i < NUM_MODULES; ++i) {
-	if (!tcptrace_modules[i].module_inuse)
-	    continue;  /* might be disabled */
-
-	if (tcptrace_modules[i].module_done == NULL)
-	    continue;  /* might not have a cleanup */
-
-	if (debug)
-	    fprintf(stderr,"Calling cleanup for module \"%s\"\n",
-		    tcptrace_modules[i].module_name);
-
-	(*tcptrace_modules[i].module_done)(&global_state);
-    }
-}
-
-#if 0
-static void
-ModulesPerConn(
-    tcptrace_state_t *state,
-    tcp_pair *ptp)
-{
-    int i;
-    void *pmodstruct;
-
-    for (i=0; i < NUM_MODULES; ++i) {
-	if (!tcptrace_modules[i].module_inuse)
-	    continue;  /* might be disabled */
-
-	if (tcptrace_modules[i].module_newconn == NULL)
-	    continue;  /* they might not care */
-
-	if (debug>3)
-	    fprintf(stderr,"Calling newconn routine for module \"%s\"\n",
-		    tcptrace_modules[i].module_name);
-
-	pmodstruct = (*tcptrace_modules[i].module_newconn)(state, ptp);
-	if (pmodstruct) {
-	    /* make sure the array is there */
-	    if (!ptp->pmod_info) {
-		ptp->pmod_info = MallocZ(global_state.num_modules * sizeof(void *));
-	    }
-
-	    /* remember this structure */
-	    ptp->pmod_info[i] = pmodstruct;
-	}
-    }
-}
-#endif
-
-#if 0
-void
-ModulesPerOldConn(
-		  tcp_pair *ptp)
-{
-    int i;
-
-    for (i=0; i < NUM_MODULES; ++i) {
-	if (!tcptrace_modules[i].module_inuse)
-	    continue;  /* might be disabled */
-
-	if (tcptrace_modules[i].module_deleteconn == NULL)
-	    continue;  /* they might not care */
-
-	if (debug>3)
-	    fprintf(stderr,"Calling delete conn routine for module \"%s\"\n",
-		    tcptrace_modules[i].module_name);
-
-	(*tcptrace_modules[i].module_deleteconn)(ptp,
-					ptp->pmod_info?ptp->pmod_info[i]:NULL);
-    }
-}
-#endif
-
-#if 0
-static void
-ModulesPerUDPConn(
-    tcptrace_state_t *state,
-    udp_pair *pup)
-{
-    int i;
-    void *pmodstruct;
-
-    for (i=0; i < NUM_MODULES; ++i) {
-	if (!tcptrace_modules[i].module_inuse)
-	    continue;  /* might be disabled */
-
-	if (tcptrace_modules[i].module_udp_newconn == NULL)
-	    continue;  /* they might not care */
-
-	if (debug>3)
-	    fprintf(stderr,"Calling UDP newconn routine for module \"%s\"\n",
-		    tcptrace_modules[i].module_name);
-
-	pmodstruct = (*tcptrace_modules[i].module_udp_newconn)(pup);
-	if (pmodstruct) {
-	    /* make sure the array is there */
-	    if (!pup->pmod_info) {
-		pup->pmod_info = MallocZ(num_modules * sizeof(void *));
-	    }
-
-	    /* remember this structure */
-	    pup->pmod_info[i] = pmodstruct;
-	}
-    }
-}
-#endif
-
-#if 0
-static void
-ModulesPerNonTCPUDP(
-    tcptrace_state_t *state,
-    struct ip *pip,
-    void *plast)
-{
-    int i;
-
-    for (i=0; i < NUM_MODULES; ++i) {
-	if (!tcptrace_modules[i].module_inuse)
-	    continue;  /* might be disabled */
-
-	if (tcptrace_modules[i].module_nontcpudp_read == NULL)
-	    continue;  /* they might not care */
-
-	if (debug>3)
-	    fprintf(stderr,"Calling nontcp routine for module \"%s\"\n",
-		    tcptrace_modules[i].module_name);
-
-	(*tcptrace_modules[i].module_nontcpudp_read)(pip,plast);
-    }
-}
-#endif
-
-#if 0
-static void
-ModulesPerPacket(
-    tcptrace_state_t *state,
-    struct ip *pip,
-    tcp_pair *ptp,
-    void *plast)
-{
-    int i;
-
-    for (i=0; i < NUM_MODULES; ++i) {
-	if (!tcptrace_modules[i].module_inuse)
-	    continue;  /* might be disabled */
-
-	if (tcptrace_modules[i].module_read == NULL)
-	    continue;  /* they might not care */
-
-	if (debug>3)
-	    fprintf(stderr,"Calling read routine for module \"%s\"\n",
-		    tcptrace_modules[i].module_name);
-
-	(*tcptrace_modules[i].module_read)(state, pip,ptp,plast,
-				  ptp->pmod_info?ptp->pmod_info[i]:NULL);
-    }
-}
-#endif
-
-
-#if 0
-static void
-ModulesPerUDPPacket(
-    tcptrace_state_t *state,
-    struct ip *pip,
-    udp_pair *pup,
-    void *plast)
-{
-    int i;
-
-    for (i=0; i < NUM_MODULES; ++i) {
-	if (!tcptrace_modules[i].module_inuse)
-	    continue;  /* might be disabled */
-
-	if (tcptrace_modules[i].module_udp_read == NULL)
-	    continue;  /* they might not care */
-
-	if (debug>3)
-	    fprintf(stderr,"Calling read routine for module \"%s\"\n",
-		    tcptrace_modules[i].module_name);
-
-	(*tcptrace_modules[i].module_udp_read)(pip,pup,plast,
-				      pup->pmod_info?pup->pmod_info[i]:NULL);
-    }
-}
-#endif /* 0 */
 
 /* the memcpy() function that gcc likes to stuff into the program has alignment
    problems, so here's MY version.  It's only used for small stuff, so the

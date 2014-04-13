@@ -844,6 +844,9 @@ void trace_done(tcptrace_state_t *state);
 void seglist_init(tcb *);
 
 /* module routines */
+void tcptrace_modules_load(tcptrace_state_t *state, int argc, char *argv[]);
+void tcptrace_modules_finish(tcptrace_state_t *state);
+
 void tcptrace_modules_all_newfile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename);
 void tcptrace_modules_newconn(tcptrace_state_t *state, tcp_pair *ptp);
 void tcptrace_modules_newconn_udp(tcptrace_state_t *state, udp_pair *pup);
@@ -852,7 +855,6 @@ void tcptrace_modules_readpacket_udp( tcptrace_state_t *state, struct ip *pip, u
 void tcptrace_modules_readpacket_nottcpudp(tcptrace_state_t *state, struct ip *pip, void *plast);
 void
 tcptrace_modules_deleteconn(tcptrace_state_t *state, tcp_pair *ptp);
-
 
 void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
 
