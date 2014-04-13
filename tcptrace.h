@@ -846,6 +846,8 @@ void seglist_init(tcb *);
 /* module routines */
 void tcptrace_modules_all_newfile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename);
 void tcptrace_modules_newconn_udp(tcptrace_state_t *state, udp_pair *pup);
+void tcptrace_modules_readpacket_udp( tcptrace_state_t *state, struct ip *pip, udp_pair *pup, void *plast);
+
 
 void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
 

@@ -75,9 +75,9 @@ char *tcptrace_version = VERSION;
 static void Args(void);
 static void ModulesPerNonTCPUDP(tcptrace_state_t *state, struct ip *pip, void *plast);
 static void ModulesPerPacket(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast);
-static void ModulesPerUDPPacket(tcptrace_state_t *state, struct ip *pip, udp_pair *pup, void *plast);
+/* static void ModulesPerUDPPacket(tcptrace_state_t *state, struct ip *pip, * udp_pair *pup, void *plast); */
 static void ModulesPerConn(tcptrace_state_t *state, tcp_pair *ptp);
-static void ModulesPerUDPConn(tcptrace_state_t *state, udp_pair *pup);
+/* static void ModulesPerUDPConn(tcptrace_state_t *state, udp_pair *pup); */
 /* static void ModulesPerFile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename); */
 static void DumpFlags(void);
 static void ExplainOutput(void);
@@ -1127,7 +1127,7 @@ for other packet types, I just don't have a place to test them\n\n");
 		    tcptrace_modules_newconn_udp(state, pup);
                 }
 		/* also, pass the packet to any modules defined */
-		ModulesPerUDPPacket(state, pip,pup,plast);
+		tcptrace_modules_readpacket_udp(state, pip,pup,plast);
 	    } else if (ret < 0) {
 		/* neither UDP not TCP */
 		ModulesPerNonTCPUDP(state, pip,plast);
@@ -2579,6 +2579,7 @@ ModulesPerPacket(
 }
 
 
+#if 0
 static void
 ModulesPerUDPPacket(
     tcptrace_state_t *state,
@@ -2603,6 +2604,7 @@ ModulesPerUDPPacket(
 				      pup->pmod_info?pup->pmod_info[i]:NULL);
     }
 }
+#endif /* 0 */
 
 /* the memcpy() function that gcc likes to stuff into the program has alignment
    problems, so here's MY version.  It's only used for small stuff, so the
