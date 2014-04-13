@@ -80,7 +80,6 @@ static void Help(char *harg);
 static void Hints(void);
 static void ListModules(void);
 static void UsageModules(void);
-/* static void LoadModules(tcptrace_state_t *state, int argc, char *argv[]); */
 static void CheckArguments(int *pargc, char *argv[]);
 static void ParseArgs(char *argsource, int *pargc, char *argv[]);
 static int  ParseExtendedOpt(char *argsource, char *arg);
@@ -2384,38 +2383,6 @@ DumpFlags(void)
 		(*bvop->var_popt)?*bvop->var_popt:"<NULL>");
     }
 }
-
-#if 0
-static void
-LoadModules(
-    tcptrace_state_t *state,
-    int argc,
-    char *argv[])
-{
-    int i;
-    int enable;
-
-    for (i=0; i < NUM_MODULES; ++i) {
-	state->num_modules++;
-	if (debug)
-	    fprintf(stderr,"Initializing module \"%s\"\n",
-		    tcptrace_modules[i].module_name);
-	enable = (*tcptrace_modules[i].module_init)(state, argc, argv);
-	if (enable) {
-	    if (debug)
-		fprintf(stderr,"Module \"%s\" enabled\n",
-			tcptrace_modules[i].module_name);
-	    tcptrace_modules[i].module_inuse = TRUE;
-	} else {
-	    if (debug)
-		fprintf(stderr,"Module \"%s\" not active\n",
-			tcptrace_modules[i].module_name);
-	    tcptrace_modules[i].module_inuse = FALSE;
-	}
-    }
-
-}
-#endif
 
 /* the memcpy() function that gcc likes to stuff into the program has alignment
    problems, so here's MY version.  It's only used for small stuff, so the
