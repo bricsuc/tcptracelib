@@ -80,7 +80,7 @@ static void Help(char *harg);
 static void Hints(void);
 static void ListModules(void);
 static void UsageModules(void);
-static void LoadModules(tcptrace_state_t *state, int argc, char *argv[]);
+/* static void LoadModules(tcptrace_state_t *state, int argc, char *argv[]); */
 static void CheckArguments(int *pargc, char *argv[]);
 static void ParseArgs(char *argsource, int *pargc, char *argv[]);
 static int  ParseExtendedOpt(char *argsource, char *arg);
@@ -762,7 +762,7 @@ main(
     plot_init();
 
     /* let modules start first */
-    LoadModules(state, argc, argv);
+    tcptrace_modules_load(state, argc, argv);
 
     /* parse the flags */
     CheckArguments(&argc,argv);
@@ -2385,7 +2385,7 @@ DumpFlags(void)
     }
 }
 
-
+#if 0
 static void
 LoadModules(
     tcptrace_state_t *state,
@@ -2415,6 +2415,7 @@ LoadModules(
     }
 
 }
+#endif
 
 /* the memcpy() function that gcc likes to stuff into the program has alignment
    problems, so here's MY version.  It's only used for small stuff, so the
