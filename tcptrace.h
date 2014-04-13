@@ -845,9 +845,13 @@ void seglist_init(tcb *);
 
 /* module routines */
 void tcptrace_modules_all_newfile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename);
+void tcptrace_modules_newconn(tcptrace_state_t *state, tcp_pair *ptp);
 void tcptrace_modules_newconn_udp(tcptrace_state_t *state, udp_pair *pup);
+void tcptrace_modules_readpacket(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast);
 void tcptrace_modules_readpacket_udp( tcptrace_state_t *state, struct ip *pip, udp_pair *pup, void *plast);
 void tcptrace_modules_readpacket_nottcpudp(tcptrace_state_t *state, struct ip *pip, void *plast);
+void
+tcptrace_modules_deleteconn(tcptrace_state_t *state, tcp_pair *ptp);
 
 
 void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
@@ -946,7 +950,6 @@ Bool tcp_cksum_valid(struct ip *pip, struct tcphdr *ptcp, void *plast, tcptrace_
 Bool udp_cksum_valid(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_state_t *state);
 ipaddr *str2ipaddr(char *str);
 int IPcmp(ipaddr *pipA, ipaddr *pipB);
-void ModulesPerOldConn(tcp_pair *ptp);
 
 /* Memory allocation routines with page boundaries */ 
 tcp_pair *MakeTcpPair(void);

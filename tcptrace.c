@@ -75,9 +75,9 @@ char *tcptrace_version = VERSION;
 static void Args(void);
 
 /* static void ModulesPerNonTCPUDP(tcptrace_state_t *state, struct ip *pip, void *plast); */
-static void ModulesPerPacket(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast);
+/* static void ModulesPerPacket(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast); */
 /* static void ModulesPerUDPPacket(tcptrace_state_t *state, struct ip *pip, * udp_pair *pup, void *plast); */
-static void ModulesPerConn(tcptrace_state_t *state, tcp_pair *ptp);
+/* static void ModulesPerConn(tcptrace_state_t *state, tcp_pair *ptp); */
 /* static void ModulesPerUDPConn(tcptrace_state_t *state, udp_pair *pup); */
 /* static void ModulesPerFile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename); */
 
@@ -1162,11 +1162,12 @@ for other packet types, I just don't have a place to test them\n\n");
 	/* about it */
 	if (!ptp->ignore_pair) {
 	    /* if it's a new connection, tell the modules */
-	    if (ptp->packets == 1)
-		ModulesPerConn(state, ptp);
+	    if (ptp->packets == 1) {
+		tcptrace_modules_newconn(state, ptp);
+            }
 
-	    /* also, pass the packet to any modules defined */
-	    ModulesPerPacket(state, pip,ptp,plast);
+	    /* pass the packet to any modules */
+	    tcptrace_modules_readpacket(state, pip, ptp, plast);
 	}
 
         /* TODO: this signal business doesn't seem necessary, and could */
@@ -2375,7 +2376,7 @@ DumpFlags(void)
 	struct ext_bool_op *pbop = &extended_bools[i];
 	char buf[100];
 	snprintf(buf,sizeof(buf),"%s:", pbop->bool_optname);
-	fprintf(stderr,"%-18s%s\n", buf, BOOL2STR(*pbop->bool_popt));
+        fprintf(stderr,"%-18s%s\n", buf, BOOL2STR(*(find_option_location(pbop))));
     }
 
     /* print out the stuff controlled by the extended variable args */
@@ -2441,7 +2442,7 @@ FinishModules(void)
     }
 }
 
-
+#if 0
 static void
 ModulesPerConn(
     tcptrace_state_t *state,
@@ -2473,8 +2474,9 @@ ModulesPerConn(
 	}
     }
 }
+#endif
 
-
+#if 0
 void
 ModulesPerOldConn(
 		  tcp_pair *ptp)
@@ -2496,6 +2498,7 @@ ModulesPerOldConn(
 					ptp->pmod_info?ptp->pmod_info[i]:NULL);
     }
 }
+#endif
 
 #if 0
 static void
@@ -2556,7 +2559,7 @@ ModulesPerNonTCPUDP(
 }
 #endif
 
-
+#if 0
 static void
 ModulesPerPacket(
     tcptrace_state_t *state,
@@ -2581,6 +2584,7 @@ ModulesPerPacket(
 				  ptp->pmod_info?ptp->pmod_info[i]:NULL);
     }
 }
+#endif
 
 
 #if 0

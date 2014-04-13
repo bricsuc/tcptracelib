@@ -103,7 +103,7 @@ static void RemoveOldConns(tcptrace_state_t *state,
 			   const unsigned expire_interval,
 			   const Bool num_conn_check,
 			   int *conn_count);
-static void RemoveConn(const ptp_ptr *tcp_ptr);
+static void RemoveConn(tcptrace_state_t *state, const ptp_ptr *tcp_ptr);
 static void RemoveTcpPair(const ptp_ptr *tcp_ptr);
 static Bool MissingData(tcp_pair *ptp);
 
@@ -978,7 +978,7 @@ FindTTP(
 		ptp_ptr *last_ptr = live_conn_list_tail;
 		live_conn_list_tail = last_ptr->prev;
 		live_conn_list_tail->next = NULL;
-		RemoveConn(last_ptr);
+		RemoveConn(state, last_ptr);
 		num_removed_tcp_pairs++;
 		active_conn_count--;
 		FreePtpPtr(last_ptr);
@@ -1050,7 +1050,7 @@ UpdateConnLists(
 	  ptp_ptr *last_ptr = closed_conn_list_tail;
 	  closed_conn_list_tail = last_ptr->prev;
 	  closed_conn_list_tail->next = NULL;
-	  RemoveConn(last_ptr);
+	  RemoveConn(state, last_ptr);
 	  num_removed_tcp_pairs++;
 	  closed_conn_count--;
 	  FreePtpPtr(last_ptr);
@@ -1211,7 +1211,7 @@ RemoveOldConns(
 	 and the hash_table */
       ptr->prev->next = NULL;
       *conn_list_tail = ptr->prev;
-      RemoveConn(ptr);
+      RemoveConn(state, ptr);
       num_removed_tcp_pairs++;
       if (0) {
 	printf("trace.c:RemoveOldConns() calling FreePtpSnap()\n");
@@ -1230,7 +1230,7 @@ RemoveOldConns(
        expire_interval)) {
     *conn_list_head = NULL;
     *conn_list_tail = NULL;
-    RemoveConn(ptr);
+    RemoveConn(state, ptr);
     num_removed_tcp_pairs++;
     FreePtpPtr(ptr);
     if (num_conn_check)
@@ -1243,16 +1243,17 @@ RemoveOldConns(
 /* remove tcp pair from the hash table */
 static void
 RemoveConn(
+           tcptrace_state_t *state,
 	   const ptp_ptr *tcp_ptr)
 {
-  hash		hval;
+   hash hval;
    
    if (0) {
       printf("trace.c: RemoveConn(%p %s<->%s) called\n", 
 	     tcp_ptr->ptp, tcp_ptr->ptp->a_endpoint, tcp_ptr->ptp->b_endpoint);
    }
    
-   ModulesPerOldConn(tcp_ptr->ptp);
+   tcptrace_modules_deleteconn(state, tcp_ptr->ptp);
    
    hval = tcp_ptr->ptp->addr_pair.hash % HASH_TABLE_SIZE;
    
