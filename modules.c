@@ -176,12 +176,13 @@ tcptrace_modules_newconn_udp(
 }
 
 void
-tcptrace_modules_read_nottcpudp(
+tcptrace_modules_readpacket_nottcpudp(
     tcptrace_state_t *state,
     struct ip *pip,
     void *plast)
 {
     int i;
+    struct module *modules = tcptrace_modules;
 
     for (i=0; i < NUM_MODULES; ++i) {
 	if (!tcptrace_modules[i].module_inuse)
@@ -234,18 +235,20 @@ tcptrace_modules_readpacket_udp(
 {
     int i;
 
+    struct module *modules = tcptrace_modules;
+
     for (i=0; i < NUM_MODULES; ++i) {
-	if (!tcptrace_modules[i].module_inuse)
+	if (!modules[i].module_inuse)
 	    continue;  /* might be disabled */
 
-	if (tcptrace_modules[i].module_udp_read == NULL)
+	if (modules[i].module_udp_read == NULL)
 	    continue;  /* they might not care */
 
 	if (debug>3)
 	    fprintf(stderr,"Calling read routine for module \"%s\"\n",
-		    tcptrace_modules[i].module_name);
+		    modules[i].module_name);
 
-	(*tcptrace_modules[i].module_udp_read)(pip,pup,plast,
+	(*modules[i].module_udp_read)(pip,pup,plast,
 				      pup->pmod_info?pup->pmod_info[i]:NULL);
     }
 }

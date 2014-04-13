@@ -73,12 +73,14 @@ char *tcptrace_version = VERSION;
 
 /* local routines */
 static void Args(void);
-static void ModulesPerNonTCPUDP(tcptrace_state_t *state, struct ip *pip, void *plast);
+
+/* static void ModulesPerNonTCPUDP(tcptrace_state_t *state, struct ip *pip, void *plast); */
 static void ModulesPerPacket(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast);
 /* static void ModulesPerUDPPacket(tcptrace_state_t *state, struct ip *pip, * udp_pair *pup, void *plast); */
 static void ModulesPerConn(tcptrace_state_t *state, tcp_pair *ptp);
 /* static void ModulesPerUDPConn(tcptrace_state_t *state, udp_pair *pup); */
 /* static void ModulesPerFile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename); */
+
 static void DumpFlags(void);
 static void ExplainOutput(void);
 static void FinishModules(void);
@@ -1129,8 +1131,8 @@ for other packet types, I just don't have a place to test them\n\n");
 		/* also, pass the packet to any modules defined */
 		tcptrace_modules_readpacket_udp(state, pip,pup,plast);
 	    } else if (ret < 0) {
-		/* neither UDP not TCP */
-		ModulesPerNonTCPUDP(state, pip,plast);
+		/* neither UDP nor TCP */
+		tcptrace_modules_readpacket_nottcpudp(state, pip, plast);
 	    }
 	    continue;
 	}
@@ -2529,6 +2531,7 @@ ModulesPerUDPConn(
 }
 #endif
 
+#if 0
 static void
 ModulesPerNonTCPUDP(
     tcptrace_state_t *state,
@@ -2551,6 +2554,7 @@ ModulesPerNonTCPUDP(
 	(*tcptrace_modules[i].module_nontcpudp_read)(pip,plast);
     }
 }
+#endif
 
 
 static void
