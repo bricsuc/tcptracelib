@@ -85,7 +85,7 @@ static void ParseArgs(char *argsource, int *pargc, char *argv[]);
 static int  ParseExtendedOpt(char *argsource, char *arg);
 static void ParseExtendedBool(char *argsource, char *arg);
 static void ParseExtendedVar(char *argsource, char *arg);
-static void ProcessFile(tcptrace_state_t *state, char *filename);
+/* static void ProcessFile(tcptrace_state_t *state, char *filename); */
 static void QuitSig(int signum);
 static void Usage(void);
 static void BadArg(char *argsource, char *format, ...);
@@ -805,7 +805,7 @@ main(
 	}
 
 	/* do the real work */
-	ProcessFile(state, filenames[i]);
+	tcptrace_process_file(state, filenames[i]);
     }
 
     /* clean up output */
@@ -859,6 +859,7 @@ main(
     exit(0);
 }
 
+#if 0
 
 static void
 ProcessFile(
@@ -1201,6 +1202,8 @@ for other packet types, I just don't have a place to test them\n\n");
     CompCloseFile(filename);
 
 }
+
+#endif /* 0; ProcessFile() */
 
 
 static void
@@ -2165,7 +2168,7 @@ ParseArgs(
 		  case 'Z': dump_rtt = TRUE; break;
 		  case 'b': printbrief = TRUE; break;
 		  case 'c': ignore_non_comp = TRUE; break;
-		  case 'd': ++debug; break;
+		  case 'd': options->debug++; debug++; break;
 		  case 'e': save_tcp_data = TRUE; break;
 		  case 'f':
 		    filter_output = TRUE;

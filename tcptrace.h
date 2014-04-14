@@ -740,6 +740,8 @@ extern int thru_interval;
 
 /* options */
 typedef struct tcptrace_runtime_options_t {
+    int debug;
+
     u_long beginpnum;
     u_long endpnum;
 
@@ -855,6 +857,10 @@ void tcptrace_modules_readpacket_udp( tcptrace_state_t *state, struct ip *pip, u
 void tcptrace_modules_readpacket_nottcpudp(tcptrace_state_t *state, struct ip *pip, void *plast);
 void
 tcptrace_modules_deleteconn(tcptrace_state_t *state, tcp_pair *ptp);
+
+/* general processing routines */
+void tcptrace_process_file(tcptrace_state_t *state, char *filename);
+
 
 void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
 
