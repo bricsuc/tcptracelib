@@ -179,11 +179,11 @@ static inline int IP_SAMEADDR(ipaddr *paddr1, ipaddr *paddr2)
 	    ret = (memcmp(paddr1->un.ip6.s6_addr,
 			  paddr2->un.ip6.s6_addr,16) == 0);
     }
-    if (debug > 3)
-	printf("SameAddr(%s(%d),%s(%d)) returns %d\n",
-	       HostAddr(*paddr1), ADDR_VERSION(paddr1),
-	       HostAddr(*paddr2), ADDR_VERSION(paddr2),
+    if (debug > 3) {
+	printf("SameAddr(%s(%d),", HostAddr(*paddr1), ADDR_VERSION(paddr1));
+        printf("%s(%d)) returns %d\n", HostAddr(*paddr2), ADDR_VERSION(paddr2),
 	       ret);
+    }
     return ret;
 }
 
@@ -202,11 +202,11 @@ static inline int IP_LOWADDR(ipaddr *paddr1, ipaddr *paddr2)
 	if (ADDR_ISV4(paddr2))
 	    ret = (paddr1->un.ip4.s_addr < paddr2->un.ip4.s_addr);
     }
-    if (debug > 3)
-	printf("LowAddr(%s(%d),%s(%d)) returns %d\n",
-	       HostAddr(*paddr1), ADDR_VERSION(paddr1),
-	       HostAddr(*paddr2), ADDR_VERSION(paddr2),
+    if (debug > 3) {
+        printf("LowAddr(%s(%d),", HostAddr(*paddr1), ADDR_VERSION(paddr1));
+        printf("%s(%d)) returns %d\n", HostAddr(*paddr2), ADDR_VERSION(paddr2),
 	       ret);
+    }
     return ret;
 }
 
@@ -348,13 +348,11 @@ CopyAddr(
 	}
     }
 
-    if (debug > 3)
-	printf("Hash of (%s:%d,%s:%d) is %d\n",
-	       HostAddr(ptpa->a_address),
-	       ptpa->a_port,
-	       HostAddr(ptpa->b_address),
-	       ptpa->b_port,
+    if (debug > 3) {
+	printf("Hash of (%s:%d,", HostAddr(ptpa->a_address), ptpa->a_port);
+        printf("%s:%d) is %d\n", HostAddr(ptpa->b_address), ptpa->b_port,
 	       ptpa->hash);
+    }
 }
 
 /* 
