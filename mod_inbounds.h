@@ -30,13 +30,13 @@
 #define UDP_REMOVE_LIVE_CONN_INTERVAL 60
 
 /* header file for inbounds.c */
-int inbounds_init(tcptrace_state_t *state, int argc, char *argv[]);
-void inbounds_tcp_read(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast, void *pmod_data);
-void inbounds_done(tcptrace_state_t *state);
+int inbounds_init(tcptrace_context_t *context, int argc, char *argv[]);
+void inbounds_tcp_read(tcptrace_context_t *context, struct ip *pip, tcp_pair *ptp, void *plast, void *pmod_data);
+void inbounds_done(tcptrace_context_t *context);
 void inbounds_usage(void);
 void inbounds_udp_read(struct ip *pip, udp_pair *pup, void *plast, void *pmodstruct);
 void inbounds_nontcpudp_read(struct ip *pip, void *plast);
-void *inbounds_tcp_newconn(tcptrace_state_t *state,  tcp_pair *ptp);
+void *inbounds_tcp_newconn(tcptrace_context_t *context,  tcp_pair *ptp);
 void inbounds_tcp_deleteconn(tcp_pair *ptp, void *mod_data);
 void *inbounds_udp_newconn( udp_pair *pup);
 void inbounds_udp_deleteconn(udp_pair *pup, void *mod_data);

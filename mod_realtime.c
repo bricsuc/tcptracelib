@@ -140,7 +140,7 @@ realtime_usage(void)
 
 int
 realtime_init(
-              tcptrace_state_t *state,
+              tcptrace_context_t *context,
 	      int argc,
 	      char *argv[])
 {
@@ -166,8 +166,8 @@ realtime_init(
     return(0);	/* don't call me again */
 
   mod_info = (rtinfo *)malloc(sizeof(rtinfo));
-  mod_info->last_scheduled_time = state->current_time;
-  mod_info->last_actual_time = state->current_time;
+  mod_info->last_scheduled_time = context->current_time;
+  mod_info->last_actual_time = context->current_time;
   mod_info->conn_head = NULL;
   mod_info->conn_tail = NULL;
   mod_info->open_conns = 0;
@@ -189,13 +189,13 @@ realtime_init(
      max_conn_num = 20000;
    */
   
-  state->options->do_udp = TRUE;
+  context->options->do_udp = TRUE;
 
   return(1);	/* TRUE means call other realtime routines later */
 }
 
 void
-realtime_done(tcptrace_state_t *state)
+realtime_done(tcptrace_context_t *context)
 {
   struct protocol *pp;
  
@@ -211,18 +211,18 @@ realtime_done(tcptrace_state_t *state)
 
 void *
 realtime_newconn( 
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     tcp_pair *ptp)
 {
    rtconn *new_conn = MakeRtconn();
    
    if (mod_info->last_scheduled_time.tv_sec == 0) {
-      mod_info->last_scheduled_time = state->current_time;
-      mod_info->last_actual_time = state->current_time;
+      mod_info->last_scheduled_time = context->current_time;
+      mod_info->last_actual_time = context->current_time;
    }
    
-   new_conn->first_time = state->current_time;
-   new_conn->last_time = state->current_time;
+   new_conn->first_time = context->current_time;
+   new_conn->last_time = context->current_time;
    new_conn->is_new = TRUE;
    new_conn->is_closed = FALSE;
    new_conn->addr_pair = ptp->addr_pair;
@@ -281,7 +281,7 @@ realtime_deleteconn(
 
 void
 realtime_read(
-              tcptrace_state_t *state,
+              tcptrace_context_t *context,
 	      struct ip *pip,	/* the packet */
 	      tcp_pair *ptp,	/* info I have about this connection */
 	      void *plast,	/* past byte in the packet */
@@ -299,18 +299,18 @@ realtime_read(
   }
 
   if (conn->is_new) {
-    dtime = state->current_time.tv_sec + (state->current_time.tv_usec / 1000000.0);
+    dtime = context->current_time.tv_sec + (context->current_time.tv_usec / 1000000.0);
     fprintf(stdout, "%.6f  %s\t%s new connection\n",
 	    dtime, ptp->a_endpoint, ptp->b_endpoint);
     conn->is_new = FALSE;
   }
 
-  conn->last_time = state->current_time;
+  conn->last_time = context->current_time;
    
   if (!conn->is_closed) {
     if ((FinCount(ptp) >= 1) || (ConnReset(ptp))) {
       if (dtime == 0) {
-	dtime = state->current_time.tv_sec + (state->current_time.tv_usec / 1000000.0);
+	dtime = context->current_time.tv_sec + (context->current_time.tv_usec / 1000000.0);
       }
       fprintf(stdout, "%.6f  %s\t%s connection closes (had %" FS_ULL " packets)\n",
 	      dtime, ptp->a_endpoint, ptp->b_endpoint, ptp->packets);
@@ -319,15 +319,15 @@ realtime_read(
     }
   }
 
-  if ((elapsed(mod_info->last_scheduled_time, state->current_time) / 1000000.0) >= 
+  if ((elapsed(mod_info->last_scheduled_time, context->current_time) / 1000000.0) >= 
        realtime_update_interval) {
       if (dtime == 0) {
-	dtime = state->current_time.tv_sec + (state->current_time.tv_usec / 1000000.0);
+	dtime = context->current_time.tv_sec + (context->current_time.tv_usec / 1000000.0);
       }
      fprintf(stdout, "%.6f  number of open connections is %lu\n", 
 	     dtime, mod_info->open_conns);
      mod_info->last_scheduled_time.tv_sec += realtime_update_interval;
-     mod_info->last_actual_time = state->current_time;
+     mod_info->last_actual_time = context->current_time;
   }
 }
 

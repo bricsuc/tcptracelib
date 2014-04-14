@@ -146,8 +146,8 @@ u_long update_interval = UPDATE_INTERVAL;
 u_long max_conn_num = MAX_CONN_NUM;
 int debug = 0;
 
-/* global state (packets read across all files, etc) */
-tcptrace_state_t global_state;
+/* global context (packets read across all files, etc) */
+tcptrace_context_t global_context;
 
 /* the following have been de-globalized */
 /* u_long pnum = 0; */
@@ -564,11 +564,11 @@ static Bool *find_option_location(struct ext_bool_op *bopt) {
 
     /* If the location for the option setting isn't directly in
        the struct, then it might be at an offset into
-       global_state.options. Check that. */
+       global_context.options. Check that. */
     if (option_location == NULL) {
         if (bopt->runtime_struct_offset != 0) {
             /* if this is an offset, find the actual location */
-            option_location = (Bool *) global_state.options;
+            option_location = (Bool *) global_context.options;
             option_location += bopt->runtime_struct_offset;
         } else {
             return(NULL);
@@ -737,16 +737,16 @@ main(
     int i;
     double etime;
     tcptrace_runtime_options_t cmd_options, *options;
-    tcptrace_state_t *state;
+    tcptrace_context_t *context;
     char *comment;
    
-    state = &global_state;
+    context = &global_context;
     options = &cmd_options;
 
-    state->options = options;
+    context->options = options;
 
-    /* initialize global state */
-    tcptrace_initialize_state(state);
+    /* initialize global context */
+    tcptrace_initialize_context(context);
 
     /* initialize the runtime options */
     tcptrace_initialize_options(options);
@@ -760,7 +760,7 @@ main(
     plot_init();
 
     /* let modules start first */
-    tcptrace_modules_load(state, argc, argv);
+    tcptrace_modules_load(context, argc, argv);
 
     /* parse the flags */
     CheckArguments(&argc,argv);
@@ -770,7 +770,7 @@ main(
      */
 
     /* (this is admittedly dumb, but less dumb than what was here before) */
-    comment = state->comment_prefix;
+    comment = context->comment_prefix;
     if (csv || tsv || (sv != NULL)) {
         strncpy(comment, "# ", __TCPTRACE_COMMENT_PREFIX_MAX);
         comment[__TCPTRACE_COMMENT_PREFIX_MAX - 1] = '\0';
@@ -804,7 +804,7 @@ main(
 	}
 
 	/* do the real work */
-	tcptrace_process_file(state, filenames[i]);
+	tcptrace_process_file(context, filenames[i]);
     }
 
     /* clean up output */
@@ -817,7 +817,7 @@ main(
 
     /* general output */
     fprintf(stdout, "%s%lu packets seen, %lu TCP packets traced",
-	    comment, state->pnum, tcp_trace_count);
+	    comment, context->pnum, tcp_trace_count);
     if (options->do_udp) {
 	fprintf(stdout,", %lu UDP packets traced", udp_trace_count);
     }
@@ -828,31 +828,31 @@ main(
     fprintf(stdout, "%selapsed wallclock time: %s, %d pkts/sec analyzed\n",
 	    comment,
 	    elapsed2str(etime),
-	    (int)((double)state->pnum/(etime/1000000)));
+	    (int)((double)context->pnum/(etime/1000000)));
 
     /* actual tracefile times */
-    etime = elapsed(state->first_packet, state->last_packet);
+    etime = elapsed(context->first_packet, context->last_packet);
     fprintf(stdout,"%strace %s elapsed time: %s\n",
 	    comment,
 	    (num_files==1)?"file":"files",
 	    elapsed2str(etime));
     if (debug) {
-	fprintf(stdout,"%s\tfirst packet:  %s\n", comment, ts2ascii(&state->first_packet));
-	fprintf(stdout,"%s\tlast packet:   %s\n", comment, ts2ascii(&state->last_packet));
+	fprintf(stdout,"%s\tfirst packet:  %s\n", comment, ts2ascii(&context->first_packet));
+	fprintf(stdout,"%s\tlast packet:   %s\n", comment, ts2ascii(&context->last_packet));
     }
     if (options->verify_checksums) {
-	fprintf(stdout,"%sbad IP checksums:  %ld\n", comment, state->bad_ip_checksums);
-	fprintf(stdout,"%sbad TCP checksums: %ld\n", comment, state->bad_tcp_checksums);
+	fprintf(stdout,"%sbad IP checksums:  %ld\n", comment, context->bad_ip_checksums);
+	fprintf(stdout,"%sbad TCP checksums: %ld\n", comment, context->bad_tcp_checksums);
 	if (options->do_udp) {
-	    fprintf(stdout,"%sbad UDP checksums: %ld\n", comment, state->bad_udp_checksums);
+	    fprintf(stdout,"%sbad UDP checksums: %ld\n", comment, context->bad_udp_checksums);
         }
     }
 
     /* close files, cleanup, and etc... */
-    trace_done(state);
-    udptrace_done(state);
+    trace_done(context);
+    udptrace_done(context);
 
-    tcptrace_modules_finish(state);
+    tcptrace_modules_finish(context);
     plotter_done();
 
     exit(0);
@@ -863,17 +863,17 @@ static void
 QuitSig(
     int signum)
 {
-    tcptrace_state_t *state;
+    tcptrace_context_t *context;
 
-    state = &global_state;
+    context = &global_context;
 
     printf("%c\n\n", 7);  /* BELL */
     printf("Terminating processing early on signal %d\n", signum);
-    printf("Partial result after processing %lu packets:\n\n\n", global_state.pnum);
-    tcptrace_modules_finish(state);
+    printf("Partial result after processing %lu packets:\n\n\n", global_context.pnum);
+    tcptrace_modules_finish(context);
     plotter_done();
-    trace_done(state);
-    udptrace_done(state);
+    trace_done(context);
+    udptrace_done(context);
     exit(1);
 }
 
@@ -1269,7 +1269,7 @@ CheckArguments(
     char *rc_path = NULL;
     char *rc_buf = NULL;
 
-    tcptrace_runtime_options_t *options = global_state.options;
+    tcptrace_runtime_options_t *options = global_context.options;
 
     /* remember the name of the program for errors... */
     progname = argv[0];
@@ -1733,7 +1733,7 @@ ParseArgs(
 {
     int i;
     int saw_i_or_o = 0;
-    tcptrace_runtime_options_t *options = global_state.options;
+    tcptrace_runtime_options_t *options = global_context.options;
 
     /* parse the args */
     for (i=1; i < *pargc; ++i) {
@@ -1884,7 +1884,7 @@ ParseArgs(
 		    warn_printtrunc = TRUE;
 		    warn_printbadmbz = TRUE;
 		    warn_printhwdups = TRUE;
-		    global_state.options->warn_printbadcsum = TRUE;
+		    global_context.options->warn_printbadcsum = TRUE;
 		    warn_printbad_syn_fin_seq = TRUE;
 		    warn_ooo = TRUE;
 		    break;
@@ -1953,7 +1953,7 @@ ParseArgs(
 		    warn_printtrunc = !TRUE;
 		    warn_printbadmbz = !TRUE;
 		    warn_printhwdups = !TRUE;
-		    global_state.options->warn_printbadcsum = !TRUE;
+		    global_context.options->warn_printbadcsum = !TRUE;
 		    warn_ooo = !TRUE;
 		    break;
 		  case 'y': plot_tput_instant = !plot_tput_instant; break;
@@ -1993,7 +1993,7 @@ static void
 DumpFlags(void)
 {
     int i;
-    tcptrace_runtime_options_t *options = global_state.options;
+    tcptrace_runtime_options_t *options = global_context.options;
 
     fprintf(stderr,"printbrief:       %s\n", BOOL2STR(printbrief));
     fprintf(stderr,"printsuppress:    %s\n", BOOL2STR(printsuppress));
@@ -2152,8 +2152,8 @@ ExpandFormat(const char *format)
             /* need to parameterize this somehow */
 
 	    /* basename of current file (after the last slash) */
-            if (global_state.current_filename != NULL) {
-                char *filename = global_state.current_filename;
+            if (global_context.current_filename != NULL) {
+                char *filename = global_context.current_filename;
             } else {
                 char *filename = "";
             }

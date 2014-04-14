@@ -411,7 +411,7 @@ pread_f *is_tcpdump(char *filename)
 
 void
 PcapSavePacket(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     char *filename,
     struct ip *pip,
     void *plast)
@@ -449,8 +449,8 @@ PcapSavePacket(
 
     /* create the packet header */
     /* (copying time structure in 2 steps to avoid RedHat brain damage) */
-    phdr.ts.tv_sec = state->current_time.tv_sec;
-    phdr.ts.tv_usec = state->current_time.tv_usec;
+    phdr.ts.tv_sec = context->current_time.tv_sec;
+    phdr.ts.tv_usec = context->current_time.tv_usec;
     phdr.caplen = (char *)plast - (char *)pip + 1;
     phdr.caplen += EH_SIZE;	/* add in the ether header */
     phdr.len = EH_SIZE + ntohs(PIP_LEN(pip));	/* probably this */

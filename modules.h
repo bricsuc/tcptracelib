@@ -78,20 +78,20 @@ struct module {
     /* delete any args you want (just make the pointer NULL)		*/
     /* If you return TRUE, I'll call the other functions later, else	*/
     /* I won't.								*/
-    int (*module_init) (tcptrace_state_t *state, int argc, char *argv[]);
+    int (*module_init) (tcptrace_context_t *context, int argc, char *argv[]);
 
     /* TCP Reading routine, for each packet grabbed, I'll pass you the	*/
     /* TCP structure and the IP packet itself (in			*/
     /* host byte order).						*/
     void (*module_read) (
-        tcptrace_state_t *state,
+        tcptrace_context_t *context,
 	struct ip *pip,		/* the packet */
 	tcp_pair *ptp,		/* info I have about this connection */
 	void *plast,		/* pointer to last byte */
 	void *pmodstruct);	/* module-specific structure */
 
     /* Finish up routine.  Called after tcpdump is finished printing.	*/
-    void (*module_done) (tcptrace_state_t *state);
+    void (*module_done) (tcptrace_context_t *context);
 
     /* Usage message additions */
     void (*module_usage)(void);
@@ -107,7 +107,7 @@ struct module {
     /* tcp_pair, return its address and I'll hand it back to */
     /* you with each read, otherwise return NULL  */
     void *(*module_newconn)(
-        tcptrace_state_t *state,
+        tcptrace_context_t *context,
 	tcp_pair *ptp);		/* info I have about this connection */
 
     /* UDP Reading routine, for each packet grabbed, I'll pass you the	*/

@@ -76,8 +76,8 @@ u_long udp_trace_count = 0;
 
 
 /* local routine definitions */
-static udp_pair *NewUTP(tcptrace_state_t *state, struct ip *, struct udphdr *);
-static udp_pair *FindUTP(tcptrace_state_t *state, struct ip *, struct udphdr *, int *);
+static udp_pair *NewUTP(tcptrace_context_t *context, struct ip *, struct udphdr *);
+static udp_pair *FindUTP(tcptrace_context_t *context, struct ip *, struct udphdr *, int *);
 static void MoreUdpPairs(int num_needed);
 
 
@@ -85,7 +85,7 @@ static void MoreUdpPairs(int num_needed);
 
 static udp_pair *
 NewUTP(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     struct udphdr *pudp)
 {
@@ -130,7 +130,7 @@ NewUTP(
 	strdup(EndpointName(pup->addr_pair.b_address,
 			    pup->addr_pair.b_port));
 
-    pup->filename = state->current_filename;
+    pup->filename = context->current_filename;
 
     return(pup);
 }
@@ -142,7 +142,7 @@ NewUTP(
 #define HASH_TABLE_SIZE 1021  /* oughta be prime */
 static udp_pair *
 FindUTP(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     struct udphdr *pudp,
     int *pdir)
@@ -181,7 +181,7 @@ FindUTP(
     }
 
     /* Didn't find it, make a new one, if possible */
-    pup = NewUTP(state, pip, pudp);
+    pup = NewUTP(context, pip, pudp);
 
     /* put at the head of the access list */
     if (pup) {
@@ -234,7 +234,7 @@ OnlyUDPConn(
 
 udp_pair *
 udpdotrace(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     struct udphdr *pudp,
     void *plast)
@@ -253,8 +253,8 @@ udpdotrace(
 	if (warn_printtrunc)
 	    fprintf(stderr,
 		    "UDP packet %lu truncated too short to trace, ignored\n",
-		    state->pnum);
-	state->ctrunc++;
+		    context->pnum);
+	context->ctrunc++;
 	return(NULL);
     }
 
@@ -265,7 +265,7 @@ udpdotrace(
     uh_ulen = ntohs(pudp->uh_ulen);
 
     /* make sure this is one of the connections we want */
-    pup_save = FindUTP(state, pip,pudp,&dir);
+    pup_save = FindUTP(context, pip,pudp,&dir);
 
     ++packet_count;
 
@@ -277,9 +277,9 @@ udpdotrace(
 
     /* do time stats */
     if (ZERO_TIME(&pup_save->first_time)) {
-	pup_save->first_time = state->current_time;
+	pup_save->first_time = context->current_time;
     }
-    pup_save->last_time = state->current_time;
+    pup_save->last_time = context->current_time;
 
     // Lets not waste any more CPU cycles if we are ignoring this connection.
     if (pup_save->ignore_pair)
@@ -287,16 +287,16 @@ udpdotrace(
      
     /* save to a file if requested */
     if (output_filename) {
-	PcapSavePacket(state, output_filename,pip,plast);
+	PcapSavePacket(context, output_filename,pip,plast);
     }
 
     /* now, print it if requested */
-    if (state->options->printem && !state->options->printallofem) {
-	printf("Packet %lu\n", state->pnum);
+    if (context->options->printem && !context->options->printallofem) {
+	printf("Packet %lu\n", context->pnum);
 	printpacket(0,		/* original length not available */
 		    (char *)plast - (char *)pip + 1,
 		    NULL,0,	/* physical stuff not known here */
-		    pip,plast,NULL,state);
+		    pip,plast,NULL,context);
     }
 
     /* grab the address from this packet */
@@ -327,12 +327,12 @@ udpdotrace(
 
 
 void
-udptrace_done(tcptrace_state_t *state) {
+udptrace_done(tcptrace_context_t *context) {
     udp_pair *pup;
     int ix;
     double etime;
 
-    if (state->options->do_udp) { // Just a quick sanity check to make sure if we need to do 
+    if (context->options->do_udp) { // Just a quick sanity check to make sure if we need to do 
 	         // anything at all..
 	 if(!run_continuously) {
 	      if (!printsuppress) {
@@ -353,12 +353,12 @@ udptrace_done(tcptrace_state_t *state) {
 	 }
 	 
 	 /* elapsed time */
-	 etime = elapsed(state->first_packet, state->last_packet);
+	 etime = elapsed(context->first_packet, context->last_packet);
 	 
-	 if (state->ctrunc > 0) {
+	 if (context->ctrunc > 0) {
 	      fprintf(stdout,
 		      "*** %lu packets were too short to process at some point\n",
-		      state->ctrunc);
+		      context->ctrunc);
 	      if (!warn_printtrunc)
 		   fprintf(stdout,"\t(use -w option to show details)\n");
 	 }

@@ -100,7 +100,7 @@ static void ParseArgs(char *argstring);
 /* Set it up */
 int
 collie_init(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     int argc,
     char *argv[])
 {
@@ -131,7 +131,7 @@ collie_init(
     printsuppress = TRUE;
 
     /* please also include UDP packets */
-    state->options->do_udp = TRUE;
+    context->options->do_udp = TRUE;
 
     return(1);	/* TRUE means call collie_read and collie_done later */
 }
@@ -211,7 +211,7 @@ MakeUDPConnRec(void)
 
 
 void	
-collie_done(tcptrace_state_t *state)
+collie_done(tcptrace_context_t *context)
 {
     struct conn_info *pci;
     struct uconn_info *upci;
@@ -233,10 +233,10 @@ collie_done(tcptrace_state_t *state)
 	   collie_date(statbuf.st_mtime));
     printf("%s%s\n",
 	   LABEL("First packet: "),
-	   collie_time(&state->first_packet));
+	   collie_time(&context->first_packet));
     printf("%s%s\n",
 	   LABEL("Last packet: "),
-	   collie_time(&state->last_packet));
+	   collie_time(&context->last_packet));
 
     /* print out the TCP connections */
     if (print_labels)
@@ -283,7 +283,7 @@ collie_usage(void)
 
 void *
 collie_newconn(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     tcp_pair *ptp)
 {
     struct conn_info *pci;

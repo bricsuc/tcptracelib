@@ -7,8 +7,8 @@
 void
 tcptrace_modules_all_newfile(
     /* TODO: these arguments are sort of redundant, possibly streamline
-     * into "state" */
-    tcptrace_state_t *state,
+     * into "context" */
+    tcptrace_context_t *context,
     tcptrace_working_file *working_file,
     char *filename)
 {
@@ -34,7 +34,7 @@ tcptrace_modules_all_newfile(
 
 void
 tcptrace_modules_load(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     int argc,
     char *argv[])
 {
@@ -43,11 +43,11 @@ tcptrace_modules_load(
     struct module *modules = tcptrace_modules;
 
     for (i=0; i < NUM_MODULES; ++i) {
-	state->num_modules++;
+	context->num_modules++;
 	if (debug)
 	    fprintf(stderr,"Initializing module \"%s\"\n",
 		    modules[i].module_name);
-	enable = (*modules[i].module_init)(state, argc, argv);
+	enable = (*modules[i].module_init)(context, argc, argv);
 	if (enable) {
 	    if (debug)
 		fprintf(stderr,"Module \"%s\" enabled\n",
@@ -65,7 +65,7 @@ tcptrace_modules_load(
 
 
 void
-tcptrace_modules_finish(tcptrace_state_t *state)
+tcptrace_modules_finish(tcptrace_context_t *context)
 {
     int i;
     struct module *modules = tcptrace_modules;
@@ -81,14 +81,14 @@ tcptrace_modules_finish(tcptrace_state_t *state)
 	    fprintf(stderr,"Calling cleanup for module \"%s\"\n",
 		    modules[i].module_name);
 
-	(*modules[i].module_done)(state);
+	(*modules[i].module_done)(context);
     }
 }
 
 
 void
 tcptrace_modules_newconn(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     tcp_pair *ptp)
 {
     int i;
@@ -106,11 +106,11 @@ tcptrace_modules_newconn(
 	    fprintf(stderr,"Calling newconn routine for module \"%s\"\n",
 		    modules[i].module_name);
 
-	pmodstruct = (*modules[i].module_newconn)(state, ptp);
+	pmodstruct = (*modules[i].module_newconn)(context, ptp);
 	if (pmodstruct) {
 	    /* make sure the array is there */
 	    if (!ptp->pmod_info) {
-		ptp->pmod_info = MallocZ(state->num_modules * sizeof(void *));
+		ptp->pmod_info = MallocZ(context->num_modules * sizeof(void *));
 	    }
 
 	    /* remember this structure */
@@ -122,7 +122,7 @@ tcptrace_modules_newconn(
 
 void
 tcptrace_modules_deleteconn(
-                  tcptrace_state_t *state,
+                  tcptrace_context_t *context,
 		  tcp_pair *ptp)
 {
     int i;
@@ -147,7 +147,7 @@ tcptrace_modules_deleteconn(
 
 void
 tcptrace_modules_newconn_udp(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     udp_pair *pup)
 {
     int i;
@@ -169,7 +169,7 @@ tcptrace_modules_newconn_udp(
 	if (pmodstruct) {
 	    /* make sure the array is there */
 	    if (!pup->pmod_info) {
-		pup->pmod_info = MallocZ(state->num_modules * sizeof(void *));
+		pup->pmod_info = MallocZ(context->num_modules * sizeof(void *));
 	    }
 
 	    /* remember this structure */
@@ -180,7 +180,7 @@ tcptrace_modules_newconn_udp(
 
 void
 tcptrace_modules_readpacket_nottcpudp(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     void *plast)
 {
@@ -205,7 +205,7 @@ tcptrace_modules_readpacket_nottcpudp(
 
 void
 tcptrace_modules_readpacket(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     tcp_pair *ptp,
     void *plast)
@@ -224,7 +224,7 @@ tcptrace_modules_readpacket(
 	    fprintf(stderr,"Calling read routine for module \"%s\"\n",
 		    modules[i].module_name);
 
-	(*modules[i].module_read)(state, pip,ptp,plast,
+	(*modules[i].module_read)(context, pip,ptp,plast,
 				  ptp->pmod_info?ptp->pmod_info[i]:NULL);
     }
 }
@@ -232,7 +232,7 @@ tcptrace_modules_readpacket(
 
 void
 tcptrace_modules_readpacket_udp(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     udp_pair *pup,
     void *plast)

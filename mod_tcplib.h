@@ -57,12 +57,12 @@ static char const GCC_UNUSED rcsid_tcplib[] =
 
 
 /* header file for mod_tcplib.c */
-int tcplib_init(tcptrace_state_t *state, int argc, char *argv[]);
-void tcplib_read(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast, void *pmodstruct);
-void tcplib_done(tcptrace_state_t *state);
+int tcplib_init(tcptrace_context_t *context, int argc, char *argv[]);
+void tcplib_read(tcptrace_context_t *context, struct ip *pip, tcp_pair *ptp, void *plast, void *pmodstruct);
+void tcplib_done(tcptrace_context_t *context);
 void tcplib_usage(void);
 void tcplib_newfile(char *filename, u_long filesize, Bool fcompressed);
-void * tcplib_newconn(tcptrace_state_t *state, tcp_pair *ptp);
+void * tcplib_newconn(tcptrace_context_t *context, tcp_pair *ptp);
 
 
 /* various ports that we need to find */

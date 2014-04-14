@@ -84,26 +84,26 @@ u_long tcp_trace_count = 0;
 
 
 /* local routine definitions */
-static tcp_pair *NewTTP(tcptrace_state_t *state, struct ip *, struct tcphdr *);
-static tcp_pair *FindTTP(tcptrace_state_t *state, struct ip *, struct tcphdr *, int *, ptp_ptr **);
+static tcp_pair *NewTTP(tcptrace_context_t *context, struct ip *, struct tcphdr *);
+static tcp_pair *FindTTP(tcptrace_context_t *context, struct ip *, struct tcphdr *, int *, ptp_ptr **);
 static void MoreTcpPairs(int num_needed);
 static void ExtractContents(u_long seq, u_long tcp_data_bytes,
 			    u_long saved_data_bytes, void *pdata, tcb *ptcb);
-static Bool check_hw_dups(u_short id, seqnum seq, tcb *ptcb, tcptrace_state_t *state);
+static Bool check_hw_dups(u_short id, seqnum seq, tcb *ptcb, tcptrace_context_t *context);
 static u_long SeqRep(tcb *ptcb, u_long seq);
-static void UpdateConnLists(tcptrace_state_t *state, ptp_ptr *tcp_ptr, struct tcphdr *ptcp);
-static void UpdateConnList(tcptrace_state_t *state,
+static void UpdateConnLists(tcptrace_context_t *context, ptp_ptr *tcp_ptr, struct tcphdr *ptcp);
+static void UpdateConnList(tcptrace_context_t *context,
                            ptp_ptr *tcp_ptr, 
 			   const Bool valid, 
 			   ptp_ptr **conn_list_head, 
 			   ptp_ptr **conn_list_tail);
-static void RemoveOldConns(tcptrace_state_t *state,
+static void RemoveOldConns(tcptrace_context_t *context,
                            ptp_ptr **conn_list_head, 
 			   ptp_ptr **conn_list_tail,
 			   const unsigned expire_interval,
 			   const Bool num_conn_check,
 			   int *conn_count);
-static void RemoveConn(tcptrace_state_t *state, const ptp_ptr *tcp_ptr);
+static void RemoveConn(tcptrace_context_t *context, const ptp_ptr *tcp_ptr);
 static void RemoveTcpPair(const ptp_ptr *tcp_ptr);
 static Bool MissingData(tcp_pair *ptp);
 
@@ -497,7 +497,7 @@ SameConn(
 
 static tcp_pair *
 NewTTP(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     struct tcphdr *ptcp)
 {
@@ -579,8 +579,8 @@ NewTTP(
 			    PLOT_FILE_EXTENSION);
 	    if (graph_time_zero) {
 		/* set graph zero points */
-		plotter_nothing(ptp->a2b.tsg_plotter, state->current_time);
-		plotter_nothing(ptp->b2a.tsg_plotter, state->current_time);
+		plotter_nothing(ptp->a2b.tsg_plotter, context->current_time);
+		plotter_nothing(ptp->b2a.tsg_plotter, context->current_time);
 	    }
 	}
     }
@@ -605,8 +605,8 @@ NewTTP(
 			    OWIN_FILE_EXTENSION);
 	    if (graph_time_zero) {
 		/* set graph zero points */
-		plotter_nothing(ptp->a2b.owin_plotter, state->current_time);
-		plotter_nothing(ptp->b2a.owin_plotter, state->current_time);
+		plotter_nothing(ptp->a2b.owin_plotter, context->current_time);
+		plotter_nothing(ptp->b2a.owin_plotter, context->current_time);
 	    }
 	    ptp->a2b.owin_line =
 		new_line(ptp->a2b.owin_plotter, "owin", "red");
@@ -663,8 +663,8 @@ NewTTP(
 	    plotter_switch_axis(ptp->a2b.tline_plotter, TRUE);
 	      
 	    /* set graph zero points */
-	    plotter_nothing(ptp->a2b.tline_plotter, state->current_time);
-	    plotter_nothing(ptp->b2a.tline_plotter, state->current_time);
+	    plotter_nothing(ptp->a2b.tline_plotter, context->current_time);
+	    plotter_nothing(ptp->b2a.tline_plotter, context->current_time);
 
 	    /* Some graph initializations 
 	     * Generating a drawing space between x=0-100.
@@ -677,8 +677,8 @@ NewTTP(
 	     */
 	    tline_left  = 40;
 	    tline_right = 60;
-	    plotter_invisible(ptp->a2b.tline_plotter, state->current_time, 0);
-	    plotter_invisible(ptp->a2b.tline_plotter, state->current_time, 100);
+	    plotter_invisible(ptp->a2b.tline_plotter, context->current_time, 0);
+	    plotter_invisible(ptp->a2b.tline_plotter, context->current_time, 100);
 	}
     }
    
@@ -702,8 +702,8 @@ NewTTP(
 			SEGSIZE_FILE_EXTENSION);
 	if (graph_time_zero) {
 	    /* set graph zero points */
-	    plotter_nothing(ptp->a2b.segsize_plotter, state->current_time);
-	    plotter_nothing(ptp->b2a.segsize_plotter, state->current_time);
+	    plotter_nothing(ptp->a2b.segsize_plotter, context->current_time);
+	    plotter_nothing(ptp->b2a.segsize_plotter, context->current_time);
 	}
 	ptp->a2b.segsize_line =
 	    new_line(ptp->a2b.segsize_plotter, "segsize", "red");
@@ -721,7 +721,7 @@ NewTTP(
     ptp->a2b.ss = MakeSeqspace();
     ptp->b2a.ss = MakeSeqspace();
 
-    ptp->filename = state->current_filename;
+    ptp->filename = context->current_filename;
 
     return(ptp);
 }
@@ -759,7 +759,7 @@ static timeval	last_update_time = {0, 0};
 
 static tcp_pair *
 FindTTP(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     struct tcphdr *ptcp,
     int *pdir,
@@ -871,7 +871,7 @@ FindTTP(
 		if (0 && SYN_SET(ptcp)) {
 		    /* better keep this debugging around, it keeps breaking */
 		    printf("elapsed: %f sec\n",
-			   elapsed(ptp->last_time, state->current_time)/1000000);
+			   elapsed(ptp->last_time, context->current_time)/1000000);
 		    printf("SYN_SET: %d\n", SYN_SET(ptcp));
 		    printf("a2b.fin_count: %d\n", ptp->a2b.fin_count);
 		    printf("b2a.fin_count: %d\n", ptp->b2a.fin_count);
@@ -888,7 +888,7 @@ FindTTP(
 		} 
 	     
 		if (/* rule 1 */
-		    (elapsed(ptp->last_time, state->current_time)/1000000 > nonreal_live_conn_interval)//(4*60)) - Using nonreal_live_conn_interval instead of the 4 mins heuristic
+		    (elapsed(ptp->last_time, context->current_time)/1000000 > nonreal_live_conn_interval)//(4*60)) - Using nonreal_live_conn_interval instead of the 4 mins heuristic
 		    || /* rule 2 */
 		    ((SYN_SET(ptcp)) && 
 		     (((thisdir->fin_count >= 1) ||
@@ -904,11 +904,11 @@ FindTTP(
 		
 		    if (debug>1) {
 			printf("%s: Marking %p %s<->%s INACTIVE (idle: %f sec)\n",
-			       ts2ascii(&state->current_time),
+			       ts2ascii(&context->current_time),
 			       ptp,
 			       ptp->a_endpoint, ptp->b_endpoint,
 			       elapsed(ptp->last_time,
-				       state->current_time)/1000000);
+				       context->current_time)/1000000);
 			if (debug > 3)
 			    PrintTrace(ptp);
 		    }
@@ -969,7 +969,7 @@ FindTTP(
 	    live_conn_list_head = ptr;
 	}
 	ptr->from = ptph;
-	ptr->ptp = NewTTP(state, pip, ptcp);
+	ptr->ptp = NewTTP(context, pip, ptcp);
 	ptph->addr_pair = ptr->ptp->addr_pair;
 	ptph->ptp = (void *)ptr;
 	if (conn_num_threshold) {
@@ -978,7 +978,7 @@ FindTTP(
 		ptp_ptr *last_ptr = live_conn_list_tail;
 		live_conn_list_tail = last_ptr->prev;
 		live_conn_list_tail->next = NULL;
-		RemoveConn(state, last_ptr);
+		RemoveConn(context, last_ptr);
 		num_removed_tcp_pairs++;
 		active_conn_count--;
 		FreePtpPtr(last_ptr);
@@ -986,7 +986,7 @@ FindTTP(
 	}
     }
     else {
-	tcp_pair *tmp = NewTTP(state, pip,ptcp);
+	tcp_pair *tmp = NewTTP(context, pip,ptcp);
 	ptph->addr_pair = tmp->addr_pair;
 	ptph->ptp = tmp;
     }
@@ -1019,7 +1019,7 @@ FindTTP(
      
 static void 
 UpdateConnLists(
-                tcptrace_state_t *state,
+                tcptrace_context_t *context,
 		ptp_ptr *tcp_ptr,
 		struct tcphdr *ptcp)
 {
@@ -1037,7 +1037,7 @@ UpdateConnLists(
       if (debug > 6) {
 	printf("UpdateConnLists: removing conn from list of active conns\n");
       }
-      UpdateConnList(state,
+      UpdateConnList(context,
                      tcp_ptr, FALSE, 
 		     &live_conn_list_head, 
 		     &live_conn_list_tail);
@@ -1050,7 +1050,7 @@ UpdateConnLists(
 	  ptp_ptr *last_ptr = closed_conn_list_tail;
 	  closed_conn_list_tail = last_ptr->prev;
 	  closed_conn_list_tail->next = NULL;
-	  RemoveConn(state, last_ptr);
+	  RemoveConn(context, last_ptr);
 	  num_removed_tcp_pairs++;
 	  closed_conn_count--;
 	  FreePtpPtr(last_ptr);
@@ -1073,7 +1073,7 @@ UpdateConnLists(
     }
     else {
     /* update the list of closed connecitons */
-    UpdateConnList(state, tcp_ptr, TRUE, &closed_conn_list_head, 
+    UpdateConnList(context, tcp_ptr, TRUE, &closed_conn_list_head, 
 		   &closed_conn_list_tail);
     }
   }
@@ -1086,27 +1086,27 @@ UpdateConnLists(
 	       tcp_ptr->ptp->a2b.reset_count, tcp_ptr->ptp->b2a.reset_count,
 	       RESET_SET(ptcp));
      }
-    UpdateConnList(state, tcp_ptr, TRUE, &live_conn_list_head, &live_conn_list_tail);
+    UpdateConnList(context, tcp_ptr, TRUE, &live_conn_list_head, &live_conn_list_tail);
   }
   
   /* if we haven't updated the structures for at least update_interval number 
    * of seconds, update list of connections and hash table */
-  if ((elapsed(last_update_time, state->current_time) / 1000000) >= update_interval) {
+  if ((elapsed(last_update_time, context->current_time) / 1000000) >= update_interval) {
 
     real_time = time(&real_time);
     if (debug > 10) {
       fprintf(stderr, "%3i program time: %i\tcurrent time: %i\tdifference: %i\n",
-              ++minutes, (int)state->current_time.tv_sec, (int)real_time, 
-              (int)(real_time - state->current_time.tv_sec));
+              ++minutes, (int)context->current_time.tv_sec, (int)real_time, 
+              (int)(real_time - context->current_time.tv_sec));
     }
     if (conn_num_threshold) {
-      RemoveOldConns(state,
+      RemoveOldConns(context,
                      &live_conn_list_head, 
 		     &live_conn_list_tail, 
 		     remove_live_conn_interval, 
 		     TRUE,
 		     &active_conn_count);
-      RemoveOldConns(state,
+      RemoveOldConns(context,
                      &closed_conn_list_head,
 		     &closed_conn_list_tail, 
 		     remove_closed_conn_interval, 
@@ -1114,20 +1114,20 @@ UpdateConnLists(
 		     &closed_conn_count);
     }
     else {
-      RemoveOldConns(state,
+      RemoveOldConns(context,
                      &live_conn_list_head, 
 		     &live_conn_list_tail, 
 		     remove_live_conn_interval, 
 		     FALSE,
 		     0);
-      RemoveOldConns(state,
+      RemoveOldConns(context,
                      &closed_conn_list_head,
 		     &closed_conn_list_tail, 
 		     remove_closed_conn_interval, 
 		     FALSE,
 		     0);
     }
-    last_update_time = state->current_time;
+    last_update_time = context->current_time;
   }
 }
 
@@ -1135,7 +1135,7 @@ UpdateConnLists(
 
 static void
 UpdateConnList(
-               tcptrace_state_t *state,
+               tcptrace_context_t *context,
 	       ptp_ptr *tcp_ptr,
 	       const Bool valid,
 	       ptp_ptr **conn_list_head,
@@ -1184,7 +1184,7 @@ UpdateConnList(
 
 static void
 RemoveOldConns(
-               tcptrace_state_t *state,
+               tcptrace_context_t *context,
 	       ptp_ptr **conn_list_head,
 	       ptp_ptr **conn_list_tail,
 	       const unsigned expire_interval,
@@ -1205,13 +1205,13 @@ RemoveOldConns(
   ptr = (*conn_list_tail);
   prev_ptr = ptr->prev;
   for (; prev_ptr != NULL; ptr = prev_ptr, prev_ptr = ptr->prev) {
-    if ((elapsed(ptr->ptp->last_time, state->current_time) / 1000000) >= 
+    if ((elapsed(ptr->ptp->last_time, context->current_time) / 1000000) >= 
 	expire_interval) {
       /* if the connection is old enough, remove the snap from the linked-list
 	 and the hash_table */
       ptr->prev->next = NULL;
       *conn_list_tail = ptr->prev;
-      RemoveConn(state, ptr);
+      RemoveConn(context, ptr);
       num_removed_tcp_pairs++;
       if (0) {
 	printf("trace.c:RemoveOldConns() calling FreePtpSnap()\n");
@@ -1226,11 +1226,11 @@ RemoveOldConns(
   }
 
   if (((*conn_list_head)->ptp->last_time.tv_sec != 0) &&
-      ((elapsed((*conn_list_head)->ptp->last_time, state->current_time) / 1000000) >= 
+      ((elapsed((*conn_list_head)->ptp->last_time, context->current_time) / 1000000) >= 
        expire_interval)) {
     *conn_list_head = NULL;
     *conn_list_tail = NULL;
-    RemoveConn(state, ptr);
+    RemoveConn(context, ptr);
     num_removed_tcp_pairs++;
     FreePtpPtr(ptr);
     if (num_conn_check)
@@ -1243,7 +1243,7 @@ RemoveOldConns(
 /* remove tcp pair from the hash table */
 static void
 RemoveConn(
-           tcptrace_state_t *state,
+           tcptrace_context_t *context,
 	   const ptp_ptr *tcp_ptr)
 {
    hash hval;
@@ -1253,7 +1253,7 @@ RemoveConn(
 	     tcp_ptr->ptp, tcp_ptr->ptp->a_endpoint, tcp_ptr->ptp->b_endpoint);
    }
    
-   tcptrace_modules_deleteconn(state, tcp_ptr->ptp);
+   tcptrace_modules_deleteconn(context, tcp_ptr->ptp);
    
    hval = tcp_ptr->ptp->addr_pair.hash % HASH_TABLE_SIZE;
    
@@ -1362,7 +1362,7 @@ RemoveTcpPair(
 
 tcp_pair *
 dotrace(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     struct tcphdr *ptcp,
     void *plast)
@@ -1406,8 +1406,8 @@ dotrace(
 	if (warn_printtrunc)
 	    fprintf(stderr,
 		    "TCP packet %lu truncated too short to trace, ignored\n",
-		    state->pnum);
-	state->ctrunc++;
+		    context->pnum);
+	context->ctrunc++;
 	return(NULL);
     }
 
@@ -1422,7 +1422,7 @@ dotrace(
     ip_len   = gethdrlength(pip, plast) + getpayloadlength(pip,plast);
 
     /* make sure this is one of the connections we want */
-    ptp_save = FindTTP(state, pip,ptcp,&dir, &tcp_ptr);
+    ptp_save = FindTTP(context, pip,ptcp,&dir, &tcp_ptr);
 
     ++tcp_packet_count;
 
@@ -1439,9 +1439,9 @@ dotrace(
 
     /* do time stats */
     if (ZERO_TIME(&ptp_save->first_time)) {
-	ptp_save->first_time = state->current_time;
+	ptp_save->first_time = context->current_time;
     }
-    ptp_save->last_time = state->current_time;
+    ptp_save->last_time = context->current_time;
 
 
     /* bug fix:  it's legal to have the same end points reused.  The */
@@ -1491,11 +1491,11 @@ dotrace(
     
     /* idle-time stats */
     if (!ZERO_TIME(&thisdir->last_time)) {
-	u_llong itime = elapsed(thisdir->last_time, state->current_time);
+	u_llong itime = elapsed(thisdir->last_time, context->current_time);
 	if (itime > thisdir->idle_max)
 	    thisdir->idle_max = itime;
     }
-    thisdir->last_time =  state->current_time;
+    thisdir->last_time =  context->current_time;
     
 
     /* calculate data length */
@@ -1553,7 +1553,7 @@ dotrace(
 %s->%s: rexmitted SYN had diff. seqnum! (was %lu, now %lu, etime: %d sec)\n",
 			thisdir->host_letter,thisdir->ptwin->host_letter,
 			thisdir->syn, start,
-			(int)(elapsed(ptp_save->first_time, state->current_time)/1000000));
+			(int)(elapsed(ptp_save->first_time, context->current_time)/1000000));
 	    thisdir->bad_behavior = TRUE;
 	}
 	thisdir->syn = start;
@@ -1572,7 +1572,7 @@ dotrace(
 %s->%s: rexmitted FIN had diff. seqnum! (was %lu, now %lu, etime: %d sec)\n",
 			thisdir->host_letter,thisdir->ptwin->host_letter,
 			thisdir->fin, fin,
-			(int)(elapsed(ptp_save->first_time, state->current_time)/1000000));
+			(int)(elapsed(ptp_save->first_time, context->current_time)/1000000));
 	    thisdir->bad_behavior = TRUE;
 	}
 	thisdir->fin = fin;
@@ -1605,17 +1605,17 @@ dotrace(
 
     /* save to a file if requested */
     if (output_filename) {
-	PcapSavePacket(state, output_filename,pip,plast);
+	PcapSavePacket(context, output_filename,pip,plast);
     }
 
     /* now, print it if requested */
-    if (state->options->printem && !state->options->printallofem) {
-	printf("Packet %lu\n", state->pnum);
+    if (context->options->printem && !context->options->printallofem) {
+	printf("Packet %lu\n", context->pnum);
 	printpacket(0,		/* original length not available */
 		    (char *)plast - (char *)pip + 1,
 		    NULL,0,	/* physical stuff not known here */
 		    pip,plast,thisdir,
-                    state);
+                    context);
     }
 
     /* grab the address from this packet */
@@ -1637,7 +1637,7 @@ dotrace(
     tlinepl      = thisdir->tline_plotter;
 
     /* check the options */
-    ptcpo = ParseOptions(ptcp,plast,state);
+    ptcpo = ParseOptions(ptcp,plast,context);
     if (ptcpo->mss != -1)
 	thisdir->mss = ptcpo->mss;
     if (ptcpo->ws != -1) {
@@ -1687,8 +1687,8 @@ dotrace(
 	    thisdir->min_seg_size = tcp_data_length;
 	/* record first and last times for data (Mallman) */
 	if (ZERO_TIME(&thisdir->first_data_time))
-	    thisdir->first_data_time = state->current_time;
-	thisdir->last_data_time = state->current_time;
+	    thisdir->first_data_time = context->current_time;
+	thisdir->last_data_time = context->current_time;
     }
 
     /* total packets stats */
@@ -1701,13 +1701,13 @@ dotrace(
     
     /* instantaneous throughput stats */
     if (graph_tput) {
-	DoThru(state, thisdir,tcp_data_length);
+	DoThru(context, thisdir,tcp_data_length);
     }
 
     /* segment size graphs */
     if ((tcp_data_length > 0) && (thisdir->segsize_plotter != NO_PLOTTER)) {
-	extend_line(thisdir->segsize_line, state->current_time, tcp_data_length);
-	extend_line(thisdir->segsize_avg_line, state->current_time,
+	extend_line(thisdir->segsize_line, context->current_time, tcp_data_length);
+	extend_line(thisdir->segsize_avg_line, context->current_time,
 		    thisdir->data_bytes / thisdir->data_pkts);
     }
 
@@ -1725,7 +1725,7 @@ dotrace(
     /* check for hardware duplicates */
     /* only works for IPv4, IPv6 has no mandatory ID field */
     if (PIP_ISV4(pip) && docheck_hw_dups)
-	hw_dup = check_hw_dups(pip->ip_id, th_seq, thisdir, state);
+	hw_dup = check_hw_dups(pip->ip_id, th_seq, thisdir, context);
 
 
     /* Kevin Lahey's ECN code */
@@ -1785,7 +1785,7 @@ dotrace(
 		thisdir->zwnd_probe_bytes += tcp_data_length;
 	}
 	else
-		retrans_cnt = retrans_num_bytes = rexmit(state, thisdir,start, len, &out_order);
+		retrans_cnt = retrans_num_bytes = rexmit(context, thisdir,start, len, &out_order);
 
 	if (out_order)
 	    ++thisdir->out_order_pkts;
@@ -1815,7 +1815,7 @@ dotrace(
 
     /* do rtt stats */
     if (ACK_SET(ptcp)) {
-	ack_type = ack_in(state, otherdir,th_ack,tcp_data_length,eff_win);
+	ack_type = ack_in(context, otherdir,th_ack,tcp_data_length,eff_win);
 
 	if ( (th_ack == (otherdir->syn+1)) &&
 		 (otherdir->syn_count == 1) )
@@ -1851,10 +1851,10 @@ dotrace(
     /* plot out-of-order segments, if asked */
     if (out_order && (from_tsgpl != NO_PLOTTER) && show_out_order) {
 	plotter_perm_color(from_tsgpl, out_order_color);
-	plotter_text(from_tsgpl, state->current_time, SeqRep(thisdir,end),
+	plotter_text(from_tsgpl, context->current_time, SeqRep(thisdir,end),
 		     "a", "O");
 	if (bottom_letters)
-	    plotter_text(from_tsgpl, state->current_time,
+	    plotter_text(from_tsgpl, context->current_time,
 			 SeqRep(thisdir,thisdir->min_seq)-1500,
 			 "c", "O");
     }
@@ -1878,10 +1878,10 @@ dotrace(
 	if (!(FIN_SET(ptcp)||SYN_SET(ptcp)) &&
 	    from_tsgpl != NO_PLOTTER && show_rexmit) {
 	    plotter_perm_color(from_tsgpl, retrans_color);
-	    plotter_text(from_tsgpl, state->current_time, SeqRep(thisdir,end),
+	    plotter_text(from_tsgpl, context->current_time, SeqRep(thisdir,end),
 			 "a", hw_dup?"HD":"R");
 	    if (bottom_letters)
-		plotter_text(from_tsgpl, state->current_time,
+		plotter_text(from_tsgpl, context->current_time,
 			     SeqRep(thisdir,thisdir->min_seq)-1500,
 			     "c", hw_dup?"HD":"R");
 	}
@@ -1892,7 +1892,7 @@ dotrace(
     if (probe) {
         if (from_tsgpl != NO_PLOTTER && show_zwnd_probes) {
 	    plotter_perm_color(from_tsgpl,probe_color);
-	    plotter_text(from_tsgpl, state->current_time, SeqRep (thisdir,end),
+	    plotter_text(from_tsgpl, context->current_time, SeqRep (thisdir,end),
 			  "b", "P");
 	 }
      }
@@ -1915,16 +1915,16 @@ dotrace(
 			       hw_dup?hw_dup_color:
 			       retrans_num_bytes>0?retrans_color:
 			       synfin_color);
-	    plotter_diamond(from_tsgpl, state->current_time, SeqRep(thisdir,start));
-	    plotter_text(from_tsgpl, state->current_time,
+	    plotter_diamond(from_tsgpl, context->current_time, SeqRep(thisdir,start));
+	    plotter_text(from_tsgpl, context->current_time,
 			 SeqRep(thisdir,start+1), "a",
 			 hw_dup?"HD SYN":
 			 retrans_num_bytes>0?"R SYN":
 			 "SYN");
-	    plotter_uarrow(from_tsgpl, state->current_time, SeqRep(thisdir,start+1));
+	    plotter_uarrow(from_tsgpl, context->current_time, SeqRep(thisdir,start+1));
 	    plotter_line(from_tsgpl,
-			 state->current_time, SeqRep(thisdir,start),
-			 state->current_time, SeqRep(thisdir,start+1));
+			 context->current_time, SeqRep(thisdir,start),
+			 context->current_time, SeqRep(thisdir,start+1));
 	} else if (FIN_SET(ptcp)) {	/* FIN  */
 	   /* Wed Sep 18, 2002 - bugfix
 	    * Check if data is present in the last packet.
@@ -1933,10 +1933,10 @@ dotrace(
 	    */
 	    if(tcp_data_length > 0) { /* DATA + FIN */
 	       /* Data - default color */
-	       plotter_darrow(from_tsgpl, state->current_time, SeqRep(thisdir,start));
+	       plotter_darrow(from_tsgpl, context->current_time, SeqRep(thisdir,start));
 	       plotter_line(from_tsgpl,
-			    state->current_time, SeqRep(thisdir,start),
-			    state->current_time, SeqRep(thisdir,end));
+			    context->current_time, SeqRep(thisdir,start),
+			    context->current_time, SeqRep(thisdir,end));
 	       /* FIN - synfin color */
 	       plotter_perm_color(from_tsgpl,
 				  hw_dup?hw_dup_color:
@@ -1949,13 +1949,13 @@ dotrace(
 				  hw_dup?hw_dup_color:
 				  retrans_num_bytes>0?retrans_color:
 				  synfin_color);
-	       plotter_darrow(from_tsgpl, state->current_time, SeqRep(thisdir,end));
+	       plotter_darrow(from_tsgpl, context->current_time, SeqRep(thisdir,end));
 	    }
 	    plotter_line(from_tsgpl,
-			 state->current_time, SeqRep(thisdir,end),
-			 state->current_time, SeqRep(thisdir,end+1));
-	    plotter_box(from_tsgpl, state->current_time, SeqRep(thisdir,end+1));
-	    plotter_text(from_tsgpl, state->current_time,
+			 context->current_time, SeqRep(thisdir,end),
+			 context->current_time, SeqRep(thisdir,end+1));
+	    plotter_box(from_tsgpl, context->current_time, SeqRep(thisdir,end+1));
+	    plotter_text(from_tsgpl, context->current_time,
 			 SeqRep(thisdir,end+1), "a",
 			 hw_dup?"HD FIN":
 			 retrans_num_bytes>0?"R FIN":
@@ -1967,29 +1967,29 @@ dotrace(
 	    } else if (retrans) {
 		plotter_perm_color(from_tsgpl, retrans_color);
 	    }
-	    plotter_darrow(from_tsgpl, state->current_time, SeqRep(thisdir,start));
+	    plotter_darrow(from_tsgpl, context->current_time, SeqRep(thisdir,start));
 	    if (PUSH_SET(ptcp)) {
 		/* colored diamond is PUSH */
 		plotter_temp_color(from_tsgpl, push_color);
 		plotter_diamond(from_tsgpl,
-				state->current_time, SeqRep(thisdir,end));
+				context->current_time, SeqRep(thisdir,end));
 		plotter_temp_color(from_tsgpl, push_color);
-		plotter_dot(from_tsgpl, state->current_time, SeqRep(thisdir,end));
+		plotter_dot(from_tsgpl, context->current_time, SeqRep(thisdir,end));
 	    } else {
-		plotter_uarrow(from_tsgpl, state->current_time, SeqRep(thisdir,end));
+		plotter_uarrow(from_tsgpl, context->current_time, SeqRep(thisdir,end));
 	    }
 	    plotter_line(from_tsgpl,
-			 state->current_time, SeqRep(thisdir,start),
-			 state->current_time, SeqRep(thisdir,end));
+			 context->current_time, SeqRep(thisdir,start),
+			 context->current_time, SeqRep(thisdir,end));
 	} else if (tcp_data_length == 0) {
 	    /* for Brian Utterback */
 	    if (graph_zero_len_pkts) {
 		/* draw zero-length packets */
 		/* shows up as an X, really two arrow heads */
 		plotter_darrow(from_tsgpl,
-			       state->current_time, SeqRep(thisdir,start));
+			       context->current_time, SeqRep(thisdir,start));
 		plotter_uarrow(from_tsgpl,
-			       state->current_time, SeqRep(thisdir,start));
+			       context->current_time, SeqRep(thisdir,start));
 	    }
 	}
 
@@ -1998,8 +1998,8 @@ dotrace(
 	if (cwr || ecn_ce) {
 	    plotter_perm_color(from_tsgpl, ecn_color);
 	    plotter_diamond(from_tsgpl,
-			    state->current_time, SeqRep(thisdir,start));
-	    plotter_text(from_tsgpl, state->current_time, SeqRep(thisdir, start), "a",
+			    context->current_time, SeqRep(thisdir,start));
+	    plotter_text(from_tsgpl, context->current_time, SeqRep(thisdir, start), "a",
 			 cwr ? (ecn_ce ? "CWR CE" : "CWR") : "CE");
 	}
        
@@ -2009,7 +2009,7 @@ dotrace(
     if(urg) {
         if(from_tsgpl != NO_PLOTTER && show_urg){
 	    plotter_perm_color(from_tsgpl,urg_color);
-	    plotter_text(from_tsgpl, state->current_time, SeqRep (thisdir,end),
+	    plotter_text(from_tsgpl, context->current_time, SeqRep (thisdir,end),
 			   "a", "U");
 	 } 
     }
@@ -2043,8 +2043,8 @@ dotrace(
       struct timeval one3rd_rtt;                  
       struct timeval copy_current_time;   
       /* Make a copy of the current time (Needed for calculations) */
-      copy_current_time.tv_sec  = state->current_time.tv_sec;
-      copy_current_time.tv_usec = state->current_time.tv_usec;
+      copy_current_time.tv_sec  = context->current_time.tv_sec;
+      copy_current_time.tv_usec = context->current_time.tv_usec;
       /* Compute 1/3rd rtt */
       one3rd_rtt.tv_sec  = 0;
       one3rd_rtt.tv_usec = thisdir->rtt_last/3;
@@ -2127,10 +2127,10 @@ dotrace(
 	   plotter_perm_color(tlinepl, synfin_color);
 	 else
 	   plotter_perm_color(tlinepl, a2b_seg_color);
-	 plotter_line(tlinepl, state->current_time, tline_left, copy_current_time, tline_right);
+	 plotter_line(tlinepl, context->current_time, tline_left, copy_current_time, tline_right);
 	 plotter_rarrow(tlinepl, copy_current_time, tline_right);
 	 plotter_perm_color(tlinepl, default_color);
-	 plotter_text(tlinepl, state->current_time, tline_left, "l", buf1);
+	 plotter_text(tlinepl, context->current_time, tline_left, "l", buf1);
       }
       else if(dir == B2A) {
 	 tv_sub(&copy_current_time, one3rd_rtt);
@@ -2140,8 +2140,8 @@ dotrace(
 	   plotter_perm_color(tlinepl, synfin_color);
 	 else
 	   plotter_perm_color(tlinepl, b2a_seg_color);
-	 plotter_line(tlinepl, copy_current_time, tline_right, state->current_time, tline_left);
-	 plotter_larrow(tlinepl, state->current_time, tline_left);
+	 plotter_line(tlinepl, copy_current_time, tline_right, context->current_time, tline_left);
+	 plotter_larrow(tlinepl, context->current_time, tline_left);
 	 plotter_perm_color(tlinepl, default_color);	      
 	 plotter_text(tlinepl, copy_current_time, tline_right, "r", buf1);
       }
@@ -2163,20 +2163,20 @@ dotrace(
 	if (to_tsgpl != NO_PLOTTER) {
 	    plotter_temp_color(to_tsgpl, text_color);
 	    plotter_text(to_tsgpl,
-			 state->current_time, SeqRep(otherdir,plot_at),
+			 context->current_time, SeqRep(otherdir,plot_at),
 			 "a", "RST_IN");
 	}
 	if (from_tsgpl != NO_PLOTTER) {
 	    plotter_temp_color(from_tsgpl, text_color);
 	    plotter_text(from_tsgpl,
-			 state->current_time, SeqRep(thisdir,start),
+			 context->current_time, SeqRep(thisdir,start),
 			 "a", "RST_OUT");
 	}
 	if (ACK_SET(ptcp))
 	    ++thisdir->ack_pkts;
 
         if (run_continuously) {
-            UpdateConnLists(state, tcp_ptr, ptcp); 
+            UpdateConnLists(context, tcp_ptr, ptcp); 
         }
 	return(ptp_save);
     }
@@ -2239,12 +2239,12 @@ dotrace(
 	    if (to_tsgpl != NO_PLOTTER && show_zero_window) {
 		plotter_temp_color(to_tsgpl, text_color);
 		plotter_text(to_tsgpl,
-			     state->current_time, SeqRep(otherdir,winend),
+			     context->current_time, SeqRep(otherdir,winend),
 			     "a", "Z");
 		if (bottom_letters) {
 		    plotter_temp_color(to_tsgpl, text_color);
 		    plotter_text(to_tsgpl,
-				 state->current_time,
+				 context->current_time,
 				 SeqRep(otherdir,otherdir->min_seq)-1500,
 				 "a", "Z");
 		}
@@ -2262,11 +2262,11 @@ dotrace(
 	    plotter_perm_color(to_tsgpl, ack_color);
 	    plotter_line(to_tsgpl,
 			 thisdir->time, SeqRep(otherdir,thisdir->ack),
-			 state->current_time, SeqRep(otherdir,thisdir->ack));
+			 context->current_time, SeqRep(otherdir,thisdir->ack));
 	    if (thisdir->ack != ack) {
 		plotter_line(to_tsgpl,
-			     state->current_time, SeqRep(otherdir,thisdir->ack),
-			     state->current_time, SeqRep(otherdir,ack));
+			     context->current_time, SeqRep(otherdir,thisdir->ack),
+			     context->current_time, SeqRep(otherdir,ack));
 		if (show_rtt_dongles) {
 		    /* draw dongles for "interesting" acks */
 		    switch (ack_type) {
@@ -2281,20 +2281,20 @@ dotrace(
 			break;
 		      case AMBIG:	/* ambiguous */
 			plotter_temp_color(to_tsgpl, ackdongle_ambig_color);
-			plotter_diamond(to_tsgpl, state->current_time,
+			plotter_diamond(to_tsgpl, context->current_time,
 					SeqRep(otherdir,ack));
 			break;
 		      case NOSAMP:	/* acks retransmitted stuff cumulatively */
 			plotter_temp_color(to_tsgpl, ackdongle_nosample_color);
-			plotter_diamond(to_tsgpl, state->current_time,
+			plotter_diamond(to_tsgpl, context->current_time,
 					SeqRep(otherdir,ack));
 			break;
 		    }
 		}
 	    } else {
-		plotter_dtick(to_tsgpl, state->current_time, SeqRep(otherdir,ack));
+		plotter_dtick(to_tsgpl, context->current_time, SeqRep(otherdir,ack));
 		if (show_triple_dupack && (ack_type == TRIPLE)) {
-		    plotter_text(to_tsgpl, state->current_time,
+		    plotter_text(to_tsgpl, context->current_time,
 				 SeqRep(otherdir,ack),
 				 "a", "3");  /* '3' is for triple dupack */
 		}
@@ -2303,19 +2303,19 @@ dotrace(
 	    /* Kevin Lahey's code */
 	    if (ecn_echo && !SYN_SET(ptcp)) {
 	        plotter_perm_color(to_tsgpl, ecn_color);
-		plotter_diamond(to_tsgpl, state->current_time, SeqRep(otherdir, ack));
+		plotter_diamond(to_tsgpl, context->current_time, SeqRep(otherdir, ack));
 	    }
 
 	    plotter_perm_color(to_tsgpl, window_color);
 	    plotter_line(to_tsgpl,
 			 thisdir->time, SeqRep(otherdir,old_this_windowend),
-			 state->current_time, SeqRep(otherdir,old_this_windowend));
+			 context->current_time, SeqRep(otherdir,old_this_windowend));
 	    if (old_this_windowend != winend) {
 		plotter_line(to_tsgpl,
-			     state->current_time, SeqRep(otherdir,old_this_windowend),
-			     state->current_time, SeqRep(otherdir,winend));
+			     context->current_time, SeqRep(otherdir,old_this_windowend),
+			     context->current_time, SeqRep(otherdir,winend));
 	    } else {
-		plotter_utick(to_tsgpl, state->current_time, SeqRep(otherdir,winend));
+		plotter_utick(to_tsgpl, context->current_time, SeqRep(otherdir,winend));
 	    }
 	}
 
@@ -2367,18 +2367,18 @@ dotrace(
 	    plotter_perm_color(to_tsgpl, sack_color);
 	    for (scount = 0; scount < ptcpo->sack_count; ++scount) {
 		plotter_line(to_tsgpl,
-			     state->current_time,
+			     context->current_time,
 			     SeqRep(otherdir,ptcpo->sacks[scount].sack_left),
-			     state->current_time,
+			     context->current_time,
 			     SeqRep(otherdir,ptcpo->sacks[scount].sack_right));
 		/* make it easier to read multiple sacks by making them look like
 		   |-----|  (sideways)
 		*/
 		plotter_htick(to_tsgpl,
-			      state->current_time,
+			      context->current_time,
 			      SeqRep(otherdir,ptcpo->sacks[scount].sack_left));
 		plotter_htick(to_tsgpl,
-			      state->current_time,
+			      context->current_time,
 			      SeqRep(otherdir,ptcpo->sacks[scount].sack_right));
 
 		/* if there's more than one, label the order */
@@ -2387,7 +2387,7 @@ dotrace(
 		    char buf[5]; /* can't be more than 1 digit! */
 		    snprintf(buf,sizeof(buf),"%u",scount+1);	/* 1-base, rather than 0-base */
 		    plotter_text(to_tsgpl,
-				 state->current_time,
+				 context->current_time,
 				 SeqRep(otherdir,ptcpo->sacks[scount].sack_right),
 				 "r", buf);
 		}
@@ -2397,11 +2397,11 @@ dotrace(
 		    sack_top = ptcpo->sacks[scount].sack_right;
 	    }
 	    /* change - just draw the 'S' above the highest one */
-	    plotter_text(to_tsgpl, state->current_time,
+	    plotter_text(to_tsgpl, context->current_time,
 			 SeqRep(otherdir,sack_top),
 			 "a", "S");  /* 'S' is for Sack */
 	}
-	thisdir->time = state->current_time;
+	thisdir->time = context->current_time;
 	thisdir->ack = ack;
 
 /* 	thisdir->windowend = winend;  (moved above "only" point) */
@@ -2472,17 +2472,17 @@ dotrace(
 
 	/* graph owin */
 	if (thisdir->owin_plotter != NO_PLOTTER) {
-	    extend_line(thisdir->owin_line, state->current_time, owin);
+	    extend_line(thisdir->owin_line, context->current_time, owin);
 	    if (show_rwinline) {
-	      extend_line(thisdir->rwin_line, state->current_time, 
+	      extend_line(thisdir->rwin_line, context->current_time, 
 			  otherdir->win_last);
 	    }
-	    extend_line(thisdir->owin_avg_line, state->current_time,
+	    extend_line(thisdir->owin_avg_line, context->current_time,
 			(thisdir->owin_count?(thisdir->owin_tot/thisdir->owin_count):0)); 
 	}
     }
     if (run_continuously) {
-      UpdateConnLists(state, tcp_ptr, ptcp);
+      UpdateConnLists(context, tcp_ptr, ptcp);
     }
 
     return(ptp_save);
@@ -2491,7 +2491,7 @@ dotrace(
 
 
 void
-trace_done(tcptrace_state_t *state)
+trace_done(tcptrace_context_t *context)
 {
   tcp_pair *ptp;
   FILE *f_passfilter = NULL;
@@ -2500,7 +2500,7 @@ trace_done(tcptrace_state_t *state)
   Bool incomplete_pkt_capture = FALSE;
   char *comment;
   
-  comment = state->comment_prefix;
+  comment = context->comment_prefix;
   if (!run_continuously) {
     if (!printsuppress) {
 	if (tcp_trace_count == 0) {
@@ -2516,11 +2516,11 @@ trace_done(tcptrace_state_t *state)
 		comment,
 		num_tcp_pairs + 1,
 		num_tcp_pairs==0?"connection":"connections");
-    if (state->ctrunc > 0) {
+    if (context->ctrunc > 0) {
 	fprintf(stdout,
 		"%s*** %lu packets were too short to process at some point\n",
 		comment,
-		state->ctrunc);
+		context->ctrunc);
 	if (!warn_printtrunc)
 	    fprintf(stdout,"%s\t(use -w option to show details)\n", comment);
     }
@@ -2577,7 +2577,7 @@ trace_done(tcptrace_state_t *state)
 	/* a2b direction */
 	thisdir = &ptp->a2b;
 	if (!ZERO_TIME(&thisdir->last_time)) {
-	    itime = elapsed(thisdir->last_time, state->current_time);
+	    itime = elapsed(thisdir->last_time, context->current_time);
 	    if (itime > thisdir->idle_max)
 		thisdir->idle_max = itime;
 	}
@@ -2586,7 +2586,7 @@ trace_done(tcptrace_state_t *state)
 	/* b2a direction */
 	thisdir = &ptp->b2a;
 	if (!ZERO_TIME(&thisdir->last_time)) {
-	    itime = elapsed(thisdir->last_time, state->current_time);
+	    itime = elapsed(thisdir->last_time, context->current_time);
 	    if (itime > thisdir->idle_max)
 		thisdir->idle_max = itime;
 	}
@@ -2839,7 +2839,7 @@ struct tcp_options *
 ParseOptions(
     struct tcphdr *ptcp,
     void *plast,
-    tcptrace_state_t *state)
+    tcptrace_context_t *context)
 {
     static struct tcp_options tcpo;
     struct sack_block *psack;
@@ -2863,12 +2863,12 @@ ParseOptions(
 	if (TH_X2(ptcp) != 0) {
 	    fprintf(stderr,
 		    "TCP packet %lu: 4 reserved bits are not zero (0x%01x)\n",
-		    state->pnum, TH_X2(ptcp));
+		    context->pnum, TH_X2(ptcp));
 	}
 	if ((ptcp->th_flags & 0xc0) != 0) {
 	    fprintf(stderr,
 		    "TCP packet %lu: upper flag bits are not zero (0x%02x)\n",
-		    state->pnum, ptcp->th_flags);
+		    context->pnum, ptcp->th_flags);
 	}
     } else {
 	static int warned = 0;
@@ -2878,7 +2878,7 @@ ParseOptions(
 	    fprintf(stderr, "\
 TCP packet %lu: reserved bits are not all zero.  \n\
 \tFurther warnings disabled, use '-w' for more info\n",
-		    state->pnum);
+		    context->pnum);
 	}
     }
 
@@ -2890,8 +2890,8 @@ TCP packet %lu: reserved bits are not all zero.  \n\
 	if ((char *)popt > (char *)plast) {
 	    if (warn_printtrunc)
 		fprintf(stderr,"\
-ParseOptions: packet %lu too short to parse remaining options\n", state->pnum);
-	    state->ctrunc++;
+ParseOptions: packet %lu too short to parse remaining options\n", context->pnum);
+	    context->ctrunc++;
 	    break;
 	}
 
@@ -2899,14 +2899,14 @@ ParseOptions: packet %lu too short to parse remaining options\n", state->pnum);
 	if (*plen == 0) { \
 	    if (warn_printtrunc) fprintf(stderr, "\
 ParseOptions: packet %lu %s option has length 0, skipping other options\n", \
-                                           state->pnum,opt); \
+                                           context->pnum,opt); \
 	    popt = pdata; break;} \
 	if ((char *)popt + *plen - 1 > (char *)(plast)) { \
 	    if (warn_printtrunc) \
 		fprintf(stderr, "\
 ParseOptions: packet %lu %s option truncated, skipping other options\n", \
-              state->pnum,opt); \
-	    state->ctrunc++; \
+              context->pnum,opt); \
+	    context->ctrunc++; \
 	    popt = pdata; break;} \
 
 
@@ -2984,8 +2984,8 @@ ParseOptions: packet %lu %s option truncated, skipping other options\n", \
 		    if (warn_printtrunc)
 			fprintf(stderr,
 				"packet %lu: SACK block truncated\n",
-				state->pnum);
-		    state->ctrunc++;
+				context->pnum);
+		    context->ctrunc++;
 		    break;
 		}
 		++tcpo.sack_count;
@@ -3158,7 +3158,7 @@ check_hw_dups(
     u_short id,
     seqnum seq,
     tcb *tcb,
-    tcptrace_state_t *state)
+    tcptrace_context_t *context)
 {
     int i;
     struct str_hardware_dups *pshd;
@@ -3174,7 +3174,7 @@ check_hw_dups(
 	    if (warn_printhwdups) {
 		printf("%s->%s: saw hardware duplicate of TCP seq %lu, IP ID %u (packet %lu == %lu)\n",
 		       tcb->host_letter,tcb->ptwin->host_letter,
-		       seq, id, state->pnum, pshd->hwdup_packnum);
+		       seq, id, context->pnum, pshd->hwdup_packnum);
 	    }
 	    return(TRUE);
 	}
@@ -3184,7 +3184,7 @@ check_hw_dups(
     pshd = &tcb->hardware_dups[tcb->hardware_dups_ix];
     pshd->hwdup_seq = seq;
     pshd->hwdup_id = id;
-    pshd->hwdup_packnum = state->pnum;
+    pshd->hwdup_packnum = context->pnum;
     tcb->hardware_dups_ix = (tcb->hardware_dups_ix+1) % SEGS_TO_REMEMBER;
 
     return(FALSE);
@@ -3309,7 +3309,7 @@ tcp_cksum(
     struct ip *pip,
     struct tcphdr *ptcp,
     void *plast,
-    tcptrace_state_t *state)
+    tcptrace_context_t *context)
 {
     u_long sum = 0;
     unsigned tcp_length = 0;
@@ -3359,7 +3359,7 @@ tcp_cksum(
         /* quick sanity check, it the packet is truncated,
 	 * pertend it is valid.
 	 */ 
-        if (gettcp(state, pip, &ptcp, &plast) != 0)
+        if (gettcp(context, pip, &ptcp, &plast) != 0)
 	 return(0);
        
         /* Forming the pseudo-header */
@@ -3381,7 +3381,7 @@ tcp_cksum(
 	   struct ipv6_ext *pipv6_ext = (struct ipv6_ext *)(pip6+1);
 
 	   /* Searching for the routing header */
-	   int ret = getroutingheader(pip, &pipv6_ext, &plast, state);
+	   int ret = getroutingheader(pip, &pipv6_ext, &plast, context);
 	   
 	   if(!ret) {  /* Found the routing header */
 	      if(pipv6_ext->ip6ext_len >= 2) { /* Sanity check */
@@ -3433,7 +3433,7 @@ udp_cksum(
     struct ip *pip,
     struct udphdr *pudp,
     void *plast,
-    tcptrace_state_t *state)
+    tcptrace_context_t *context)
 {
     u_long sum = 0;
     unsigned udp_length;
@@ -3475,7 +3475,7 @@ udp_cksum(
         /* quick sanity check, it the packet is truncated,
 	 * pertend it is valid.
 	 */ 
-        if(getudp(pip, &pudp, &plast, state) != 0)
+        if(getudp(pip, &pudp, &plast, context) != 0)
 	 return(0);
        
         /* Forming the pseudo-header */
@@ -3497,7 +3497,7 @@ udp_cksum(
 	   struct ipv6_ext *pipv6_ext = (struct ipv6_ext *)(pip6+1);
 
 	   /* Searching for the routing header */
-	   int ret = getroutingheader(pip, &pipv6_ext, &plast, state);
+	   int ret = getroutingheader(pip, &pipv6_ext, &plast, context);
 	   
 	   if(!ret) {  /* Found the routing header */
 	      if(pipv6_ext->ip6ext_len >= 2) { /* Sanity check */
@@ -3544,9 +3544,9 @@ tcp_cksum_valid(
     struct ip *pip,
     struct tcphdr *ptcp,
     void *plast,
-    tcptrace_state_t *state)
+    tcptrace_context_t *context)
 {
-    return(tcp_cksum(pip,ptcp,plast,state) == 0);
+    return(tcp_cksum(pip,ptcp,plast,context) == 0);
 }
 
 
@@ -3556,14 +3556,14 @@ udp_cksum_valid(
     struct ip *pip,
     struct udphdr *pudp,
     void *plast,
-    tcptrace_state_t *state)
+    tcptrace_context_t *context)
 {
     if (ntohs(pudp->uh_sum) == 0) {
 	/* checksum not used */
 	return(1);		/* valid */
     }
     
-    return(udp_cksum(pip,pudp,plast,state) == 0);
+    return(udp_cksum(pip,pudp,plast,context) == 0);
 }
 
 /* Did we miss any segment during packet capture? */

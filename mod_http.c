@@ -187,10 +187,10 @@ static void HttpGather(struct http_info *ph);
 static struct http_info *MakeHttpRec(void);
 static struct get_info *MakeGetRec(struct http_info *ph);
 static u_long DataOffset(tcb *tcb, seqnum seq);
-static void AddGetTS(tcptrace_state_t *state, struct http_info *ph, u_long position);
-static void AddDataTS(tcptrace_state_t *state, struct http_info *ph, u_long position);
-static void AddAckTS(tcptrace_state_t *state, struct http_info *ph, u_long position);
-static void AddTS(tcptrace_state_t *state,
+static void AddGetTS(tcptrace_context_t *context, struct http_info *ph, u_long position);
+static void AddDataTS(tcptrace_context_t *context, struct http_info *ph, u_long position);
+static void AddAckTS(tcptrace_context_t *context, struct http_info *ph, u_long position);
+static void AddTS(tcptrace_context_t *context,
                   struct time_stamp *phead, struct time_stamp *ptail,
 		  u_long position);
 static double ts2d(timeval *pt);
@@ -207,7 +207,7 @@ static struct client_info *FindClient(char *clientname);
 /* Mostly as a module example, here's a plug in that records HTTP info */
 int
 http_init(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     int argc,
     char *argv[])
 {
@@ -330,32 +330,32 @@ MakeHttpRec()
 
 static void
 AddGetTS(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct http_info *ph,
     u_long position)
 {
-    AddTS(state, &ph->get_head,&ph->get_tail,position);
+    AddTS(context, &ph->get_head,&ph->get_tail,position);
 }
 
 
 
 static void
 AddDataTS(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct http_info *ph,
     u_long position)
 {
-    AddTS(state, &ph->data_head,&ph->data_tail,position);
+    AddTS(context, &ph->data_head,&ph->data_tail,position);
 }
 
 
 static void
 AddAckTS(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct http_info *ph,
     u_long position)
 {
-    AddTS(state, &ph->ack_head,&ph->ack_tail,position);
+    AddTS(context, &ph->ack_head,&ph->ack_tail,position);
 }
 
 
@@ -364,7 +364,7 @@ AddAckTS(
 /* TAIL points to the largest position numbers */
 static void
 AddTS(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct time_stamp *phead,
     struct time_stamp *ptail,
     u_long position)
@@ -373,7 +373,7 @@ AddTS(
     struct time_stamp *pts_new;
 
     pts_new = MallocZ(sizeof(struct time_stamp));
-    pts_new->thetime = state->current_time;
+    pts_new->thetime = context->current_time;
     pts_new->position = position;
 
     for (pts = ptail->prev; pts != NULL; pts = pts->prev) {
@@ -420,7 +420,7 @@ FindClient(
 
 void
 http_read(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,		/* the packet */
     tcp_pair *ptp,		/* info I have about this connection */
     void *plast,		/* past byte in the packet */
@@ -447,19 +447,19 @@ http_read(
     /* for client, record both ACKs and DATA time stamps */
     if (ph && IS_CLIENT(ptcp)) {
 	if (tcp_data_length > 0) {
-	    AddGetTS(state, ph,DataOffset(ph->tcb_client,ntohl(ptcp->th_seq)));
+	    AddGetTS(context, ph,DataOffset(ph->tcb_client,ntohl(ptcp->th_seq)));
 	}
 	if (ACK_SET(ptcp)) {
 	    if (debug > 4)
 		printf("Client acks %ld\n", DataOffset(ph->tcb_server,ntohl(ptcp->th_ack)));	    
-	    AddAckTS(state, ph,DataOffset(ph->tcb_server,ntohl(ptcp->th_ack)));
+	    AddAckTS(context, ph,DataOffset(ph->tcb_server,ntohl(ptcp->th_ack)));
 	}
     }
 
     /* for server, record DATA time stamps */
     if (ph && IS_SERVER(ptcp)) {
 	if (tcp_data_length > 0) {
-	    AddDataTS(state, ph,DataOffset(ph->tcb_server,ntohl(ptcp->th_seq)));
+	    AddDataTS(context, ph,DataOffset(ph->tcb_server,ntohl(ptcp->th_seq)));
 	    if (debug > 5) {
 		printf("Server sends %ld thru %ld\n",
 		       DataOffset(ph->tcb_server,ntohl(ptcp->th_seq)),
@@ -474,11 +474,11 @@ http_read(
 	if (IS_SERVER(ptcp)) {
 	    /* server */
 	    if (ZERO_TIME(&(ph->s_fin_time)))
-		ph->s_fin_time = state->current_time;
+		ph->s_fin_time = context->current_time;
 	} else {
 	    /* client */
 	    if (ZERO_TIME(&ph->c_fin_time))
-		ph->c_fin_time = state->current_time;
+		ph->c_fin_time = context->current_time;
 	}
     }
 
@@ -487,11 +487,11 @@ http_read(
 	if (IS_SERVER(ptcp)) {
 	    /* server */
 	    if (ZERO_TIME(&ph->s_syn_time))
-		ph->s_syn_time = state->current_time;
+		ph->s_syn_time = context->current_time;
 	} else {
 	    /* client */
 	    if (ZERO_TIME(&ph->c_syn_time))
-		ph->c_syn_time = state->current_time;
+		ph->c_syn_time = context->current_time;
 	}
     }
 }
@@ -693,12 +693,12 @@ FindContent(
        ContentStateFindResponse,
        ContentStateFindContentLength,
        ContentStateFinishHeader} StateType;
-    StateType state;
+    StateType context;
 
     pget = ph->gets_head;
     if ((mf) && (pget)) {
  
-       state = ContentStateStartHttp;
+       context = ContentStateStartHttp;
        done = 0;
 
        /* Memory map the entire file (I hope it's short!) */
@@ -714,14 +714,14 @@ FindContent(
        ph->total_reply_count= 0;
        
        while ((!done) && (pch <= (char *) plast)) {
-           switch (state) {
+           switch (context) {
 
-	    /* Start state: Find "HTTP/" that begins a response */
+	    /* Start context: Find "HTTP/" that begins a response */
 	    case (ContentStateStartHttp): {
 	       if (strncasecmp(pch, "HTTP/", 5) == 0) {
 
 		  /* Found start of a response */
-		  state = ContentStateFinishHttp;
+		  context = ContentStateFinishHttp;
 		  position = pch - pdata + 1;
 		  pget->reply_position = position;
 		  pch += 5;
@@ -735,7 +735,7 @@ FindContent(
 	    /* Finish off HTTP string (version number) by looking for whitespace */
 	    case (ContentStateFinishHttp): {
 	       if (*(pch) == ' ') {
-		  state = ContentStateFindResponse;
+		  context = ContentStateFindResponse;
 	       }
 	       else {
 		  pch++;
@@ -748,7 +748,7 @@ FindContent(
 	       if (*(pch) != ' ') {
 		  pget->response_code = atoi(pch);
 		  pch += 3;
-		  state = ContentStateFindContentLength;
+		  context = ContentStateFindContentLength;
 	       }
 	       else {
 		  pch++;
@@ -756,7 +756,7 @@ FindContent(
 	    }
 	      break;
 	      
-	    /* this state is now misnamed since we pull out other */
+	    /* this context is now misnamed since we pull out other */
 	    /* headers than just content-length now. */
 	    case (ContentStateFindContentLength): {
 	       if (strncasecmp(pch, "\r\nContent-Length:", 17) == 0) {
@@ -796,7 +796,7 @@ FindContent(
 		  /* No content-length header detected */
 		  /* No increment for pch here, effectively fall through */
 		  /* pget->content_length = 0; */
-		  state = ContentStateFinishHeader;
+		  context = ContentStateFinishHeader;
 	       }
 	       else {
 		  pch++;
@@ -851,14 +851,14 @@ FindContent(
 		   while (pch <= (char *)plast) {
 		     if (strncmp(pch, "\r\n\r\n", 4) == 0) {
 		       pch += 4;
-		       state = ContentStateStartHttp;
+		       context = ContentStateStartHttp;
 		       break;
 		     } else {
 		       pch++;
 		     }
 		   } 
 		   
-		   if (state == ContentStateStartHttp) {
+		   if (context == ContentStateStartHttp) {
 		     pget->content_length = pch - start;
 		   } else {
 		     /* calculate the content length */
@@ -867,10 +867,10 @@ FindContent(
 		   }
 		  }
 		 
-		  /* Set next state and do original tcptrace
+		  /* Set next context and do original tcptrace
 		   * processing based on what we learned above.
 		   */
-		  state = ContentStateStartHttp;
+		  context = ContentStateStartHttp;
 		  last_position = pch - pdata + 1;
 		  
 		  /* when was the first byte sent? */
@@ -960,7 +960,7 @@ FindGets(
        GetStateFindContentLength,
        GetStateFinishHeader
      } StateType;
-     StateType state;
+     StateType context;
 
    if (mf) {
 
@@ -974,14 +974,14 @@ FindGets(
       ph->total_request_length = (unsigned) (plast - pdata);
       ph->total_request_count = 0;
       
-      state = GetStateStartMethod;
+      context = GetStateStartMethod;
       
       /* search for method string*/
       pch = pdata;
       while (pch <= (char *)plast) {
-	  switch (state) {
+	  switch (context) {
 	     
-	  /* Start state: Find access method keyword */
+	  /* Start context: Find access method keyword */
 	  case (GetStateStartMethod): {
 	     
 	  /* Try to find a word describing a method.  These
@@ -1031,7 +1031,7 @@ FindGets(
 		
 		contentLength = 0;
 		pch += methodlen;
-		state = GetStateFinishMethod;
+		context = GetStateFinishMethod;
 	     }
 	     else {
 		/* Couldn't find a valid method, so increment */
@@ -1050,7 +1050,7 @@ FindGets(
 		    (j >= sizeof(getbuf)-1)) {
 		   getbuf[j] = '\00';
 		   pch = pch2;  /* skip forward */
-		   state = GetStateFindContentLength;
+		   context = GetStateFindContentLength;
 		   break;
 		}
 		getbuf[j] = *pch2;
@@ -1077,7 +1077,7 @@ FindGets(
 		 /* No content-length header detected, assume */
 		 /* zero.  Fall through (effective). */
 		 /* contentLength = 0; */
-		 state = GetStateFinishHeader;
+		 context = GetStateFinishHeader;
 	      }
 	      else {
 		 pch++;
@@ -1099,7 +1099,7 @@ FindGets(
 		   /* XXX What if a POST with no content-length? */
 		}
 		
-		state = GetStateStartMethod;
+		context = GetStateStartMethod;
 	     }
 	     else {
 		pch++;
@@ -1587,7 +1587,7 @@ connection (FINs) were not found in trace file.\n");
 }
 
 void
-http_done(tcptrace_state_t *state)
+http_done(tcptrace_context_t *context)
 {
     MFILE *pmf = NULL;
     struct http_info *ph;
@@ -1639,7 +1639,7 @@ http_newfile(
 
 void *
 http_newconn(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     tcp_pair *ptp)
 {
     struct http_info *ph;

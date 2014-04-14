@@ -6,7 +6,7 @@
 
 void
 tcptrace_process_file(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     char *filename)
 {
     pread_f *ppread;
@@ -32,11 +32,11 @@ tcptrace_process_file(
     tcptrace_working_file working_file;
     raw_packet_t raw_packet;
 
-    options = state->options;
-    debug = state->options->debug;
+    options = context->options;
+    debug = context->options->debug;
 
     /* set the current file name */
-    state->current_filename = filename;
+    context->current_filename = filename;
 
     /* load the file */
     {
@@ -61,7 +61,7 @@ tcptrace_process_file(
     location = 0;
 
     /* inform the modules, if they care... */
-    tcptrace_modules_all_newfile(state, &working_file, filename);
+    tcptrace_modules_all_newfile(context, &working_file, filename);
 
     /* count the files */
     ++file_count;
@@ -69,37 +69,37 @@ tcptrace_process_file(
     /* read each packet */
     while (1) {
         /* read the next packet */
-	ret = (*ppread)(&state->current_time,&len,&tlen,&phys,&phystype,&pip,&plast);
+	ret = (*ppread)(&context->current_time,&len,&tlen,&phys,&phystype,&pip,&plast);
 	if (ret == 0) /* EOF */
 	    break;
 
 	/* update global and per-file packet counters */
-	state->pnum++;          /* global */
+	context->pnum++;          /* global */
 	working_file.pnum++;	/* local to this file */
 
         /* TODO: move this stuff to read packet struct (maybe) */
         /* not sure if timestamp is necessary in raw_packet */
         /* (though it's the "correct" place for it) */
-        raw_packet.timestamp = &state->current_time;
+        raw_packet.timestamp = &context->current_time;
         raw_packet.pip = pip;
         raw_packet.phystype = phystype;
 
 
 	/* in case only a subset analysis was requested */
-	if (state->pnum < options->beginpnum) {
+	if (context->pnum < options->beginpnum) {
             continue;
         }
-	if ((state->options->endpnum != 0) &&
-            (state->pnum > options->endpnum)) {
-	    state->pnum--;
+	if ((context->options->endpnum != 0) &&
+            (context->pnum > options->endpnum)) {
+	    context->pnum--;
 	    working_file.pnum--;
 	    break;
         }
 
 	/* check for out-of-order packets (by timestamp, not protocol) */
         /* not sure why this first check is necessary */
-	if (!ZERO_TIME(&state->last_packet)) {
-	    if (tv_gt(state->last_packet, state->current_time)) {
+	if (!ZERO_TIME(&context->last_packet)) {
+	    if (tv_gt(context->last_packet, context->current_time)) {
 		/* out of order */
 		if ((file_count > 1) && (working_file.pnum == 1)) {
 		    fprintf(stderr, "\
@@ -147,7 +147,7 @@ That will likely confuse the program, so be careful!\n", filename);
 		unsigned frac;
 
 		if (debug)
-		    fprintf(stderr, "%s: ", state->current_filename);
+		    fprintf(stderr, "%s: ", context->current_filename);
 		if (is_stdin) {
 		    fprintf(stderr ,"%lu", working_file.pnum);
 		} else if (CompIsCompressed()) {
@@ -164,7 +164,7 @@ That will likely confuse the program, so be careful!\n", filename);
 		}
 		/* print elapsed time */
 		{
-		    double etime = elapsed(state->first_packet,state->last_packet);
+		    double etime = elapsed(context->first_packet,context->last_packet);
 		    fprintf(stderr," (%s)", elapsed2str(etime));
 		}
 
@@ -174,35 +174,35 @@ That will likely confuse the program, so be careful!\n", filename);
 	    fflush(stderr);
 	}
 
-        if (check_packet_type(&raw_packet, &working_file, state) == FALSE) {
+        if (check_packet_type(context, &raw_packet, &working_file) == FALSE) {
             /* if we don't support this packet type, skip it */
             continue;
         }
 
 	/* print the packet, if requested */
 	if (options->printallofem || options->dump_packet_data) {
-	    printf("Packet %lu\n", state->pnum);
-	    printpacket(len,tlen,phys,phystype,pip,plast,NULL,state);
+	    printf("Packet %lu\n", context->pnum);
+	    printpacket(len,tlen,phys,phystype,pip,plast,NULL,context);
 	}
 
 	/* keep track of global times */
-	if (ZERO_TIME(&state->first_packet)) {
-	    state->first_packet = state->current_time;
+	if (ZERO_TIME(&context->first_packet)) {
+	    context->first_packet = context->current_time;
         }
-	state->last_packet = state->current_time;
+	context->last_packet = context->current_time;
 
 	/* verify IP checksums, if requested */
 	if (options->verify_checksums) {
 	    if (!ip_cksum_valid(pip,plast)) {
-		state->bad_ip_checksums++;
+		context->bad_ip_checksums++;
 		if (options->warn_printbadcsum)
-		    fprintf(stderr, "packet %lu: bad IP checksum\n", state->pnum);
+		    fprintf(stderr, "packet %lu: bad IP checksum\n", context->pnum);
 		continue;
 	    }
 	}
 		       
 	/* find the start of the TCP header */
-	ret = gettcp(state, pip, &ptcp, &plast);
+	ret = gettcp(context, pip, &ptcp, &plast);
 
 	/* if that failed, it's not TCP */
 	if (ret < 0) {
@@ -210,18 +210,18 @@ That will likely confuse the program, so be careful!\n", filename);
 	    struct udphdr *pudp;
 
 	    /* look for a UDP header */
-	    ret = getudp(pip, &pudp, &plast, state);
+	    ret = getudp(pip, &pudp, &plast, context);
 
 	    if (options->do_udp && (ret == 0)) {
-		pup = udpdotrace(state, pip, pudp, plast);
+		pup = udpdotrace(context, pip, pudp, plast);
 
 		/* verify UDP checksums, if requested */
 		if (options->verify_checksums) {
-		    if (!udp_cksum_valid(pip,pudp,plast, state)) {
-			state->bad_udp_checksums++;
+		    if (!udp_cksum_valid(pip,pudp,plast, context)) {
+			context->bad_udp_checksums++;
 			if (options->warn_printbadcsum) {
 			    fprintf(stderr, "packet %lu: bad UDP checksum\n",
-				    state->pnum);
+				    context->pnum);
                         }
 			continue;
 		    }
@@ -229,13 +229,13 @@ That will likely confuse the program, so be careful!\n", filename);
 		       
 		/* if it's a new connection, tell the modules */
 		if (pup && pup->packets == 1) {
-		    tcptrace_modules_newconn_udp(state, pup);
+		    tcptrace_modules_newconn_udp(context, pup);
                 }
 		/* also, pass the packet to any modules defined */
-		tcptrace_modules_readpacket_udp(state, pip,pup,plast);
+		tcptrace_modules_readpacket_udp(context, pip,pup,plast);
 	    } else if (ret < 0) {
 		/* neither UDP nor TCP */
-		tcptrace_modules_readpacket_nottcpudp(state, pip, plast);
+		tcptrace_modules_readpacket_nottcpudp(context, pip, plast);
 	    }
 	    continue;
 	}
@@ -245,18 +245,17 @@ That will likely confuse the program, so be careful!\n", filename);
 
 	/* verify TCP checksums, if requested */
 	if (options->verify_checksums) {
-	    if (!tcp_cksum_valid(pip,ptcp,plast, state)) {
-		state->bad_tcp_checksums++;
+	    if (!tcp_cksum_valid(pip,ptcp,plast, context)) {
+		context->bad_tcp_checksums++;
 		if (options->warn_printbadcsum) {
-		    fprintf(stderr, "packet %lu: bad TCP checksum\n", state->pnum);
+		    fprintf(stderr, "packet %lu: bad TCP checksum\n", context->pnum);
                 }
 		continue;
 	    }
 	}
 		       
         /* perform TCP packet analysis */
-	ptp = dotrace(state, pip, ptcp, plast);
-
+	ptp = dotrace(context, pip, ptcp, plast); 
 	/* if it wasn't "interesting", we return NULL here */
 	if (ptp == NULL)
 	    continue;
@@ -266,11 +265,11 @@ That will likely confuse the program, so be careful!\n", filename);
 	if (!ptp->ignore_pair) {
 	    /* if it's a new connection, tell the modules */
 	    if (ptp->packets == 1) {
-		tcptrace_modules_newconn(state, ptp);
+		tcptrace_modules_newconn(context, ptp);
             }
 
 	    /* pass the packet to any modules */
-	    tcptrace_modules_readpacket(state, pip, ptp, plast);
+	    tcptrace_modules_readpacket(context, pip, ptp, plast);
 	}
 
 #if 0
@@ -278,12 +277,12 @@ That will likely confuse the program, so be careful!\n", filename);
         /* be harmful. Why would you have an abnormal number of signals here? */
         /* Would there be a problem if you did a ^C and the output was not */
         /* consistent? (and why would you care about that?) */
-        /* can we trap signals in state, return, then die gracefully? */
+        /* can we trap signals in context, return, then die gracefully? */
         /* determine why this code is here and eliminate it if possible */
 
 	/* for efficiency, only allow a signal every 1000 packets	*/
 	/* (otherwise the system call overhead will kill us)		*/
-	if (state->pnum % 1000 == 0) {
+	if (context->pnum % 1000 == 0) {
 	    sigset_t mask;
 
 	    sigemptyset(&mask);
@@ -312,7 +311,7 @@ That will likely confuse the program, so be careful!\n", filename);
 #endif
 
     /* unset current filename */
-    state->current_filename = NULL;
+    context->current_filename = NULL;
 
     /* close the input file */
     CompCloseFile(filename);
@@ -322,9 +321,10 @@ That will likely confuse the program, so be careful!\n", filename);
 
 
 Bool
-check_packet_type(raw_packet_t *raw_packet,
-                  tcptrace_working_file *working_file,
-                  tcptrace_state_t *state) {
+check_packet_type(tcptrace_context_t *context,
+                  raw_packet_t *raw_packet,
+                  tcptrace_working_file *working_file)
+{
 
     /* TODO: need test for this one */
     /* quick sanity check, better be an IPv4/v6 packet */
@@ -340,7 +340,7 @@ check_packet_type(raw_packet_t *raw_packet,
         if (debug) {
             fprintf(stderr,
                     "Skipping packet %lu, not an IPv4/v6 packet (version:%d)\n",
-                    state->pnum, IP_V(raw_packet->pip));
+                    context->pnum, IP_V(raw_packet->pip));
         }
         return(FALSE);
     }
@@ -360,7 +360,7 @@ for other packet types, I just don't have a place to test them\n\n");
         } else if (not_ether < 5) {
             fprintf(stderr,
                     "Skipping packet %lu, not an ethernet packet\n",
-                    state->pnum);
+                    context->pnum);
         } /* else, just shut up */
         return(FALSE);
     }
@@ -371,29 +371,29 @@ for other packet types, I just don't have a place to test them\n\n");
 
 /* TODO: move these into a different file */
 
-/* initialize the tcptrace runtime state */
+/* initialize the tcptrace runtime context */
 void
-tcptrace_initialize_state(tcptrace_state_t *state) {
-    state->pnum = 0;
+tcptrace_initialize_context(tcptrace_context_t *context) {
+    context->pnum = 0;
 
-    state->last_packet.tv_sec = 0;
-    state->last_packet.tv_usec = 0;
-    state->first_packet.tv_sec = 0;
-    state->first_packet.tv_usec = 0;
+    context->last_packet.tv_sec = 0;
+    context->last_packet.tv_usec = 0;
+    context->first_packet.tv_sec = 0;
+    context->first_packet.tv_usec = 0;
 
-    state->current_time.tv_sec = 0;
-    state->current_time.tv_usec = 0;
+    context->current_time.tv_sec = 0;
+    context->current_time.tv_usec = 0;
 
-    state->ctrunc = 0;
-    state->bad_ip_checksums = 0;
-    state->bad_tcp_checksums = 0;
-    state->bad_udp_checksums = 0;
+    context->ctrunc = 0;
+    context->bad_ip_checksums = 0;
+    context->bad_tcp_checksums = 0;
+    context->bad_udp_checksums = 0;
 
-    state->num_modules = 0;
+    context->num_modules = 0;
 
-    state->comment_prefix[0] = '\0';   /* no comment prefix by default */
+    context->comment_prefix[0] = '\0';   /* no comment prefix by default */
 
-    state->current_filename = NULL;
+    context->current_filename = NULL;
 
 }
 

@@ -66,12 +66,12 @@ static char const GCC_UNUSED rcsid[] =
 
 /* local routines */
 static void printeth_packet(struct ether_header *);
-static void printip_packet(tcptrace_state_t *state, struct ip *, void *plast);
-static void printtcp_packet(struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
-static void printudp_packet(struct ip *, void *plast, tcptrace_state_t *state);
+static void printip_packet(tcptrace_context_t *context, struct ip *, void *plast);
+static void printtcp_packet(struct ip *, void *plast, tcb *tcb, tcptrace_context_t *context);
+static void printudp_packet(struct ip *, void *plast, tcptrace_context_t *context);
 static char *ParenServiceName(portnum);
 static char *ParenHostName(struct ipaddr addr);
-static void printipv4(tcptrace_state_t *state, struct ip *pip, void *plast);
+static void printipv4(tcptrace_context_t *context, struct ip *pip, void *plast);
 static void printipv6(struct ipv6 *pipv6, void *plast);
 static char *ipv6addr2str(struct in6_addr addr);
 static void printipv4_opt_addrs(char *popt, int ptr, int len);
@@ -153,7 +153,7 @@ printeth_packet(
 
 static void
 printip_packet(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     void *plast)
 {
@@ -162,7 +162,7 @@ printip_packet(
 	if ((char *)pip+sizeof(struct ipv6)-1 > (char *)plast) {
 	    if (warn_printtrunc)
 		printf("\t[packet truncated too short for IP details]\n");
-	    state->ctrunc++;
+	    context->ctrunc++;
 	    return;
 	}
 	printipv6((struct ipv6 *)pip, plast);
@@ -174,10 +174,10 @@ printip_packet(
 	if ((char *)pip+sizeof(struct ip)-1 > (char *)plast) {
 	    if (warn_printtrunc)
 		printf("\t[packet truncated too short for IP details]\n");
-	    state->ctrunc++;
+	    context->ctrunc++;
 	    return;
 	}
-	printipv4(state, pip, plast);
+	printipv4(context, pip, plast);
 	return;
     }
 
@@ -189,7 +189,7 @@ printip_packet(
 
 static void
 printipv4(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,
     void *plast)
 {
@@ -200,7 +200,7 @@ printipv4(
     if ((char *)pip+sizeof(struct ip)-1 > (char *)plast) {
 	if (warn_printtrunc)
 	    printf("\t[packet truncated too short for IP details]\n");
-	state->ctrunc++;
+	context->ctrunc++;
 	return;
     }
 
@@ -227,7 +227,7 @@ printipv4(
     printf("\t     LEN: %d\n", ntohs(pip->ip_len));
     printf("\t      ID: %d\n", ntohs(pip->ip_id));
     printf("\t   CKSUM: 0x%04x", ntohs(pip->ip_sum));
-    if (state->options->verify_checksums)
+    if (context->options->verify_checksums)
 	printf(" (%s)", ip_cksum_valid(pip,plast)?"CORRECT":"WRONG");
     printf("\n");
 
@@ -351,7 +351,7 @@ printtcp_packet(
     struct ip *pip,
     void *plast,
     tcb *thisdir,
-    tcptrace_state_t *state)
+    tcptrace_context_t *context)
 {
     unsigned tcp_length;
     unsigned tcp_data_length;
@@ -363,10 +363,10 @@ printtcp_packet(
 
     tcptrace_runtime_options_t *options;
 
-    options = state->options;
+    options = context->options;
 
     /* find the tcp header */
-    if (gettcp(state, pip, &ptcp, &plast)) {
+    if (gettcp(context, pip, &ptcp, &plast)) {
         return;		/* not TCP or bad TCP packet */
     }
 
@@ -374,7 +374,7 @@ printtcp_packet(
     if ((char *)ptcp+sizeof(struct tcphdr)-1 > (char *)plast) {
 	if (warn_printtrunc)
 	    printf("\t[packet truncated too short for TCP details]\n");
-	state->ctrunc++;
+	context->ctrunc++;
 	return;
     }
 
@@ -428,7 +428,7 @@ printtcp_packet(
 	if ((char *)pdata + tcp_data_length > ((char *)plast+1))
 	    printf(" (too short to verify)");
 	else
-	    printf(" (%s)", tcp_cksum_valid(pip,ptcp,plast,state)?"CORRECT":"WRONG");
+	    printf(" (%s)", tcp_cksum_valid(pip,ptcp,plast,context)?"CORRECT":"WRONG");
     }
     printf("\n");
 
@@ -461,7 +461,7 @@ printtcp_packet(
 
 	printf("\t");
 
-	ptcpo = ParseOptions(ptcp,plast,state);
+	ptcpo = ParseOptions(ptcp,plast,context);
 
 	if (ptcpo->mss != -1)
 	    printf(" MSS(%d)", ptcpo->mss);
@@ -521,7 +521,7 @@ static void
 printudp_packet(
     struct ip *pip,
     void *plast,
-    tcptrace_state_t *state)
+    tcptrace_context_t *context)
 {
     struct udphdr *pudp;
     unsigned udp_length;
@@ -529,17 +529,17 @@ printudp_packet(
     u_char *pdata;
     tcptrace_runtime_options_t *options;
 
-    options = state->options;
+    options = context->options;
 
     /* find the udp header */
-    if (getudp(pip, &pudp, &plast, state))
+    if (getudp(pip, &pudp, &plast, context))
       return;	  /* not UDP  or bad UDP packet */
 
     /* make sure we have enough of the packet */
     if ((char *)pudp+sizeof(struct udphdr)-1 > (char *)plast) {
 	if (warn_printtrunc)
 	    printf("\t[packet truncated too short for UDP details]\n");
-	state->ctrunc++;
+	context->ctrunc++;
 	return;
     }
 
@@ -554,11 +554,11 @@ printudp_packet(
     udp_data_length = udp_length - sizeof(struct udphdr);
     printf("\t  UCKSUM: 0x%04x", ntohs(pudp->uh_sum));
     pdata = (u_char *)pudp + sizeof(struct udphdr);
-    if (state->options->verify_checksums) {
+    if (context->options->verify_checksums) {
 	if ((char *)pdata + udp_data_length > ((char *)plast+1))
 	    printf(" (too short to verify)");
 	else
-	    printf(" (%s)", udp_cksum_valid(pip,pudp,plast,state)?"CORRECT":"WRONG");
+	    printf(" (%s)", udp_cksum_valid(pip,pudp,plast,context)?"CORRECT":"WRONG");
     }
     printf("\n");
     printf("\t    DLEN: %u", ntohs(pudp->uh_ulen));
@@ -582,7 +582,7 @@ printpacket(
      struct ip		*pip,
      void 		*plast,
      tcb		*tcb,
-     tcptrace_state_t *state)
+     tcptrace_context_t *context)
 {
     if (len == 0)
 	/* original length unknown */
@@ -592,7 +592,7 @@ printpacket(
     else
         printf("\tPacket Length: %d (saved length %d)\n", len,tlen);
 
-    printf("\tCollected: %s\n", ts2ascii(&state->current_time));
+    printf("\tCollected: %s\n", ts2ascii(&context->current_time));
 
     if (phys) {
 	switch(phystype) {
@@ -606,14 +606,14 @@ printpacket(
     }
 
     /* it's always supposed to be an IP packet */
-    printip_packet(state, pip,plast);
+    printip_packet(context, pip,plast);
 
 
     /* this will fail if it's not TCP */
-    printtcp_packet(pip,plast,tcb,state);
+    printtcp_packet(pip,plast,tcb,context);
 
     /* this will fail if it's not UDP */
-    printudp_packet(pip,plast,state);
+    printudp_packet(pip,plast,context);
 }
 
 

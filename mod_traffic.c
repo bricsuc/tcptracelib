@@ -192,14 +192,14 @@ static int longconn_duration = 60;
 static struct traffic_info *MakeTrafficRec(u_short port);
 static void MakeTrafficLines(struct traffic_info *pti);
 static struct conn_info *MakeConnRec(void);
-static void AgeTraffic(tcptrace_state_t *state);
+static void AgeTraffic(tcptrace_context_t *context);
 static struct traffic_info *FindPort(u_short port);
 static void IncludePorts(unsigned firstport, unsigned lastport);
 static void ExcludePorts(unsigned firstport, unsigned lastport);
 static void CheckPortNum(unsigned portnum);
 static char *PortName(int port);
 static void ParseArgs(char *argstring);
-static void DoplotIOpen(tcptrace_state_t *state, int port, Bool fopen);
+static void DoplotIOpen(tcptrace_context_t *context, int port, Bool fopen);
 
 
 /* info for opens and closes graphs */
@@ -294,7 +294,7 @@ IncludePorts(
 /* Mostly as a module example, here's a plug in that records TRAFFIC info */
 int
 traffic_init(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     int argc,
     char *argv[])
 {
@@ -453,7 +453,7 @@ traffic_init(
     MakeTrafficLines(ports[0]);
 
     /* init the graphs and etc... */
-    AgeTraffic(state);
+    AgeTraffic(context);
 
     return(1);	/* TRUE means call traffic_read and traffic_done later */
 }
@@ -566,7 +566,7 @@ MakeConnRec(void)
 
 void
 traffic_read(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     struct ip *pip,		/* the packet */
     tcp_pair *ptp,		/* info I have about this connection */
     void *plast,		/* past byte in the packet */
@@ -600,9 +600,9 @@ traffic_read(
 
 	    /* instantaneous opens and closes */
 	    if (doplot_i_open) {
-		DoplotIOpen(state, ntohs(ptcp->th_dport), TRUE);
-		DoplotIOpen(state, ntohs(ptcp->th_sport), TRUE);
-		DoplotIOpen(state, 0, TRUE);
+		DoplotIOpen(context, ntohs(ptcp->th_dport), TRUE);
+		DoplotIOpen(context, ntohs(ptcp->th_sport), TRUE);
+		DoplotIOpen(context, 0, TRUE);
 	    }
 	}
     }
@@ -633,9 +633,9 @@ traffic_read(
 
 	    /* instantaneous opens and closes */
 	    if (doplot_i_open) {
-		DoplotIOpen(state, ntohs(ptcp->th_dport), FALSE);
-		DoplotIOpen(state, ntohs(ptcp->th_sport), FALSE);
-		DoplotIOpen(state, 0, FALSE);
+		DoplotIOpen(context, ntohs(ptcp->th_dport), FALSE);
+		DoplotIOpen(context, ntohs(ptcp->th_sport), FALSE);
+		DoplotIOpen(context, 0, FALSE);
 	    }
 	}
     }
@@ -719,7 +719,7 @@ traffic_read(
 
     /* see if this is now "long duration" */
     if (!pci->islong) {
-	int etime_msecs = elapsed(ptp->first_time, state->current_time);
+	int etime_msecs = elapsed(ptp->first_time, context->current_time);
 	if (etime_msecs/1000000 > longconn_duration) {
 	    pci->islong = 1;
 	}
@@ -742,9 +742,9 @@ traffic_read(
 
 
     /* determine elapsed time and age the samples */
-    if (elapsed(last_time, state->current_time)/1000000.0 > age_interval) {
-	AgeTraffic(state);
-	last_time = state->current_time;
+    if (elapsed(last_time, context->current_time)/1000000.0 > age_interval) {
+	AgeTraffic(context);
+	last_time = context->current_time;
     }
 }
 
@@ -764,7 +764,7 @@ PortName(
 
 
 static void
-AgeTraffic(tcptrace_state_t *state)
+AgeTraffic(tcptrace_context_t *context)
 {
     struct traffic_info *pti;
     struct conn_info *pci;
@@ -774,12 +774,12 @@ AgeTraffic(tcptrace_state_t *state)
 
     /* first time doesn't count */
     if (ZERO_TIME(&last_time)) {
-	last_time = state->current_time;
+	last_time = context->current_time;
 	return;
     }
 
     /* check elapsed time */
-    etime = elapsed(last_time, state->current_time);
+    etime = elapsed(last_time, context->current_time);
     if (ldebug>1)
 	printf("AgeTraffic called, elapsed time is %.3f seconds\n", etime/1000000);
     if (etime == 0.0)
@@ -825,7 +825,7 @@ AgeTraffic(tcptrace_state_t *state)
     /* plot halfopen conns */
     if (doplot_halfopen) {
 	/* draw lines */
-	extend_line(line_num_halfopens, state->current_time, num_halfopens);
+	extend_line(line_num_halfopens, context->current_time, num_halfopens);
     }
 
 
@@ -834,9 +834,9 @@ AgeTraffic(tcptrace_state_t *state)
     /* opens */
     if (doplot_openclose) {
 	/* draw lines */
-	extend_line(line_num_opens, state->current_time, num_opens);
-	extend_line(line_num_closes, state->current_time, num_closes);
-	extend_line(line_open_conns, state->current_time, open_conns);
+	extend_line(line_num_opens, context->current_time, num_opens);
+	extend_line(line_num_closes, context->current_time, num_closes);
+	extend_line(line_open_conns, context->current_time, open_conns);
 
 	/* reset interval counters */
 	 
@@ -860,8 +860,8 @@ AgeTraffic(tcptrace_state_t *state)
 	rexmits = (rexmits+age_interval-1)/age_interval;
 
 	/* draw lines */
-	extend_line(line_dupacks, state->current_time, dupacks);
-	extend_line(line_rexmits, state->current_time, rexmits);
+	extend_line(line_dupacks, context->current_time, dupacks);
+	extend_line(line_rexmits, context->current_time, rexmits);
 
 	/* reset interval counters */
 	dupacks = 0;
@@ -878,11 +878,11 @@ AgeTraffic(tcptrace_state_t *state)
 	rtt_avg = (int)((rtt_ttl/(float)rtt_samples));
 
 	/* draw lines */
-	extend_line(line_rtt_avg, state->current_time, rtt_avg);
+	extend_line(line_rtt_avg, context->current_time, rtt_avg);
 	if (rtt_min != -1)
-	    extend_line(line_rtt_min, state->current_time, rtt_min);
+	    extend_line(line_rtt_min, context->current_time, rtt_min);
 	if (rtt_max != -1)
-	    extend_line(line_rtt_max, state->current_time, rtt_max);
+	    extend_line(line_rtt_max, context->current_time, rtt_max);
 
 	/* reset interval counters */
 	rtt_ttl = 0;
@@ -895,8 +895,8 @@ AgeTraffic(tcptrace_state_t *state)
     /* ============================================================ */
     /* report of total data */
     if (doplot_data) {
-	extend_line(line_data_all, state->current_time, data_nbytes_all);
-	extend_line(line_data_nonrexmit, state->current_time, data_nbytes_nonrexmit);
+	extend_line(line_data_all, context->current_time, data_nbytes_all);
+	extend_line(line_data_nonrexmit, context->current_time, data_nbytes_nonrexmit);
     }
 
     /* ============================================================ */
@@ -912,7 +912,7 @@ AgeTraffic(tcptrace_state_t *state)
 	    ups = (int)((float)pti->nbytes * 1000000.0 / etime);
 
 	    /* plot it */
-	    extend_line(pti->line_nbytes, state->current_time, ups);
+	    extend_line(pti->line_nbytes, context->current_time, ups);
 	}
 
 	/* plot packets */
@@ -921,7 +921,7 @@ AgeTraffic(tcptrace_state_t *state)
 	    ups = (int)((float)pti->npackets * 1000000.0 / etime);
 
 	    /* plot it */
-	    extend_line(pti->line_npackets, state->current_time, ups);
+	    extend_line(pti->line_npackets, context->current_time, ups);
 	}
 
 
@@ -929,25 +929,25 @@ AgeTraffic(tcptrace_state_t *state)
 	/* plot active connections */
 	if (doplot_active) {
 	    /* plot it */
-	    extend_line(pti->line_nactive, state->current_time, pti->nactive);
+	    extend_line(pti->line_nactive, context->current_time, pti->nactive);
 	}
 
 	/* plot idle connections */
 	if (doplot_idle) {
 	    /* plot it */
-	    extend_line(pti->line_nidle, state->current_time, pti->nidle);
+	    extend_line(pti->line_nidle, context->current_time, pti->nidle);
 	}
 
 
 	/* plot open connections */
 	if (doplot_open) {
 	    /* plot it */
-	    extend_line(pti->line_nopen, state->current_time, pti->nopen);
+	    extend_line(pti->line_nopen, context->current_time, pti->nopen);
 	}
 
 	/* plot long-duration */
 	if (doplot_long) {
-	    extend_line(pti->line_nlong, state->current_time, pti->nlong);
+	    extend_line(pti->line_nlong, context->current_time, pti->nlong);
 	}
 
 	/* plot pureacks */
@@ -955,7 +955,7 @@ AgeTraffic(tcptrace_state_t *state)
 	    /* convert to units per second */
 	    ups = (int)((float)pti->npureacks * 1000000.0 / etime);
 
-	    extend_line(pti->line_pureacks, state->current_time, ups);
+	    extend_line(pti->line_pureacks, context->current_time, ups);
 	}
     }
 
@@ -974,16 +974,16 @@ AgeTraffic(tcptrace_state_t *state)
 	pti->npureacks = 0;
     }
 
-    last_time = state->current_time;
+    last_time = context->current_time;
 }
 
 
 void	
-traffic_done(tcptrace_state_t *state)
+traffic_done(tcptrace_context_t *context)
 {
     struct traffic_info *pti;
     struct conn_info *pci;
-    double etime = elapsed(state->first_packet, state->last_packet);
+    double etime = elapsed(context->first_packet, context->last_packet);
     int etime_secs = etime / 1000000.0;
     MFILE *pmf;
     int i;
@@ -997,7 +997,7 @@ traffic_done(tcptrace_state_t *state)
 	++ports[0]->ttlactive;
     }
 
-    AgeTraffic(state);
+    AgeTraffic(context);
 
     pmf = Mfopen(PORT_FILENAME,"w");
     printf("Dumping port statistics into file %s\n", PORT_FILENAME);
@@ -1082,7 +1082,7 @@ bytes: %12lu  pkts: %10lu  conns: %8lu  tput: %8lu B/s\n",
 
 void *
 traffic_newconn(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     tcp_pair *ptp)
 {
     struct conn_info *pci;
@@ -1345,7 +1345,7 @@ ParseArgs(char *argstring)
 }
 
 static void
-DoplotIOpen(tcptrace_state_t *state, int port, Bool fopen)
+DoplotIOpen(tcptrace_context_t *context, int port, Bool fopen)
 {
     struct traffic_info *pti;
 
@@ -1358,7 +1358,7 @@ DoplotIOpen(tcptrace_state_t *state, int port, Bool fopen)
     else
 	--pti->n_i_open;
 
-    extend_line(pti->line_niopen, state->current_time, pti->n_i_open);
+    extend_line(pti->line_niopen, context->current_time, pti->n_i_open);
 }
 
 #endif /* LOAD_MODULE_TRAFFIC */

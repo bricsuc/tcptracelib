@@ -90,29 +90,29 @@ static void insert_seg_between (quadrant *,
 				segment *,
 				segment *);
 static void collapse_quad (quadrant *);
-static segment *create_seg (tcptrace_state_t *,
+static segment *create_seg (tcptrace_context_t *,
                             seqnum,
 			    seglen);
 static quadrant *whichquad (seqspace *,
 			    seqnum);
 static quadrant *create_quadrant (void);
-static int addseg (tcptrace_state_t *,
+static int addseg (tcptrace_context_t *,
                    tcb *,
 		   quadrant *,
 		   seqnum,
 		   seglen,
 		   Bool *);
-static void rtt_retrans (tcptrace_state_t *,
+static void rtt_retrans (tcptrace_context_t *,
                          tcb *,
 			 segment *);
-static enum t_ack rtt_ackin (tcptrace_state_t *,
+static enum t_ack rtt_ackin (tcptrace_context_t *,
                              tcb *,
 			     segment *,
 			     Bool rexmit);
 static void dump_rtt_sample (tcb *,
 			     segment *,
 			     double);
-static void graph_rtt_sample (tcptrace_state_t *,
+static void graph_rtt_sample (tcptrace_context_t *,
                               tcb *,
 			      segment *,
 			      unsigned long);
@@ -125,7 +125,7 @@ static void graph_rtt_sample (tcptrace_state_t *,
  *            *pout_order to to TRUE if segment is out of order
  */
 int
-rexmit (tcptrace_state_t *state,
+rexmit (tcptrace_context_t *context,
         tcb * ptcb,
 	seqnum seq,
 	seglen len,
@@ -151,14 +151,14 @@ rexmit (tcptrace_state_t *state,
 	/* in first quadrant */
 	seq1 = seq;
 	len1 = LAST_SEQ (QUADNUM (seq1)) - seq1 + 1;
-	rexlen = addseg(state, ptcb, pquad, seq1, len1, pout_order);
+	rexlen = addseg(context, ptcb, pquad, seq1, len1, pout_order);
 
 	/* in second quadrant */
 	seq2 = FIRST_SEQ (QUADNUM (seq_last));
 	len2 = len - len1;
-	rexlen += addseg(state, ptcb, pquad->next, seq2, len2, pout_order);
+	rexlen += addseg(context, ptcb, pquad->next, seq2, len2, pout_order);
     } else {
-	rexlen = addseg(state, ptcb, pquad, seq, len, pout_order);
+	rexlen = addseg(context, ptcb, pquad, seq, len, pout_order);
     }
 
     return (rexlen);
@@ -167,7 +167,7 @@ rexmit (tcptrace_state_t *state,
 
 /********************************************************************/
 static int
-addseg (tcptrace_state_t *state,
+addseg (tcptrace_context_t *context,
         tcb * ptcb,
 	quadrant * pquad,
 	seqnum thisseg_firstbyte,
@@ -203,7 +203,7 @@ addseg (tcptrace_state_t *state,
 		*pout_order = TRUE;
 
 	    /* make a new segment record for it */
-	    pseg_new = create_seg(state, thisseg_firstbyte, len);
+	    pseg_new = create_seg(context, thisseg_firstbyte, len);
 	    insert_seg_between (pquad, pseg_new, pseg->prev, pseg);
 
 	    /* see if we overlap the next segment in the list */
@@ -231,7 +231,7 @@ addseg (tcptrace_state_t *state,
 	    ++pseg->retrans;
 	    if (!split) {
                 /* must be a retransmission */
-		rtt_retrans(state, ptcb, pseg);
+		rtt_retrans(context, ptcb, pseg);
             }
 
 	    if (thisseg_lastbyte <= pseg->seq_lastbyte) {
@@ -252,7 +252,7 @@ addseg (tcptrace_state_t *state,
 
     /* if we got to the end, then it doesn't go BEFORE anybody, */
     /* tack it onto the end */
-    pseg_new = create_seg(state, thisseg_firstbyte, len);
+    pseg_new = create_seg(context, thisseg_firstbyte, len);
     insert_seg_between (pquad, pseg_new, pquad->seglist_tail, NULL);
 
     return (rexlen);
@@ -262,7 +262,7 @@ addseg (tcptrace_state_t *state,
 
 /**********************************************************************/
 static segment *
-create_seg (tcptrace_state_t *state,
+create_seg (tcptrace_context_t *context,
             seqnum seq,
 	    seglen len)
 {
@@ -270,7 +270,7 @@ create_seg (tcptrace_state_t *state,
 
     pseg = (segment *) MallocZ (sizeof (segment));
 
-    pseg->time = state->current_time;
+    pseg->time = context->current_time;
     pseg->seq_firstbyte = seq;
     pseg->seq_lastbyte = seq + len - 1;
 
@@ -431,7 +431,7 @@ insert_seg_between (quadrant * pquad,
 
 
 static enum t_ack
-rtt_ackin (tcptrace_state_t *state,
+rtt_ackin (tcptrace_context_t *context,
            tcb * ptcb,
 	   segment * pseg,
 	   Bool rexmit_prev)
@@ -442,7 +442,7 @@ rtt_ackin (tcptrace_state_t *state,
     u_long current_size = 0;
 
     /* how long did it take */
-    etime_rtt = elapsed (pseg->time, state->current_time);
+    etime_rtt = elapsed (pseg->time, context->current_time);
 
     if (rexmit_prev) {
 	/* first, check for the situation in which the segment being ACKed */
@@ -529,7 +529,7 @@ rtt_ackin (tcptrace_state_t *state,
 
     /* plot RTT samples, if asked */
     if (graph_rtt && (pseg->retrans == 0)) {
-	graph_rtt_sample(state, ptcb, pseg, etime_rtt);
+	graph_rtt_sample(context, ptcb, pseg, etime_rtt);
     }
 
     return (ret);
@@ -538,7 +538,7 @@ rtt_ackin (tcptrace_state_t *state,
 
 
 static void
-rtt_retrans (tcptrace_state_t *state,
+rtt_retrans (tcptrace_context_t *context,
              tcb * ptcb,
 	     segment * pseg)
 {
@@ -547,7 +547,7 @@ rtt_retrans (tcptrace_state_t *state,
     if (!pseg->acked) {
 	/* if it was acked, then it's been collapsed and these */
 	/* are no longer meaningful */
-	etime = elapsed (pseg->time, state->current_time);
+	etime = elapsed (pseg->time, context->current_time);
 	if (pseg->retrans > ptcb->retr_max)
 	    ptcb->retr_max = pseg->retrans;
 
@@ -561,12 +561,12 @@ rtt_retrans (tcptrace_state_t *state,
 	++ptcb->retr_tm_count;
     }
 
-    pseg->time = state->current_time;
+    pseg->time = context->current_time;
 }
 
 
 enum t_ack
-ack_in (tcptrace_state_t *state,
+ack_in (tcptrace_context_t *context,
         tcb * ptcb,
 	seqnum ack,
 	unsigned tcp_data_length,
@@ -681,7 +681,7 @@ ack_in (tcptrace_state_t *state,
 	       the the RTT sample is invalid */
 	    intervening_xmits = (tv_gt (last_xmit, pseg->time));
 
-	    ret = rtt_ackin(state, ptcb, pseg, intervening_xmits);
+	    ret = rtt_ackin(context, ptcb, pseg, intervening_xmits);
 	} else {
 	    /* cumulatively ACKed */
 	    ++ptcb->rtt_cumack;
@@ -753,7 +753,7 @@ dump_rtt_sample (tcb * ptcb,
 
 /* graph RTT samples in milliseconds */
 static void
-graph_rtt_sample (tcptrace_state_t *state,
+graph_rtt_sample (tcptrace_context_t *context,
                   tcb * ptcb,
 		  segment * pseg,
 		  unsigned long etime_rtt)
@@ -779,7 +779,7 @@ graph_rtt_sample (tcptrace_state_t *state,
 
 	if (graph_time_zero) {
 	    /* set graph zero points */
-	    plotter_nothing (ptcb->rtt_plotter, state->current_time);
+	    plotter_nothing (ptcb->rtt_plotter, context->current_time);
 	}
 	ptcb->rtt_line = new_line (ptcb->rtt_plotter, "rtt", "red");
     }
@@ -787,7 +787,7 @@ graph_rtt_sample (tcptrace_state_t *state,
     if (etime_rtt <= 1)
 	return;
 
-    extend_line(ptcb->rtt_line, state->current_time, (int) (etime_rtt / 1000));
+    extend_line(ptcb->rtt_line, context->current_time, (int) (etime_rtt / 1000));
 }
 
 Bool IsRTO(tcb *ptcb, seqnum s) {

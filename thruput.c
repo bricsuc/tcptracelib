@@ -63,7 +63,7 @@ static char const GCC_UNUSED rcsid[] =
 
 void
 DoThru(
-    tcptrace_state_t *state,
+    tcptrace_context_t *context,
     tcb *ptcb,
     int nbytes)
 {
@@ -75,8 +75,8 @@ DoThru(
     if (ZERO_TIME(&ptcb->thru_firsttime)) {
 	char title[210];
 
-	ptcb->thru_firsttime = state->current_time;
-	ptcb->thru_lasttime = state->current_time;
+	ptcb->thru_firsttime = context->current_time;
+	ptcb->thru_lasttime = context->current_time;
 	ptcb->thru_pkts = 1;
 	ptcb->thru_bytes = nbytes;
 	
@@ -97,7 +97,7 @@ DoThru(
 					 THROUGHPUT_FILE_EXTENSION);
 	if (graph_time_zero) {
 	    /* set graph zero points */
-	    plotter_nothing(ptcb->thru_plotter, state->current_time);
+	    plotter_nothing(ptcb->thru_plotter, context->current_time);
 	}
 
 	/* create lines for average and instantaneous values */
@@ -117,44 +117,44 @@ DoThru(
     if (ptcb->thru_pkts+1 >= thru_interval) {
 
 	/* compute stats for this interval */
-	etime = elapsed(ptcb->thru_firsttime, state->current_time);
+	etime = elapsed(ptcb->thru_firsttime, context->current_time);
 	if (etime == 0.0)
 	    etime = 1000;	/* ick, what if "no time" has passed?? */
 	thruput = (double) ptcb->thru_bytes / ((double) etime / 1000000.0);
 
 	/* instantaneous plot */
 	extend_line(ptcb->thru_inst_line,
-		     state->current_time, (int) thruput);
+		     context->current_time, (int) thruput);
 
 	/* compute stats for connection lifetime */
-	etime = elapsed(ptcb->ptp->first_time, state->current_time);
+	etime = elapsed(ptcb->ptp->first_time, context->current_time);
 	if (etime == 0.0)
 	    etime = 1000;	/* ick, what if "no time" has passed?? */
 	thruput = (double) ptcb->data_bytes / ((double) etime / 1000000.0);
 
 	/* long-term average */
 	extend_line(ptcb->thru_avg_line,
-		     state->current_time, (int) thruput);
+		     context->current_time, (int) thruput);
 
 	/* reset stats for this interval */
-	ptcb->thru_firsttime = state->current_time;
+	ptcb->thru_firsttime = context->current_time;
 	ptcb->thru_pkts = 0;
 	ptcb->thru_bytes = 0;
     }
 
     /* immediate value in yellow ticks */
     if (plot_tput_instant) {
-	etime = elapsed(ptcb->thru_lasttime, state->current_time);
+	etime = elapsed(ptcb->thru_lasttime, context->current_time);
 	if (etime == 0.0)
 	    etime = 1000;	/* ick, what if "no time" has passed?? */
 	thruput = (double) nbytes / ((double) etime / 1000000.0);
 	plotter_temp_color(ptcb->thru_plotter,"yellow");
 	plotter_dot(ptcb->thru_plotter,
-		    state->current_time, (int) thruput);
+		    context->current_time, (int) thruput);
     }
 
     /* add in the latest packet */
-    ptcb->thru_lasttime = state->current_time;
+    ptcb->thru_lasttime = context->current_time;
     ++ptcb->thru_pkts;
     ptcb->thru_bytes += nbytes;
 }

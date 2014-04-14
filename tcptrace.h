@@ -736,7 +736,7 @@ extern u_long max_conn_num;
 extern int debug;
 extern int thru_interval;
 
-/* extern u_long pnum; */ /* now localized in tcptrace_state_t */
+/* extern u_long pnum; */ /* now localized in tcptrace_context_t */
 
 /* options */
 typedef struct tcptrace_runtime_options_t {
@@ -771,8 +771,8 @@ typedef struct tcptrace_working_file {
 
 #define __TCPTRACE_COMMENT_PREFIX_MAX 5
 
-/* packet-reading state */
-typedef struct tcptrace_state_t {
+/* packet-reading state/context */
+typedef struct tcptrace_context_t {
     u_long pnum;
     tcptrace_runtime_options_t *options;
     timeval first_packet;
@@ -790,7 +790,7 @@ typedef struct tcptrace_state_t {
     /* see tcptrace.c/main() for explanation of this comment stuff */
     char comment_prefix[__TCPTRACE_COMMENT_PREFIX_MAX];
 
-} tcptrace_state_t;
+} tcptrace_context_t;
 
 /* raw packet, read from file */
 typedef struct raw_packet_t {
@@ -842,28 +842,29 @@ void *MallocZ(int);
 void *ReallocZ(void *oldptr, int obytes, int nbytes);
 
 void trace_init(void);
-void trace_done(tcptrace_state_t *state);
+void trace_done(tcptrace_context_t *context);
 
 void seglist_init(tcb *);
 
 /* module routines */
-void tcptrace_modules_load(tcptrace_state_t *state, int argc, char *argv[]);
-void tcptrace_modules_finish(tcptrace_state_t *state);
+void tcptrace_modules_load(tcptrace_context_t *context, int argc, char *argv[]);
+void tcptrace_modules_finish(tcptrace_context_t *context);
 
-void tcptrace_modules_all_newfile(tcptrace_state_t *state, tcptrace_working_file *working_file, char *filename);
-void tcptrace_modules_newconn(tcptrace_state_t *state, tcp_pair *ptp);
-void tcptrace_modules_newconn_udp(tcptrace_state_t *state, udp_pair *pup);
-void tcptrace_modules_readpacket(tcptrace_state_t *state, struct ip *pip, tcp_pair *ptp, void *plast);
-void tcptrace_modules_readpacket_udp( tcptrace_state_t *state, struct ip *pip, udp_pair *pup, void *plast);
-void tcptrace_modules_readpacket_nottcpudp(tcptrace_state_t *state, struct ip *pip, void *plast);
+void tcptrace_modules_all_newfile(tcptrace_context_t *context, tcptrace_working_file *working_file, char *filename);
+void tcptrace_modules_newconn(tcptrace_context_t *context, tcp_pair *ptp);
+void tcptrace_modules_newconn_udp(tcptrace_context_t *context, udp_pair *pup);
+void tcptrace_modules_readpacket(tcptrace_context_t *context, struct ip *pip, tcp_pair *ptp, void *plast);
+void tcptrace_modules_readpacket_udp( tcptrace_context_t *context, struct ip *pip, udp_pair *pup, void *plast);
+void tcptrace_modules_readpacket_nottcpudp(tcptrace_context_t *context, struct ip *pip, void *plast);
 void
-tcptrace_modules_deleteconn(tcptrace_state_t *state, tcp_pair *ptp);
+tcptrace_modules_deleteconn(tcptrace_context_t *context, tcp_pair *ptp);
 
 /* general processing routines */
-void tcptrace_process_file(tcptrace_state_t *state, char *filename);
+void tcptrace_process_file(tcptrace_context_t *context, char *filename);
 
 
-void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb, tcptrace_state_t *state);
+void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb,
+tcptrace_context_t *context);
 
 void plotter_vtick(PLOTTER, timeval, u_long);
 void plotter_utick(PLOTTER, timeval, u_long);
@@ -892,7 +893,7 @@ void plotter_invisible(PLOTTER, timeval, u_long);
 void plotter_switch_axis(PLOTTER, Bool);
 void plot_init(void);
 
-tcp_pair *dotrace(tcptrace_state_t *state, struct ip *, struct tcphdr *ptcp, void *plast);
+tcp_pair *dotrace(tcptrace_context_t *context, struct ip *, struct tcphdr *ptcp, void *plast);
 
 void PrintRawData(char *label, void *pfirst, void *plast, Bool octal);
 void PrintRawDataHex(char *label, void *pfirst, void *plast);
@@ -926,10 +927,10 @@ char *NextHostLetter(void);
 char *EndpointName(ipaddr,portnum);
 PLOTTER new_plotter(tcb *plast, char *filename, char *title,
 		    char *xlabel, char *ylabel, char *suffix);
-int rexmit(tcptrace_state_t *state, tcb *, seqnum, seglen, Bool *);
-enum t_ack ack_in(tcptrace_state_t *state, tcb *, seqnum, unsigned tcp_data_length, u_long eff_win);
+int rexmit(tcptrace_context_t *context, tcb *, seqnum, seglen, Bool *);
+enum t_ack ack_in(tcptrace_context_t *context, tcb *, seqnum, unsigned tcp_data_length, u_long eff_win);
 Bool IsRTO(tcb *ptcb, seqnum s);
-void DoThru(tcptrace_state_t *state, tcb *ptcb, int nbytes);
+void DoThru(tcptrace_context_t *context, tcb *ptcb, int nbytes);
 struct mfile *Mfopen(char *fname, char *mode);
 void Minit(void);
 int Mfileno(MFILE *pmf);
@@ -941,7 +942,7 @@ int Mfprintf(MFILE *pmf, char *format, ...);
 int Mfflush(MFILE *pmf);
 int Mfclose(MFILE *pmf);
 int Mfpipe(int pipes[2]);
-struct tcp_options *ParseOptions(struct tcphdr *ptcp, void *plast, tcptrace_state_t *state);
+struct tcp_options *ParseOptions(struct tcphdr *ptcp, void *plast, tcptrace_context_t *context);
 FILE *CompOpenHeader(char *filename);
 FILE *CompOpenFile(char *filename);
 void CompCloseFile(char *filename);
@@ -949,14 +950,14 @@ void CompFormats(void);
 int CompIsCompressed(void);
 Bool FileIsStdin(char *filename);
 struct tcb *ptp2ptcb(tcp_pair *ptp, struct ip *pip, struct tcphdr *ptcp);
-void PcapSavePacket(tcptrace_state_t *state, char *filename, struct ip *pip, void *plast);
+void PcapSavePacket(tcptrace_context_t *context, char *filename, struct ip *pip, void *plast);
 void StringToArgv(char *buf, int *pargc, char ***pargv);
 void CopyAddr(tcp_pair_addrblock *, struct ip *pip,portnum,portnum);
 int WhichDir(tcp_pair_addrblock *, tcp_pair_addrblock *);
 int SameConn(tcp_pair_addrblock *, tcp_pair_addrblock *, int *);
 Bool ip_cksum_valid(struct ip *pip, void *plast);
-Bool tcp_cksum_valid(struct ip *pip, struct tcphdr *ptcp, void *plast, tcptrace_state_t *state);
-Bool udp_cksum_valid(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_state_t *state);
+Bool tcp_cksum_valid(struct ip *pip, struct tcphdr *ptcp, void *plast, tcptrace_context_t *context);
+Bool udp_cksum_valid(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_context_t *context);
 ipaddr *str2ipaddr(char *str);
 int IPcmp(ipaddr *pipA, ipaddr *pipB);
 
@@ -988,8 +989,8 @@ void extend_line(PLINE pline, timeval xval, int yval);
 
 /* UDP support routines */
 void udptrace_init(void);
-void udptrace_done(tcptrace_state_t *state);
-udp_pair *udpdotrace(tcptrace_state_t *state, struct ip *pip, struct udphdr *pudp, void *plast);
+void udptrace_done(tcptrace_context_t *context);
+udp_pair *udpdotrace(tcptrace_context_t *context, struct ip *pip, struct udphdr *pudp, void *plast);
 
 /* filter routines */
 void HelpFilter(void);
