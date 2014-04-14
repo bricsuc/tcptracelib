@@ -3475,8 +3475,9 @@ udp_cksum(
         /* quick sanity check, it the packet is truncated,
 	 * pertend it is valid.
 	 */ 
-        if(getudp(pip, &pudp, &plast, context) != 0)
-	 return(0);
+        if (getudp(context, pip, &pudp, &plast) != 0) {
+            return(0);
+        }
        
         /* Forming the pseudo-header */
         /* source address */

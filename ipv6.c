@@ -317,10 +317,10 @@ gettcp(
  */
 int
 getudp(
+    tcptrace_context_t *context,
     struct ip *pip,
     struct udphdr **ppudp,
-    void **pplast,
-    tcptrace_context_t *context)
+    void **pplast)
 {
    int ret_val = findheader(IPPROTO_UDP, pip, (void **)ppudp, pplast, context);
    return (ret_val);

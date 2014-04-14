@@ -139,7 +139,7 @@ struct ipv6_ext_frag {
 
 /* tcptrace's IPv6 access routines */
 int gettcp(tcptrace_context_t *context, struct ip *pip, struct tcphdr **pptcp, void **pplast);
-int getudp(struct ip *pip, struct udphdr **ppudp, void **pplast, tcptrace_context_t *context);
+int getudp(tcptrace_context_t *context, struct ip *pip, struct udphdr **ppudp, void **pplast);
 int getroutingheader(struct ip *pip, struct ipv6_ext **ppipv6_ext, void **pplast, tcptrace_context_t *context);
 int gethdrlength (struct ip *pip, void *plast);
 int getpayloadlength (struct ip *pip, void *plast);

@@ -532,8 +532,9 @@ printudp_packet(
     options = context->options;
 
     /* find the udp header */
-    if (getudp(pip, &pudp, &plast, context))
-      return;	  /* not UDP  or bad UDP packet */
+    if (getudp(context, pip, &pudp, &plast)) {
+        return; /* not UDP  or bad UDP packet */
+    }
 
     /* make sure we have enough of the packet */
     if ((char *)pudp+sizeof(struct udphdr)-1 > (char *)plast) {

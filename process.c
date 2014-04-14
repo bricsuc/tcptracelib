@@ -210,7 +210,7 @@ That will likely confuse the program, so be careful!\n", filename);
 	    struct udphdr *pudp;
 
 	    /* look for a UDP header */
-	    ret = getudp(pip, &pudp, &plast, context);
+	    ret = getudp(context, pip, &pudp, &plast);
 
 	    if (options->do_udp && (ret == 0)) {
 		pup = udpdotrace(context, pip, pudp, plast);
