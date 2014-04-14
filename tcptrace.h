@@ -681,8 +681,8 @@ extern Bool graph_segsize;
 extern Bool graph_owin;
 extern Bool graph_tline;
 extern Bool hex;
-extern Bool ignore_non_comp;
-extern Bool resolve_ipaddresses;
+/* extern Bool ignore_non_comp; */
+/* extern Bool resolve_ipaddresses; */
 extern Bool resolve_ports;
 extern Bool triple_dupack_allows_data;
 /* extern Bool verify_checksums; */ /* de-globalized, now in runtime_options */
@@ -747,10 +747,13 @@ typedef struct tcptrace_runtime_options_t {
 
     Bool do_udp;
 
+    Bool resolve_ipaddresses;
+
     Bool printem;
     Bool printallofem;
     Bool printticks;
 
+    Bool ignore_incomplete;
     Bool verify_checksums;
     Bool warn_printbadcsum;
     Bool dump_packet_data;
@@ -881,7 +884,7 @@ void plotter_larrow(PLOTTER, timeval, u_long);
 void plotter_htick(PLOTTER, timeval, u_long);
 void plotter_dtick(PLOTTER, timeval, u_long);
 void plotter_dot(PLOTTER, timeval, u_long);
-void plotter_done(void);
+void plotter_done(tcptrace_context_t *context);
 void plotter_dline(PLOTTER, timeval, u_long, timeval, u_long);
 void plotter_diamond(PLOTTER, timeval, u_long);
 void plotter_darrow(PLOTTER, timeval, u_long);
@@ -919,11 +922,11 @@ u_int FinCount(tcp_pair *ptp);
 char *ts2ascii(timeval *);
 char *ts2ascii_date(timeval *);
 char *ServiceName(portnum);
-char *HostName(ipaddr);
+char *tcptrace_hostname(tcptrace_context_t *, ipaddr);
 char *HostAddr(ipaddr);
 char *HostLetter(llong);
 char *NextHostLetter(void);
-char *EndpointName(ipaddr,portnum);
+char *EndpointName(tcptrace_context_t *, ipaddr, portnum);
 PLOTTER new_plotter(tcb *plast, char *filename, char *title,
 		    char *xlabel, char *ylabel, char *suffix);
 int rexmit(tcptrace_context_t *, tcb *, seqnum, seglen, Bool *);
@@ -948,10 +951,10 @@ void CompCloseFile(char *filename);
 void CompFormats(void);
 int CompIsCompressed(void);
 Bool FileIsStdin(char *filename);
-struct tcb *ptp2ptcb(tcp_pair *ptp, struct ip *pip, struct tcphdr *ptcp);
+struct tcb *ptp2ptcb(tcptrace_context_t *context, tcp_pair *ptp, struct ip *pip, struct tcphdr *ptcp);
 void PcapSavePacket(tcptrace_context_t *context, char *filename, struct ip *pip, void *plast);
 void StringToArgv(char *buf, int *pargc, char ***pargv);
-void CopyAddr(tcp_pair_addrblock *, struct ip *pip,portnum,portnum);
+void CopyAddr(tcptrace_context_t *, tcp_pair_addrblock *, struct ip *pip,portnum,portnum);
 int WhichDir(tcp_pair_addrblock *, tcp_pair_addrblock *);
 int SameConn(tcp_pair_addrblock *, tcp_pair_addrblock *, int *);
 Bool ip_cksum_valid(struct ip *pip, void *plast);

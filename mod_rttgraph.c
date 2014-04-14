@@ -258,7 +258,7 @@ rttgraph_read(
 	return;  /* no RTT info */
 
     /* see which direction it is, if we don't know yet */
-    ptcb = ptp2ptcb(ptp,pip,ptcp);
+    ptcb = ptp2ptcb(context, ptp,pip,ptcp);
     if (ptcb == prttg->a2b.ptcb)
 	prtcb = &prttg->a2b;
     else if (ptcb == prttg->b2a.ptcb)

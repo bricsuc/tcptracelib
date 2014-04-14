@@ -443,9 +443,9 @@ int ip_sameaddr (ipaddr *paddr1, ipaddr *paddr2)
 	    ret = (paddr1->un.ip4.s_addr == paddr2->un.ip4.s_addr);
     }
     if (debug > 3)
-	printf("SameAddr(%s(%d),%s(%d)) returns %d\n",
-	       HostName(*paddr1), ADDR_VERSION(paddr1),
-	       HostName(*paddr2), ADDR_VERSION(paddr2),
+	printf("SameAddr(%d,%d) returns %d\n",
+	       ADDR_VERSION(paddr1),
+	       ADDR_VERSION(paddr2),
 	       ret);
     return ret;
 }
@@ -468,9 +468,9 @@ int ip_lowaddr (ipaddr *paddr1, ipaddr *paddr2)
 	    ret = (paddr1->un.ip4.s_addr < paddr2->un.ip4.s_addr);
     }
     if (debug > 3)
-	printf("LowAddr(%s(%d),%s(%d)) returns %d\n",
-	       HostName(*paddr1), ADDR_VERSION(paddr1),
-	       HostName(*paddr2), ADDR_VERSION(paddr2),
+	printf("LowAddr(%d,%d) returns %d\n",
+	       HostAddr(*paddr1), ADDR_VERSION(paddr1),
+	       HostAddr(*paddr2), ADDR_VERSION(paddr2),
 	       ret);
     return ret;
 }

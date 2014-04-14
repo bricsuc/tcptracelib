@@ -146,6 +146,9 @@ realtime_init(
 {
   int		i;
   int		enable = 0;
+  tcptrace_runtime_options_t *options;
+
+  options = context->options;
 
   /* look for "-xrealtime" */
   for (i = 1; i < argc; ++i) {
@@ -175,7 +178,7 @@ realtime_init(
 
   /* DNS lookups are time expensive, we want to disable them in real-time 
      module */
-  resolve_ipaddresses = FALSE;
+  options->resolve_ipaddresses = FALSE;
   resolve_ports = FALSE;
 
   /* we want to run the program in real-time mode */

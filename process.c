@@ -407,6 +407,8 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
 
     options->do_udp = FALSE;
 
+    options->ignore_incomplete = FALSE;
+
     options->printem = FALSE;
     options->printallofem = FALSE;
     options->printticks = FALSE;

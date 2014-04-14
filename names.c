@@ -154,7 +154,8 @@ HostAddr(
 
 
 char *
-HostName(
+tcptrace_hostname(
+    tcptrace_context_t *context,
     ipaddr ipaddress)
 {
     tcelen len;
@@ -166,7 +167,7 @@ HostName(
 
     adr = HostAddr(ipaddress);
 
-    if (!resolve_ipaddresses) {
+    if (!context->options->resolve_ipaddresses) {
 	return(adr);
     }
 	
@@ -223,6 +224,7 @@ HostName(
 
 char *
 EndpointName(
+    tcptrace_context_t *context,
     ipaddr ipaddress,
     portnum port)
 {
@@ -230,7 +232,7 @@ EndpointName(
     char *sb_host;
     char *sb_port;
 
-    sb_host = HostName(ipaddress);
+    sb_host = tcptrace_hostname(context, ipaddress);
     sb_port = ServiceName(port);
 
     snprintf(name_buf,sizeof(name_buf),"%s:%s", sb_host, sb_port);

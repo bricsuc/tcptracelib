@@ -1659,7 +1659,7 @@ http_newconn(
     }
  
     /* attach the client info */
-    ph->pclient = FindClient(HostName(ptp->addr_pair.a_address));
+    ph->pclient = FindClient(tcptrace_hostname(context, ptp->addr_pair.a_address));
 
     return(ph);
 }

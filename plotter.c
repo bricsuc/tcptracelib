@@ -342,24 +342,28 @@ new_plotter(
 
 
 void
-plotter_done(void)
+plotter_done(tcptrace_context_t *context)
 {
     PLOTTER pl;
     MFILE *f;
     char *fname;
-	static struct dstring *xplot_cmd_buff=NULL;
+    static struct dstring *xplot_cmd_buff=NULL;
+    tcptrace_runtime_options_t *options;
 
-	if(plotter_ix>0) {
-		if(xplot_all_files) {
-			xplot_cmd_buff=DSNew();
-			DSAppendString(xplot_cmd_buff,"xplot");
-			DSAppendString(xplot_cmd_buff," ");
-			if(xplot_args!=NULL) {
-				DSAppendString(xplot_cmd_buff,xplot_args);
-				DSAppendString(xplot_cmd_buff," ");
-			}
-		}
-	}
+    options = context->options;
+
+
+    if(plotter_ix>0) {
+        if(xplot_all_files) {
+            xplot_cmd_buff=DSNew();
+            DSAppendString(xplot_cmd_buff,"xplot");
+            DSAppendString(xplot_cmd_buff," ");
+            if(xplot_args!=NULL) {
+                DSAppendString(xplot_cmd_buff,xplot_args);
+                DSAppendString(xplot_cmd_buff," ");
+            }
+        }
+    }
 
     for (pl = 0; pl <= plotter_ix; ++pl) {
 	struct plotter_info *ppi = &pplotters[pl];
@@ -372,7 +376,7 @@ plotter_done(void)
         if(!ppi->header_done)
 	 WritePlotHeader(pl);
        
-	if (!ignore_non_comp ||
+	if (!options->ignore_incomplete ||
 	    ((ppi->p2plast != NULL) && (ConnComplete(ppi->p2plast->ptp)))) {
 	    Mfprintf(f,"go\n");
 	    Mfclose(f);

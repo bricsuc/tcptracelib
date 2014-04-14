@@ -70,11 +70,11 @@ static void printip_packet(tcptrace_context_t *context, struct ip *, void *plast
 static void printtcp_packet(tcptrace_context_t *context, struct ip *, void *plast, tcb *tcb);
 static void printudp_packet(tcptrace_context_t *context, struct ip *, void *plast);
 static char *ParenServiceName(portnum);
-static char *ParenHostName(struct ipaddr addr);
+static char *ParenHostName(tcptrace_context_t *context, struct ipaddr addr);
 static void printipv4(tcptrace_context_t *context, struct ip *pip, void *plast);
 static void printipv6(struct ipv6 *pipv6, void *plast);
 static char *ipv6addr2str(struct in6_addr addr);
-static void printipv4_opt_addrs(char *popt, int ptr, int len);
+static void printipv4_opt_addrs(tcptrace_context_t *context, char *popt, int ptr, int len);
 static char *PrintSeqRep(tcb *ptcb, u_long seq);
 
 
@@ -207,10 +207,10 @@ printipv4(
     printf("\tIP  VERS: %d\n", IP_V(pip));
     printf("\tIP  Srce: %s %s\n",
 	   inet_ntoa(pip->ip_src),
-	   ParenHostName(*IPV4ADDR2ADDR(&pip->ip_src)));
+	   ParenHostName(context, *IPV4ADDR2ADDR(&pip->ip_src)));
     printf("\tIP  Dest: %s %s\n",
 	   inet_ntoa(pip->ip_dst),
-	   ParenHostName(*IPV4ADDR2ADDR(&pip->ip_dst)));
+	   ParenHostName(context, *IPV4ADDR2ADDR(&pip->ip_dst)));
 
     printf(
 	hex?"\t    Type: 0x%x %s\n":"\t    Type: %d %s\n",
@@ -285,17 +285,17 @@ printipv4(
 	      case 3:
 		printf("\t      Loose source route:  len: %d  ptr:%d\n",
 		       len, ptr);
-		printipv4_opt_addrs(popt, ptr, len);
+		printipv4_opt_addrs(context, popt, ptr, len);
 		break;
 	      case 7:
 		printf("\t      Record Route:  len: %d  ptr:%d\n",
 		       len, ptr);
-		printipv4_opt_addrs(popt, ptr, len);
+		printipv4_opt_addrs(context, popt, ptr, len);
 		break;
 	      case 9:
 		printf("\t      Strict source route:  len: %d  ptr:%d\n",
 		       len, ptr);
-		printipv4_opt_addrs(popt, ptr, len);
+		printipv4_opt_addrs(context, popt, ptr, len);
 		break;
 	      case 4:
 		printf("\t      Timestamps:  len: %d  ptr:%d\n",
@@ -326,6 +326,7 @@ printipv4(
 /* print out the little table in the source route and record route options */
 static void
 printipv4_opt_addrs(
+    tcptrace_context_t *context,
     char *popt,
     int ptr,
     int len)
@@ -339,7 +340,7 @@ printipv4_opt_addrs(
 	if (nptr < ptr)
 	    printf("\t        %d: %-15s  %s\n",
 		   i, inet_ntoa(ina),
-		   HostName(*IPV4ADDR2ADDR(&ina)));
+		   tcptrace_hostname(context, *IPV4ADDR2ADDR(&ina)));
 	else
 	    printf("\t        %d: xxxxxxxxxxx\n", i);
     }
@@ -636,12 +637,13 @@ ParenServiceName(
 
 static char *
 ParenHostName(
+     tcptrace_context_t *context,
      struct ipaddr addr)
 {
     char *pname;
     static char buf[80];
 
-    pname = HostName(addr);
+    pname = tcptrace_hostname(context, addr);
     if (!pname || isdigit((int)(*pname)))
 	return("");
 

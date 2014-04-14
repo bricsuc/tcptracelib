@@ -167,7 +167,7 @@ static inline void IP_COPYADDR (ipaddr *ptoaddr, ipaddr *pfromaddr)
 /*
  * ipsameaddr: test for equality of two IPv4 or IPv6 addresses
  */
-static inline int IP_SAMEADDR (ipaddr *paddr1, ipaddr *paddr2)
+static inline int IP_SAMEADDR(ipaddr *paddr1, ipaddr *paddr2)
 {
     int ret = 0;
     if (ADDR_ISV4(paddr1)) {
@@ -181,8 +181,8 @@ static inline int IP_SAMEADDR (ipaddr *paddr1, ipaddr *paddr2)
     }
     if (debug > 3)
 	printf("SameAddr(%s(%d),%s(%d)) returns %d\n",
-	       HostName(*paddr1), ADDR_VERSION(paddr1),
-	       HostName(*paddr2), ADDR_VERSION(paddr2),
+	       HostAddr(*paddr1), ADDR_VERSION(paddr1),
+	       HostAddr(*paddr2), ADDR_VERSION(paddr2),
 	       ret);
     return ret;
 }
@@ -190,7 +190,7 @@ static inline int IP_SAMEADDR (ipaddr *paddr1, ipaddr *paddr2)
 /*  
  *  iplowaddr: test if one IPv4 or IPv6 address is lower than the second one
  */
-static inline int IP_LOWADDR (ipaddr *paddr1, ipaddr *paddr2)
+static inline int IP_LOWADDR(ipaddr *paddr1, ipaddr *paddr2)
 {
     int ret = 0;
     if (ADDR_ISV6(paddr1)) {
@@ -204,8 +204,8 @@ static inline int IP_LOWADDR (ipaddr *paddr1, ipaddr *paddr2)
     }
     if (debug > 3)
 	printf("LowAddr(%s(%d),%s(%d)) returns %d\n",
-	       HostName(*paddr1), ADDR_VERSION(paddr1),
-	       HostName(*paddr2), ADDR_VERSION(paddr2),
+	       HostAddr(*paddr1), ADDR_VERSION(paddr1),
+	       HostAddr(*paddr2), ADDR_VERSION(paddr2),
 	       ret);
     return ret;
 }
@@ -318,6 +318,7 @@ tv_cmp(struct timeval lhs, struct timeval rhs)
 /* faster comparisons most of the time					*/
 void
 CopyAddr(
+    tcptrace_context_t *context,
     tcp_pair_addrblock *ptpa,
     struct ip *pip,
     portnum	port1,
@@ -349,9 +350,9 @@ CopyAddr(
 
     if (debug > 3)
 	printf("Hash of (%s:%d,%s:%d) is %d\n",
-	       HostName(ptpa->a_address),
+	       HostAddr(ptpa->a_address),
 	       ptpa->a_port,
-	       HostName(ptpa->b_address),
+	       HostAddr(ptpa->b_address),
 	       ptpa->b_port,
 	       ptpa->hash);
 }
@@ -503,6 +504,9 @@ NewTTP(
 {
     char title[210];
     tcp_pair *ptp;
+    tcptrace_runtime_options_t *options;
+
+    options = context->options;
 
     if (0) {
       printf("trace.c:NewTTP() calling MakeTcpPair()\n");
@@ -522,7 +526,7 @@ NewTTP(
 
 
     /* grab the address from this packet */
-    CopyAddr(&ptp->addr_pair,
+    CopyAddr(context, &ptp->addr_pair,
 	     pip, ntohs(ptcp->th_sport), ntohs(ptcp->th_dport));
 
     ptp->a2b.time.tv_sec = -1;
@@ -537,15 +541,17 @@ NewTTP(
     ptp->b2a.ptwin = &ptp->a2b;
 
     /* fill in connection name fields */
-    ptp->a_hostname = strdup(HostName(ptp->addr_pair.a_address));
+    ptp->a_hostname = strdup(tcptrace_hostname(context, ptp->addr_pair.a_address));
     ptp->a_portname = strdup(ServiceName(ptp->addr_pair.a_port));
     ptp->a_endpoint =
-	strdup(EndpointName(ptp->addr_pair.a_address,
+	strdup(EndpointName(context,
+                            ptp->addr_pair.a_address,
 			    ptp->addr_pair.a_port));
-    ptp->b_hostname = strdup(HostName(ptp->addr_pair.b_address));
+    ptp->b_hostname = strdup(tcptrace_hostname(context, ptp->addr_pair.b_address));
     ptp->b_portname = strdup(ServiceName(ptp->addr_pair.b_port));
     ptp->b_endpoint = 
-	strdup(EndpointName(ptp->addr_pair.b_address,
+	strdup(EndpointName(context,
+                            ptp->addr_pair.b_address,
 			    ptp->addr_pair.b_port));
 
     /* make the initial guess that each side is a reno tcp */
@@ -562,7 +568,7 @@ NewTTP(
     /* init time sequence graphs */
     ptp->a2b.tsg_plotter = ptp->b2a.tsg_plotter = NO_PLOTTER;
     if (graph_tsg && !ptp->ignore_pair) {
-	if (!ignore_non_comp || (SYN_SET(ptcp))) {
+	if (!options->ignore_incomplete || (SYN_SET(ptcp))) {
 	    snprintf(title,sizeof(title),"%s_==>_%s (time sequence graph)",
 		    ptp->a_endpoint, ptp->b_endpoint);
 	    ptp->a2b.tsg_plotter =
@@ -588,7 +594,7 @@ NewTTP(
     /* init owin graphs */
     ptp->a2b.owin_plotter = ptp->b2a.owin_plotter = NO_PLOTTER;
     if (graph_owin && !ptp->ignore_pair) {
-	if (!ignore_non_comp || (SYN_SET(ptcp))) {
+	if (!options->ignore_incomplete || (SYN_SET(ptcp))) {
 	    snprintf(title,sizeof(title),"%s_==>_%s (outstanding data)",
 		    ptp->a_endpoint, ptp->b_endpoint);
 	    ptp->a2b.owin_plotter =
@@ -634,7 +640,7 @@ NewTTP(
     /* init time line graphs (Avinash, 2 July 2002) */
     ptp->a2b.tline_plotter = ptp->b2a.tline_plotter = NO_PLOTTER;
     if (graph_tline && !ptp->ignore_pair) {
-	if (!ignore_non_comp || (SYN_SET(ptcp))) {
+	if (!options->ignore_incomplete || (SYN_SET(ptcp))) {
 	    /* We don't want the standard a2b type name so we will specify
 	     * a filename of type a_b when we call new_plotter.
 	     */ 
@@ -779,7 +785,7 @@ FindTTP(
     }
 
     /* grab the address from this packet */
-    CopyAddr(&tp_in, pip, ntohs(ptcp->th_sport), ntohs(ptcp->th_dport));
+    CopyAddr(context, &tp_in, pip, ntohs(ptcp->th_sport), ntohs(ptcp->th_dport));
 
     /* grab the hash value (already computed by CopyAddr) */
     hval = tp_in.hash % HASH_TABLE_SIZE;
@@ -1619,7 +1625,7 @@ dotrace(
     }
 
     /* grab the address from this packet */
-    CopyAddr(&tp_in.addr_pair, pip,
+    CopyAddr(context, &tp_in.addr_pair, pip,
 	     th_sport, th_dport);
 
 
@@ -2499,6 +2505,9 @@ trace_done(tcptrace_context_t *context)
   static int count = 0;
   Bool incomplete_pkt_capture = FALSE;
   char *comment;
+  tcptrace_runtime_options_t *options;
+
+  options = context->options;
   
   comment = context->comment_prefix;
   if (!run_continuously) {
@@ -2594,7 +2603,7 @@ trace_done(tcptrace_context_t *context)
   }
 
     /* if we're filtering, see which connections pass */
-    if (filter_output || ignore_non_comp) {
+    if (filter_output || options->ignore_incomplete) {
 
 	/* file to dump matching connection numbers into */
 	f_passfilter = fopen(PASS_FILTER_FILENAME,"w+");
@@ -2632,10 +2641,10 @@ trace_done(tcptrace_context_t *context)
 	    ptp = ttp[ix];
 
 	    if (!ptp->ignore_pair) {
-		if ((printbrief) && (!ignore_non_comp || ConnComplete(ptp))) {
+		if ((printbrief) && (!options->ignore_incomplete || ConnComplete(ptp))) {
 		    fprintf(stdout,"%3d: ", ix+1);
 		    PrintBrief(ptp);
-		} else if (!ignore_non_comp || ConnComplete(ptp)) {
+		} else if (!options->ignore_incomplete || ConnComplete(ptp)) {
 		    if(csv || tsv || (sv != NULL)) {
 		       if(first) {
 			  PrintSVHeader();
@@ -2655,7 +2664,7 @@ trace_done(tcptrace_context_t *context)
 		  option, this option says to select only complete connections.
 		  The PF file will contain the connection numbers which are
 		  selected to be complete */
-	       if (ignore_non_comp)
+	       if (options->ignore_incomplete)
 		   if (ConnComplete(ptp)) {
 		      if (++count == 1)
 			  fprintf(f_passfilter, "%d", ix+1);
@@ -2676,7 +2685,7 @@ trace_done(tcptrace_context_t *context)
   }
   
     /* if we're filtering, close the file */
-    if (filter_output || ignore_non_comp) {
+    if (filter_output || options->ignore_incomplete) {
 	fprintf(f_passfilter,"\n");
 	fclose(f_passfilter);
     }
@@ -3194,15 +3203,19 @@ check_hw_dups(
 /* given a tcp_pair and a packet, tell me which tcb it is */
 struct tcb *
 ptp2ptcb(
+    tcptrace_context_t *context,
     tcp_pair *ptp,
     struct ip *pip,
     struct tcphdr *ptcp)
 {
     int dir = 0;
     tcp_pair tp_in;
+    tcptrace_runtime_options_t *options;
+
+    options = context->options;
 
     /* grab the address from this packet */
-    CopyAddr(&tp_in.addr_pair, pip,
+    CopyAddr(context, &tp_in.addr_pair, pip,
 	     ntohs(ptcp->th_sport), ntohs(ptcp->th_dport));
 
     /* check the direction */

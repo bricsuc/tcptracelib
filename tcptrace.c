@@ -102,7 +102,7 @@ Bool graph_segsize = FALSE;
 Bool graph_owin = FALSE;
 Bool graph_tline = FALSE;
 Bool hex = TRUE;
-Bool ignore_non_comp = FALSE;
+/* Bool ignore_non_comp = FALSE; */
 /* Bool dump_packet_data = FALSE; */
 Bool print_rtt = FALSE;
 Bool print_owin = FALSE;
@@ -128,7 +128,7 @@ Bool filter_output = FALSE;
 Bool show_title = TRUE;
 Bool show_rwinline = TRUE;
 /* Bool do_udp = FALSE; */
-Bool resolve_ipaddresses = TRUE;
+/* Bool resolve_ipaddresses = TRUE; */
 Bool resolve_ports = TRUE;
 /* Bool verify_checksums = FALSE; */
 Bool triple_dupack_allows_data = FALSE;
@@ -227,7 +227,7 @@ static struct ext_bool_op {
      "show title on the graphs"},
     {"showrwinline", &show_rwinline, 0, TRUE,
      "show yellow receive-window line in owin graphs"},
-    {"res_addr", &resolve_ipaddresses, 0, TRUE,
+    {"res_addr", NULL, __T_OPTIONS_OFFSET(resolve_ipaddresses), 0, TRUE,
      "resolve IP addresses into names (may be slow)"},
     {"res_port", &resolve_ports, 0, TRUE,
      "resolve port numbers into names"},
@@ -853,7 +853,7 @@ main(
     udptrace_done(context);
 
     tcptrace_modules_finish(context);
-    plotter_done();
+    plotter_done(context);
 
     exit(0);
 }
@@ -871,7 +871,7 @@ QuitSig(
     printf("Terminating processing early on signal %d\n", signum);
     printf("Partial result after processing %lu packets:\n\n\n", global_context.pnum);
     tcptrace_modules_finish(context);
-    plotter_done();
+    plotter_done(context);
     trace_done(context);
     udptrace_done(context);
     exit(1);
@@ -1820,7 +1820,7 @@ ParseArgs(
 		  case 'X': hex = TRUE; break;
 		  case 'Z': dump_rtt = TRUE; break;
 		  case 'b': printbrief = TRUE; break;
-		  case 'c': ignore_non_comp = TRUE; break;
+		  case 'c': options->ignore_incomplete = TRUE; break;
 		  case 'd': options->debug++; debug++; break;
 		  case 'e': save_tcp_data = TRUE; break;
 		  case 'f':
@@ -1861,7 +1861,7 @@ ParseArgs(
 			   "-m option is obsolete (no longer necessary)\n");
 		    *(argv[i]+1) = '\00'; break;
 		  case 'n':
-		    resolve_ipaddresses = FALSE;
+		    options->resolve_ipaddresses = FALSE;
 		    resolve_ports = FALSE;
 		    break;
 		  case 'o':
@@ -1936,11 +1936,11 @@ ParseArgs(
 		  case 'X': hex = !TRUE; break;
 		  case 'Z': dump_rtt = !TRUE; break;
 		  case 'b': printbrief = !TRUE; break;
-		  case 'c': ignore_non_comp = !TRUE; break;
+		  case 'c': options->ignore_incomplete = !TRUE; break;
 		  case 'e': save_tcp_data = FALSE; break;
 		  case 'l': printbrief = !FALSE; break;
 		  case 'n':
-		    resolve_ipaddresses = !FALSE;
+		    options->resolve_ipaddresses = !FALSE;
 		    resolve_ports = !FALSE;
 		    break;
 		  case 'p': options->printallofem = !TRUE; break;
@@ -2007,7 +2007,7 @@ DumpFlags(void)
     fprintf(stderr,"plotem:           %s\n",
 	    colorplot?"(color)":"(b/w)");
     fprintf(stderr,"hex printing:     %s\n", BOOL2STR(hex));
-    fprintf(stderr,"ignore_non_comp:  %s\n", BOOL2STR(ignore_non_comp));
+    fprintf(stderr,"ignore_incomplete:  %s\n", BOOL2STR(options->ignore_incomplete));
     fprintf(stderr,"printem:          %s\n", BOOL2STR(options->printem));
     fprintf(stderr,"printallofem:     %s\n", BOOL2STR(options->printallofem));
     fprintf(stderr,"printticks:       %s\n", BOOL2STR(options->printticks));

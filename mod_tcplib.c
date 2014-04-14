@@ -409,7 +409,7 @@ static void update_breakdown(tcp_pair *ptp, struct tcplibstats *pstats);
 module_conninfo *FindPrevConnection(module_conninfo *pmc,
 				    enum t_dtype dtype, int app_type);
 static char *FormatBrief(tcp_pair *ptp,tcb *ptcb);
-static char *FormatAddrBrief(tcp_pair_addrblock *addr_pair);
+static char *FormatAddrBrief(tcptrace_context_t *context, tcp_pair_addrblock *addr_pair);
 static void ModuleConnFillcache(void);
 
 
@@ -427,14 +427,15 @@ static enum t_dtype traffic_type(module_conninfo *pmc,
 				   module_conninfo_tcb *ptcbc);
 
 /* prototypes for endpoint pairs */
-static void TrackEndpoints(module_conninfo *pmc);
+static void TrackEndpoints(tcptrace_context_t *context, module_conninfo *pmc);
 static hash EndpointHash(tcp_pair_addrblock *addr_pair);
 static hash IPHash(ipaddr *paddr);
 static Bool SameEndpoints(tcp_pair_addrblock *paddr_pair1,
 			  tcp_pair_addrblock *paddr_pair2);
 static struct module_conninfo_tcb *MostRecentFtpControl(endpoint_pair *pep);
 static Bool CouldBeFtpData(tcp_pair *ptp);
-static void AddEndpointPair(endpoint_pair *hashtable[],
+static void AddEndpointPair(tcptrace_context_t *context,
+                            endpoint_pair *hashtable[],
 			    module_conninfo *pmc);
 static endpoint_pair *FindEndpointPair(endpoint_pair *hashtable[],
 				       tcp_pair_addrblock *paddr_pair);
@@ -1687,7 +1688,7 @@ tcplib_newconn(
 
 
     /* add to list of endpoints we track */
-    TrackEndpoints(pmc);
+    TrackEndpoints(context, pmc);
 
     /* if it's NOT trafgen generated and it's HTTP, check if it's
        parallel */
@@ -3356,14 +3357,15 @@ FormatBrief(
 
 static char *
 FormatAddrBrief(
+    tcptrace_context_t *context,
     tcp_pair_addrblock	*paddr_pair)
 {
     static char infobuf[100];
     char infobuf1[100];
     char infobuf2[100];
 
-    snprintf(infobuf1,sizeof(infobuf1),"%s", HostName(paddr_pair->a_address));
-    snprintf(infobuf2,sizeof(infobuf2),"%s", HostName(paddr_pair->b_address));
+    snprintf(infobuf1,sizeof(infobuf1),"%s", tcptrace_hostname(context, paddr_pair->a_address));
+    snprintf(infobuf2,sizeof(infobuf2),"%s", tcptrace_hostname(context, paddr_pair->b_address));
     snprintf(infobuf,sizeof(infobuf),"%s - %s", infobuf1, infobuf2);
 
     return(infobuf);
@@ -3403,6 +3405,7 @@ FindEndpointPair(
 /* add a connection to the list of all connections on that address pair */
 static void
 AddEndpointPair(
+    tcptrace_context_t *context,
     endpoint_pair *hashtable[],
     module_conninfo *pmc)
 {
@@ -3437,7 +3440,7 @@ AddEndpointPair(
 	for (pep_search = *ppep_head; pep_search;
 	     pep_search = pep_search->pepnext) {
 	    module_conninfo *pmc;
-	    printf("  %s:\n", FormatAddrBrief(&pep_search->addr_pair));
+	    printf("  %s:\n", FormatAddrBrief(context, &pep_search->addr_pair));
 	    /* for each connection on that pair */
 	    for (pmc = pep_search->pmchead; pmc; pmc = pmc->next_pair) {
 		printf("    %u <-> %u\n",
@@ -3616,13 +3619,14 @@ is_parallel_http(
 
 static void
 TrackEndpoints(
+    tcptrace_context_t *context,
     module_conninfo *pmc)
 {
     /* remember the endpoints (ftp and HTTP) */
     if (is_ftp_ctrl_conn(pmc)) {
-	AddEndpointPair(ftp_endpoints,pmc);
+	AddEndpointPair(context, ftp_endpoints,pmc);
     } else if (is_http_conn(pmc)) {
-	AddEndpointPair(http_endpoints,pmc);
+	AddEndpointPair(context, http_endpoints,pmc);
     }
 
     /* if it's an FTP data connection, find the control conn */

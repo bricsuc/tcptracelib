@@ -107,7 +107,7 @@ NewUTP(
 
 
     /* grab the address from this packet */
-    CopyAddr(&pup->addr_pair,
+    CopyAddr(context, &pup->addr_pair,
 	     pip, ntohs(pudp->uh_sport), ntohs(pudp->uh_dport));
 
     /* data structure setup */
@@ -119,15 +119,17 @@ NewUTP(
     /* fill in connection name fields */
     pup->a2b.host_letter = strdup(NextHostLetter());
     pup->b2a.host_letter = strdup(NextHostLetter());
-    pup->a_hostname = strdup(HostName(pup->addr_pair.a_address));
+    pup->a_hostname = strdup(tcptrace_hostname(context, pup->addr_pair.a_address));
     pup->a_portname = strdup(ServiceName(pup->addr_pair.a_port));
     pup->a_endpoint =
-	strdup(EndpointName(pup->addr_pair.a_address,
+	strdup(EndpointName(context,
+                            pup->addr_pair.a_address,
 			    pup->addr_pair.a_port));
-    pup->b_hostname = strdup(HostName(pup->addr_pair.b_address));
+    pup->b_hostname = strdup(tcptrace_hostname(context, pup->addr_pair.b_address));
     pup->b_portname = strdup(ServiceName(pup->addr_pair.b_port));
     pup->b_endpoint = 
-	strdup(EndpointName(pup->addr_pair.b_address,
+	strdup(EndpointName(context,
+                            pup->addr_pair.b_address,
 			    pup->addr_pair.b_port));
 
     pup->filename = context->current_filename;
@@ -156,7 +158,7 @@ FindUTP(
     hash hval;
 
     /* grab the address from this packet */
-    CopyAddr(&tp_in.addr_pair, pip,
+    CopyAddr(context, &tp_in.addr_pair, pip,
 	     ntohs(pudp->uh_sport), ntohs(pudp->uh_dport));
 
     /* grab the hash value (already computed by CopyAddr) */
@@ -301,7 +303,7 @@ udpdotrace(
     }
 
     /* grab the address from this packet */
-    CopyAddr(&tp_in.addr_pair, pip,
+    CopyAddr(context, &tp_in.addr_pair, pip,
 	     uh_sport, uh_dport);
 
     /* figure out which direction this packet is going */

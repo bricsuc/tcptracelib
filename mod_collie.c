@@ -89,8 +89,8 @@ static Bool print_labels = TRUE;
 /* local routines */
 static struct conn_info *MakeConnRec(void);
 static struct uconn_info *MakeUDPConnRec(void);
-static char *collie_name(ipaddr ipaddress);
-static char *collie_dots(ipaddr ipaddress);
+static char *collie_name(tcptrace_context_t *context, ipaddr ipaddress);
+static char *collie_dots(tcptrace_context_t *context, ipaddr ipaddress);
 static char *collie_time(struct timeval *ptime);
 static char *collie_date(time_t timestamp);
 static void ParseArgs(char *argstring);
@@ -180,22 +180,22 @@ MakeUDPConnRec(void)
 	       collie_time(&(ptr)->last_time));\
 	printf("%s%s\n",\
 	       LABEL("Source IP address: "),\
-	       collie_dots((ptr)->addr_pair.a_address));\
+	       collie_dots(context, (ptr)->addr_pair.a_address));\
 	printf("%s%u\n",\
 	       LABEL("Source Port: "),\
 	       (unsigned)(ptr)->addr_pair.a_port);\
 	printf("%s%s\n",\
 	       LABEL("Source Fully Qualified domain name: "),\
-	       collie_name((ptr)->addr_pair.a_address));\
+	       collie_name(context, (ptr)->addr_pair.a_address));\
 	printf("%s%s\n",\
 	       LABEL("Destination IP address: "),\
-	       collie_dots((ptr)->addr_pair.b_address));\
+	       collie_dots(context, (ptr)->addr_pair.b_address));\
 	printf("%s%u\n",\
 	       LABEL("Destination Port: "),\
 	       (unsigned)(ptr)->addr_pair.b_port);\
 	printf("%s%s\n",\
 	       LABEL("Destination Fully Qualified domain name: "),\
-	       collie_name((ptr)->addr_pair.b_address));\
+	       collie_name(context, (ptr)->addr_pair.b_address));\
 	printf("%s%" FS_ULL "\n",\
 	       LABEL("Bytes Transferred Source to Destination: "),\
 	       (ptr)->a2b.data_bytes);\
@@ -312,14 +312,19 @@ collie_newudpconn(
 
 /* return the IP address in IPv4 or IPv6 dotted representation */
 static char *collie_dots(
+    tcptrace_context_t *context,
     ipaddr ipaddress)
 {
     char *pch;
-    int map = resolve_ipaddresses;
+    tcptrace_runtime_options_t *options;
+    Bool map;
 
-    resolve_ipaddresses = 0;
-    pch = HostName(ipaddress);
-    resolve_ipaddresses = map;
+    options = context->options;
+    map = options->resolve_ipaddresses;
+
+    options->resolve_ipaddresses = 0;
+    pch = tcptrace_hostname(context, ipaddress);
+    options->resolve_ipaddresses = map;
 
     return(pch);
 }
@@ -327,14 +332,20 @@ static char *collie_dots(
 
 /* convert the IP address to a name */
 static char *collie_name(
+    tcptrace_context_t *context,
     ipaddr ipaddress)
 {
     char *pch;
-    int map = resolve_ipaddresses;
+    tcptrace_runtime_options_t *options;
+    Bool map;
 
-    resolve_ipaddresses = 1;
-    pch = HostName(ipaddress);
-    resolve_ipaddresses = map;
+    options = context->options;
+
+    map = options->resolve_ipaddresses;
+
+    options->resolve_ipaddresses = 1;
+    pch = tcptrace_hostname(context, ipaddress);
+    options->resolve_ipaddresses = map;
 
     return(pch);
 }
