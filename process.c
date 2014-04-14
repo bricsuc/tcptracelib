@@ -182,7 +182,7 @@ That will likely confuse the program, so be careful!\n", filename);
 	/* print the packet, if requested */
 	if (options->printallofem || options->dump_packet_data) {
 	    printf("Packet %lu\n", context->pnum);
-	    printpacket(len,tlen,phys,phystype,pip,plast,NULL,context);
+	    printpacket(context,len,tlen,phys,phystype,pip,plast,NULL);
 	}
 
 	/* keep track of global times */
@@ -217,7 +217,7 @@ That will likely confuse the program, so be careful!\n", filename);
 
 		/* verify UDP checksums, if requested */
 		if (options->verify_checksums) {
-		    if (!udp_cksum_valid(pip,pudp,plast, context)) {
+		    if (!udp_cksum_valid(context,pip,pudp,plast)) {
 			context->bad_udp_checksums++;
 			if (options->warn_printbadcsum) {
 			    fprintf(stderr, "packet %lu: bad UDP checksum\n",
@@ -245,7 +245,7 @@ That will likely confuse the program, so be careful!\n", filename);
 
 	/* verify TCP checksums, if requested */
 	if (options->verify_checksums) {
-	    if (!tcp_cksum_valid(pip,ptcp,plast, context)) {
+	    if (!tcp_cksum_valid(context,pip,ptcp,plast)) {
 		context->bad_tcp_checksums++;
 		if (options->warn_printbadcsum) {
 		    fprintf(stderr, "packet %lu: bad TCP checksum\n", context->pnum);

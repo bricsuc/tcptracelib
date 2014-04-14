@@ -89,7 +89,7 @@ static tcp_pair *FindTTP(tcptrace_context_t *context, struct ip *, struct tcphdr
 static void MoreTcpPairs(int num_needed);
 static void ExtractContents(u_long seq, u_long tcp_data_bytes,
 			    u_long saved_data_bytes, void *pdata, tcb *ptcb);
-static Bool check_hw_dups(u_short id, seqnum seq, tcb *ptcb, tcptrace_context_t *context);
+static Bool check_hw_dups(tcptrace_context_t *context, u_short id, seqnum seq, tcb *ptcb);
 static u_long SeqRep(tcb *ptcb, u_long seq);
 static void UpdateConnLists(tcptrace_context_t *context, ptp_ptr *tcp_ptr, struct tcphdr *ptcp);
 static void UpdateConnList(tcptrace_context_t *context,
@@ -1611,11 +1611,11 @@ dotrace(
     /* now, print it if requested */
     if (context->options->printem && !context->options->printallofem) {
 	printf("Packet %lu\n", context->pnum);
-	printpacket(0,		/* original length not available */
+	printpacket(context,
+                    0,		/* original length not available */
 		    (char *)plast - (char *)pip + 1,
 		    NULL,0,	/* physical stuff not known here */
-		    pip,plast,thisdir,
-                    context);
+		    pip,plast,thisdir);
     }
 
     /* grab the address from this packet */
@@ -1637,7 +1637,7 @@ dotrace(
     tlinepl      = thisdir->tline_plotter;
 
     /* check the options */
-    ptcpo = ParseOptions(ptcp,plast,context);
+    ptcpo = ParseOptions(context, ptcp, plast);
     if (ptcpo->mss != -1)
 	thisdir->mss = ptcpo->mss;
     if (ptcpo->ws != -1) {
@@ -1725,7 +1725,7 @@ dotrace(
     /* check for hardware duplicates */
     /* only works for IPv4, IPv6 has no mandatory ID field */
     if (PIP_ISV4(pip) && docheck_hw_dups)
-	hw_dup = check_hw_dups(pip->ip_id, th_seq, thisdir, context);
+	hw_dup = check_hw_dups(context, pip->ip_id, th_seq, thisdir);
 
 
     /* Kevin Lahey's ECN code */
@@ -2837,9 +2837,9 @@ get_short_opt(
 
 struct tcp_options *
 ParseOptions(
+    tcptrace_context_t *context,
     struct tcphdr *ptcp,
-    void *plast,
-    tcptrace_context_t *context)
+    void *plast)
 {
     static struct tcp_options tcpo;
     struct sack_block *psack;
@@ -3155,10 +3155,10 @@ ExtractContents(
    (same IP ID and TCP sequence number) */
 static Bool
 check_hw_dups(
+    tcptrace_context_t *context,
     u_short id,
     seqnum seq,
-    tcb *tcb,
-    tcptrace_context_t *context)
+    tcb *tcb)
 {
     int i;
     struct str_hardware_dups *pshd;
@@ -3306,10 +3306,10 @@ ip_cksum_valid(
 /* compute the TCP checksum */
 static u_short
 tcp_cksum(
+    tcptrace_context_t *context,
     struct ip *pip,
     struct tcphdr *ptcp,
-    void *plast,
-    tcptrace_context_t *context)
+    void *plast)
 {
     u_long sum = 0;
     unsigned tcp_length = 0;
@@ -3381,7 +3381,7 @@ tcp_cksum(
 	   struct ipv6_ext *pipv6_ext = (struct ipv6_ext *)(pip6+1);
 
 	   /* Searching for the routing header */
-	   int ret = getroutingheader(pip, &pipv6_ext, &plast, context);
+	   int ret = getroutingheader(context, pip, &pipv6_ext, &plast);
 	   
 	   if(!ret) {  /* Found the routing header */
 	      if(pipv6_ext->ip6ext_len >= 2) { /* Sanity check */
@@ -3430,10 +3430,10 @@ tcp_cksum(
 /* compute the UDP checksum */
 static u_short
 udp_cksum(
+    tcptrace_context_t *context,
     struct ip *pip,
     struct udphdr *pudp,
-    void *plast,
-    tcptrace_context_t *context)
+    void *plast)
 {
     u_long sum = 0;
     unsigned udp_length;
@@ -3498,7 +3498,7 @@ udp_cksum(
 	   struct ipv6_ext *pipv6_ext = (struct ipv6_ext *)(pip6+1);
 
 	   /* Searching for the routing header */
-	   int ret = getroutingheader(pip, &pipv6_ext, &plast, context);
+	   int ret = getroutingheader(context, pip, &pipv6_ext, &plast);
 	   
 	   if(!ret) {  /* Found the routing header */
 	      if(pipv6_ext->ip6ext_len >= 2) { /* Sanity check */
@@ -3542,29 +3542,29 @@ udp_cksum(
 /* is the TCP checksum valid? */
 Bool
 tcp_cksum_valid(
+    tcptrace_context_t *context,
     struct ip *pip,
     struct tcphdr *ptcp,
-    void *plast,
-    tcptrace_context_t *context)
+    void *plast)
 {
-    return(tcp_cksum(pip,ptcp,plast,context) == 0);
+    return(tcp_cksum(context,pip,ptcp,plast) == 0);
 }
 
 
 /* is the UDP checksum valid? */
 Bool
 udp_cksum_valid(
+    tcptrace_context_t *context,
     struct ip *pip,
     struct udphdr *pudp,
-    void *plast,
-    tcptrace_context_t *context)
+    void *plast)
 {
     if (ntohs(pudp->uh_sum) == 0) {
 	/* checksum not used */
 	return(1);		/* valid */
     }
     
-    return(udp_cksum(pip,pudp,plast,context) == 0);
+    return(udp_cksum(context,pip,pudp,plast) == 0);
 }
 
 /* Did we miss any segment during packet capture? */

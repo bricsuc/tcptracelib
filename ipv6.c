@@ -133,11 +133,11 @@ ipv6_nextheader(
  */
 static int
 findheader(
+    tcptrace_context_t *context,
     u_int ipproto,
     struct ip *pip,
     void **pphdr,
-    void **pplast,
-    tcptrace_context_t *context)
+    void **pplast)
 {
     struct ipv6 *pip6 = (struct ipv6 *)pip;
     char nextheader;
@@ -156,7 +156,7 @@ findheader(
 	    if (debug>1) {
 		printf("findheader: Skipping IPv4 non-initial fragment\n");
 		if (debug > 2) {
-		    printpacket(100,100,NULL,0,pip,*pplast,NULL,context);
+		    printpacket(context,100,100,NULL,0,pip,*pplast,NULL);
 		}
 	    }
 	    return (1);
@@ -285,12 +285,12 @@ findheader(
  */
 int
 getroutingheader(
+    tcptrace_context_t *context,
     struct ip *pip,
     struct ipv6_ext **ppipv6_ext,
-    void **pplast,
-    tcptrace_context_t *context)
+    void **pplast)
 {
-    int ret_val = findheader(IPPROTO_ROUTING, pip, (void **)ppipv6_ext, pplast, context);
+    int ret_val = findheader(context, IPPROTO_ROUTING, pip, (void **)ppipv6_ext, pplast);
     return (ret_val);
 }
 
@@ -306,7 +306,7 @@ gettcp(
     struct tcphdr **pptcp,
     void **pplast)
 {
-    int ret_val = findheader(IPPROTO_TCP, pip, (void **)pptcp, pplast, context);
+    int ret_val = findheader(context, IPPROTO_TCP, pip, (void **)pptcp, pplast);
     return (ret_val);
 }
 
@@ -322,7 +322,7 @@ getudp(
     struct udphdr **ppudp,
     void **pplast)
 {
-   int ret_val = findheader(IPPROTO_UDP, pip, (void **)ppudp, pplast, context);
+   int ret_val = findheader(context, IPPROTO_UDP, pip, (void **)ppudp, pplast);
    return (ret_val);
 }
 

@@ -67,8 +67,8 @@ static char const GCC_UNUSED rcsid[] =
 /* local routines */
 static void printeth_packet(struct ether_header *);
 static void printip_packet(tcptrace_context_t *context, struct ip *, void *plast);
-static void printtcp_packet(struct ip *, void *plast, tcb *tcb, tcptrace_context_t *context);
-static void printudp_packet(struct ip *, void *plast, tcptrace_context_t *context);
+static void printtcp_packet(tcptrace_context_t *context, struct ip *, void *plast, tcb *tcb);
+static void printudp_packet(tcptrace_context_t *context, struct ip *, void *plast);
 static char *ParenServiceName(portnum);
 static char *ParenHostName(struct ipaddr addr);
 static void printipv4(tcptrace_context_t *context, struct ip *pip, void *plast);
@@ -348,10 +348,10 @@ printipv4_opt_addrs(
 
 static void
 printtcp_packet(
+    tcptrace_context_t *context,
     struct ip *pip,
     void *plast,
-    tcb *thisdir,
-    tcptrace_context_t *context)
+    tcb *thisdir)
 {
     unsigned tcp_length;
     unsigned tcp_data_length;
@@ -428,7 +428,7 @@ printtcp_packet(
 	if ((char *)pdata + tcp_data_length > ((char *)plast+1))
 	    printf(" (too short to verify)");
 	else
-	    printf(" (%s)", tcp_cksum_valid(pip,ptcp,plast,context)?"CORRECT":"WRONG");
+	    printf(" (%s)", tcp_cksum_valid(context,pip,ptcp,plast)?"CORRECT":"WRONG");
     }
     printf("\n");
 
@@ -461,7 +461,7 @@ printtcp_packet(
 
 	printf("\t");
 
-	ptcpo = ParseOptions(ptcp,plast,context);
+	ptcpo = ParseOptions(context, ptcp, plast);
 
 	if (ptcpo->mss != -1)
 	    printf(" MSS(%d)", ptcpo->mss);
@@ -519,9 +519,9 @@ printtcp_packet(
 
 static void
 printudp_packet(
+    tcptrace_context_t *context,
     struct ip *pip,
-    void *plast,
-    tcptrace_context_t *context)
+    void *plast)
 {
     struct udphdr *pudp;
     unsigned udp_length;
@@ -559,7 +559,7 @@ printudp_packet(
 	if ((char *)pdata + udp_data_length > ((char *)plast+1))
 	    printf(" (too short to verify)");
 	else
-	    printf(" (%s)", udp_cksum_valid(pip,pudp,plast,context)?"CORRECT":"WRONG");
+	    printf(" (%s)", udp_cksum_valid(context,pip,pudp,plast)?"CORRECT":"WRONG");
     }
     printf("\n");
     printf("\t    DLEN: %u", ntohs(pudp->uh_ulen));
@@ -576,14 +576,14 @@ printudp_packet(
 
 void
 printpacket(
+     tcptrace_context_t *context,
      int		len,
      int		tlen,
      void		*phys,
      int		phystype,
      struct ip		*pip,
      void 		*plast,
-     tcb		*tcb,
-     tcptrace_context_t *context)
+     tcb		*tcb)
 {
     if (len == 0)
 	/* original length unknown */
@@ -611,10 +611,10 @@ printpacket(
 
 
     /* this will fail if it's not TCP */
-    printtcp_packet(pip,plast,tcb,context);
+    printtcp_packet(context,pip,plast,tcb);
 
     /* this will fail if it's not UDP */
-    printudp_packet(pip,plast,context);
+    printudp_packet(context,pip,plast);
 }
 
 

@@ -854,7 +854,7 @@ void tcptrace_modules_all_newfile(tcptrace_context_t *context, tcptrace_working_
 void tcptrace_modules_newconn(tcptrace_context_t *context, tcp_pair *ptp);
 void tcptrace_modules_newconn_udp(tcptrace_context_t *context, udp_pair *pup);
 void tcptrace_modules_readpacket(tcptrace_context_t *context, struct ip *pip, tcp_pair *ptp, void *plast);
-void tcptrace_modules_readpacket_udp( tcptrace_context_t *context, struct ip *pip, udp_pair *pup, void *plast);
+void tcptrace_modules_readpacket_udp(tcptrace_context_t *context, struct ip *pip, udp_pair *pup, void *plast);
 void tcptrace_modules_readpacket_nottcpudp(tcptrace_context_t *context, struct ip *pip, void *plast);
 void
 tcptrace_modules_deleteconn(tcptrace_context_t *context, tcp_pair *ptp);
@@ -863,8 +863,7 @@ tcptrace_modules_deleteconn(tcptrace_context_t *context, tcp_pair *ptp);
 void tcptrace_process_file(tcptrace_context_t *context, char *filename);
 
 
-void printpacket(int, int, void *, int, struct ip *, void *plast, tcb *tcb,
-tcptrace_context_t *context);
+void printpacket(tcptrace_context_t *context, int, int, void *, int, struct ip *, void *plast, tcb *tcb);
 
 void plotter_vtick(PLOTTER, timeval, u_long);
 void plotter_utick(PLOTTER, timeval, u_long);
@@ -927,7 +926,7 @@ char *NextHostLetter(void);
 char *EndpointName(ipaddr,portnum);
 PLOTTER new_plotter(tcb *plast, char *filename, char *title,
 		    char *xlabel, char *ylabel, char *suffix);
-int rexmit(tcptrace_context_t *context, tcb *, seqnum, seglen, Bool *);
+int rexmit(tcptrace_context_t *, tcb *, seqnum, seglen, Bool *);
 enum t_ack ack_in(tcptrace_context_t *context, tcb *, seqnum, unsigned tcp_data_length, u_long eff_win);
 Bool IsRTO(tcb *ptcb, seqnum s);
 void DoThru(tcptrace_context_t *context, tcb *ptcb, int nbytes);
@@ -942,7 +941,7 @@ int Mfprintf(MFILE *pmf, char *format, ...);
 int Mfflush(MFILE *pmf);
 int Mfclose(MFILE *pmf);
 int Mfpipe(int pipes[2]);
-struct tcp_options *ParseOptions(struct tcphdr *ptcp, void *plast, tcptrace_context_t *context);
+struct tcp_options *ParseOptions(tcptrace_context_t *context, struct tcphdr *ptcp, void *plast);
 FILE *CompOpenHeader(char *filename);
 FILE *CompOpenFile(char *filename);
 void CompCloseFile(char *filename);
@@ -956,8 +955,8 @@ void CopyAddr(tcp_pair_addrblock *, struct ip *pip,portnum,portnum);
 int WhichDir(tcp_pair_addrblock *, tcp_pair_addrblock *);
 int SameConn(tcp_pair_addrblock *, tcp_pair_addrblock *, int *);
 Bool ip_cksum_valid(struct ip *pip, void *plast);
-Bool tcp_cksum_valid(struct ip *pip, struct tcphdr *ptcp, void *plast, tcptrace_context_t *context);
-Bool udp_cksum_valid(struct ip *pip, struct udphdr *pudp, void *plast, tcptrace_context_t *context);
+Bool tcp_cksum_valid(tcptrace_context_t *context, struct ip *pip, struct tcphdr *ptcp, void *plast);
+Bool udp_cksum_valid(tcptrace_context_t *context, struct ip *pip, struct udphdr *pudp, void *plast);
 ipaddr *str2ipaddr(char *str);
 int IPcmp(ipaddr *pipA, ipaddr *pipB);
 

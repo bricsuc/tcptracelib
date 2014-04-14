@@ -293,10 +293,11 @@ udpdotrace(
     /* now, print it if requested */
     if (context->options->printem && !context->options->printallofem) {
 	printf("Packet %lu\n", context->pnum);
-	printpacket(0,		/* original length not available */
+	printpacket(context,
+                    0,		/* original length not available */
 		    (char *)plast - (char *)pip + 1,
 		    NULL,0,	/* physical stuff not known here */
-		    pip,plast,NULL,context);
+		    pip,plast,NULL);
     }
 
     /* grab the address from this packet */
