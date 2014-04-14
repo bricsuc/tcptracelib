@@ -104,7 +104,7 @@ Bool graph_tline = FALSE;
 Bool hex = TRUE;
 /* Bool ignore_non_comp = FALSE; */
 /* Bool dump_packet_data = FALSE; */
-Bool print_rtt = FALSE;
+/* Bool print_rtt = FALSE; */
 Bool print_owin = FALSE;
 Bool printbrief = TRUE;
 Bool printsuppress = FALSE;
@@ -227,7 +227,7 @@ static struct ext_bool_op {
      "show title on the graphs"},
     {"showrwinline", &show_rwinline, 0, TRUE,
      "show yellow receive-window line in owin graphs"},
-    {"res_addr", NULL, __T_OPTIONS_OFFSET(resolve_ipaddresses), 0, TRUE,
+    {"res_addr", NULL, __T_OPTIONS_OFFSET(resolve_ipaddresses), TRUE,
      "resolve IP addresses into names (may be slow)"},
     {"res_port", &resolve_ports, 0, TRUE,
      "resolve port numbers into names"},
@@ -1875,7 +1875,7 @@ ParseArgs(
 		    *(argv[i]+1) = '\00'; break;
 		  case 'p': options->printallofem = TRUE; break;
 		  case 'q': printsuppress = TRUE; break;
-		  case 'r': print_rtt = TRUE; break;
+		  case 'r': options->print_rtt = TRUE; break;
 		  case 's': use_short_names = TRUE; break;
 		  case 't': options->printticks = TRUE; break;
 		  case 'u': options->do_udp = TRUE; break;
@@ -1945,7 +1945,7 @@ ParseArgs(
 		    break;
 		  case 'p': options->printallofem = !TRUE; break;
 		  case 'q': printsuppress = !TRUE; break;
-		  case 'r': print_rtt = !TRUE; break;
+		  case 'r': options->print_rtt = !TRUE; break;
 		  case 's': use_short_names = !TRUE; break;
 		  case 't': options->printticks = !TRUE; break;
 		  case 'u': options->do_udp = !TRUE; break;
@@ -1997,7 +1997,7 @@ DumpFlags(void)
 
     fprintf(stderr,"printbrief:       %s\n", BOOL2STR(printbrief));
     fprintf(stderr,"printsuppress:    %s\n", BOOL2STR(printsuppress));
-    fprintf(stderr,"print_rtt:        %s\n", BOOL2STR(print_rtt));
+    fprintf(stderr,"print_rtt:        %s\n", BOOL2STR(options->print_rtt));
     fprintf(stderr,"graph rtt:        %s\n", BOOL2STR(graph_rtt));
     fprintf(stderr,"graph tput:       %s\n", BOOL2STR(graph_tput));
     fprintf(stderr,"graph tsg:        %s\n", BOOL2STR(graph_tsg));
