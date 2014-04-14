@@ -407,6 +407,10 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
 
     options->do_udp = FALSE;
 
+    options->resolve_ipaddresses = TRUE;
+
+    options->print_rtt = FALSE;
+
     options->ignore_incomplete = FALSE;
 
     options->printem = FALSE;

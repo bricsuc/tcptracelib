@@ -686,7 +686,7 @@ extern Bool hex;
 extern Bool resolve_ports;
 extern Bool triple_dupack_allows_data;
 /* extern Bool verify_checksums; */ /* de-globalized, now in runtime_options */
-extern Bool print_rtt;
+/* extern Bool print_rtt; */        /* de-globalized, now in runtime_options */
 extern Bool print_owin;
 extern Bool printbrief;
 extern Bool printsuppress;
@@ -748,6 +748,8 @@ typedef struct tcptrace_runtime_options_t {
     Bool do_udp;
 
     Bool resolve_ipaddresses;
+
+    Bool print_rtt;
 
     Bool printem;
     Bool printallofem;
@@ -899,9 +901,9 @@ tcp_pair *dotrace(tcptrace_context_t *context, struct ip *, struct tcphdr *ptcp,
 
 void PrintRawData(char *label, void *pfirst, void *plast, Bool octal);
 void PrintRawDataHex(char *label, void *pfirst, void *plast);
-void PrintTrace(tcp_pair *);
+void PrintTrace(tcptrace_context_t *context, tcp_pair *);
 void UDPPrintTrace(udp_pair *);
-void PrintSVHeader(void);
+void PrintSVHeader(tcptrace_context_t *context);
 void PrintBrief(tcp_pair *);
 void UDPPrintBrief(udp_pair *);
 void OnlyConn(int);

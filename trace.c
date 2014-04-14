@@ -913,8 +913,9 @@ FindTTP(
 			       ptp->a_endpoint, ptp->b_endpoint,
 			       elapsed(ptp->last_time,
 				       context->current_time)/1000000);
-			if (debug > 3)
-			    PrintTrace(ptp);
+			if (debug > 3) {
+			    PrintTrace(context, ptp);
+                        }
 		    }
 		
 		    /* we won't need this one anymore, remove it from the */
@@ -2644,8 +2645,8 @@ trace_done(tcptrace_context_t *context)
 		    PrintBrief(ptp);
 		} else if (!options->ignore_incomplete || ConnComplete(ptp)) {
 		    if(csv || tsv || (sv != NULL)) {
-		       if(first) {
-			  PrintSVHeader();
+		       if (first) {
+			  PrintSVHeader(context);
 			  first = FALSE;
 		       }
 		       fprintf(stdout, "%d%s", ix+1, sp);
@@ -2656,7 +2657,7 @@ trace_done(tcptrace_context_t *context)
 		       fprintf(stdout,"TCP connection %d:\n", ix+1);
 		       
 		    }
-		    PrintTrace(ptp);
+		    PrintTrace(context, ptp);
 		}
 	       /* This piece of code dumps PF file when filtered with '-c' 
 		  option, this option says to select only complete connections.

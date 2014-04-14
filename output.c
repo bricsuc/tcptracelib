@@ -198,6 +198,7 @@ FormatBrief(
 
 void
 PrintTrace(
+    tcptrace_context_t *context,
     tcp_pair *ptp)
 {
     double etime;
@@ -210,6 +211,7 @@ PrintTrace(
     char *host1 = pab->host_letter;
     char *host2 = pba->host_letter;
     char bufl[40],bufr[40];
+    tcptrace_runtime_options_t *options = context->options;
    
     /* counters to use for seq. space wrap around calculations
      */
@@ -494,7 +496,7 @@ PrintTrace(
 		  (double) (pab->unique_bytes) / etime,
 		  (double) (pba->unique_bytes) / etime);
 
-    if (print_rtt) {
+    if (options->print_rtt) {
         if(!(csv || tsv || (sv != NULL)))
 	  fprintf(stdout,"\n");
 	StatLineI("RTT samples","", pab->rtt_count, pba->rtt_count);
@@ -963,8 +965,7 @@ UDPFormatBrief(
  * has been requested.
  */ 
 void
-PrintSVHeader(
-	      void)
+PrintSVHeader(tcptrace_context_t *context)
 {
    /* NOTE: If you have added new fields of output to be printed in 
     * PrintTrace(), make sure you update the header-list here too, so that the
@@ -1123,9 +1124,11 @@ PrintSVHeader(
 
 
    /* Print the RTT column headings (the field names) */   
-   if(print_rtt)
-     for(i = 0; i < SV_RTT_HEADER_COLUMN_COUNT; i++)
-       fprintf(stdout, "%s%s", svRTTHeader[i], sp);
+   if (context->options->print_rtt) {
+       for (i = 0; i < SV_RTT_HEADER_COLUMN_COUNT; i++) {
+           fprintf(stdout, "%s%s", svRTTHeader[i], sp);
+       }
+   }
      
    /* Improve readability */
    fprintf(stdout, "\n\n");
@@ -1133,8 +1136,9 @@ PrintSVHeader(
    /* Set the number of columns expected to be printed. */
    sv_expected_count=SV_HEADER1_COLUMN_COUNT + SV_HEADER2_COLUMN_COUNT;
   
-   if (print_rtt)
+   if (context->options->print_rtt) {
      sv_expected_count += SV_RTT_HEADER_COLUMN_COUNT;
+   }
 
    if (print_owin)
      sv_expected_count += SV_OWIN_HEADER_COLUMN_COUNT;
