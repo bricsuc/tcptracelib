@@ -180,7 +180,7 @@ That will likely confuse the program, so be careful!\n", filename);
         }
 
 	/* print the packet, if requested */
-	if (options->printallofem || dump_packet_data) {
+	if (options->printallofem || options->dump_packet_data) {
 	    printf("Packet %lu\n", state->pnum);
 	    printpacket(len,tlen,phys,phystype,pip,plast,NULL,state);
 	}
@@ -414,5 +414,7 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->warn_printbadcsum = FALSE;
 
     options->verify_checksums = FALSE;
+
+    options->dump_packet_data = FALSE;
 }
 

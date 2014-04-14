@@ -693,7 +693,7 @@ extern Bool printsuppress;
 /* extern Bool printem; */       /* de-globalized, now in runtime_options */
 /* extern Bool printallofem; */  /* de-globalized, "" */
 /* extern Bool printticks; */    /* de-globalized, "" */
-extern Bool dump_packet_data;
+/* extern Bool dump_packet_data; */ /* de-globalized */
 extern Bool warn_ooo;
 extern Bool warn_printtrunc;
 extern Bool warn_printbadmbz;
@@ -753,6 +753,7 @@ typedef struct tcptrace_runtime_options_t {
 
     Bool verify_checksums;
     Bool warn_printbadcsum;
+    Bool dump_packet_data;
 
 } tcptrace_runtime_options_t;
 

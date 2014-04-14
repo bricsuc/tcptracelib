@@ -103,7 +103,7 @@ Bool graph_owin = FALSE;
 Bool graph_tline = FALSE;
 Bool hex = TRUE;
 Bool ignore_non_comp = FALSE;
-Bool dump_packet_data = FALSE;
+/* Bool dump_packet_data = FALSE; */
 Bool print_rtt = FALSE;
 Bool print_owin = FALSE;
 Bool printbrief = TRUE;
@@ -249,7 +249,7 @@ static struct ext_bool_op {
      "print warnings when packets with bad checksums"},
     {"warn_printbad_syn_fin_seq", &warn_printbad_syn_fin_seq, 0, TRUE,
      "print warnings when SYNs or FINs rexmitted with different sequence numbers"},
-    {"dump_packet_data", &dump_packet_data, 0, TRUE,
+    {"dump_packet_data", NULL, __T_OPTIONS_OFFSET(dump_packet_data), TRUE,
      "print all packets AND dump the TCP/UDP data"},
     {"continuous", &run_continuously, 0, TRUE,
      "run continuously and don't provide a summary"},

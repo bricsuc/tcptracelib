@@ -361,6 +361,10 @@ printtcp_packet(
     struct ipv6 *pipv6;
     tcb *otherdir = NULL;
 
+    tcptrace_runtime_options_t *options;
+
+    options = state->options;
+
     /* find the tcp header */
     if (gettcp(state, pip, &ptcp, &plast)) {
         return;		/* not TCP or bad TCP packet */
@@ -420,7 +424,7 @@ printtcp_packet(
     }
     printf("\t   CKSUM: 0x%04x", ntohs(ptcp->th_sum));
     pdata = (u_char *)ptcp + TH_OFF(ptcp)*4;
-    if (state->options->verify_checksums) {
+    if (options->verify_checksums) {
 	if ((char *)pdata + tcp_data_length > ((char *)plast+1))
 	    printf(" (too short to verify)");
 	else
@@ -503,7 +507,7 @@ printtcp_packet(
         printf("\n");
     }
     if (tcp_data_length > 0) {
-	if (dump_packet_data) {
+	if (options->dump_packet_data) {
 	    char *ptcp_data = (char *)ptcp + (4 * TH_OFF(ptcp));
 	    PrintRawData("   data", ptcp_data, plast, TRUE);
 	} else {
@@ -523,6 +527,9 @@ printudp_packet(
     unsigned udp_length;
     unsigned udp_data_length;
     u_char *pdata;
+    tcptrace_runtime_options_t *options;
+
+    options = state->options;
 
     /* find the udp header */
     if (getudp(pip, &pudp, &plast, state))
@@ -559,7 +566,7 @@ printudp_packet(
 	printf(" (only %lu bytes in dump file)\n",
 	       (u_long)((char *)plast - (char *)pdata + 1));
     if (ntohs(pudp->uh_ulen) > 0) {
-	if (dump_packet_data)
+	if (options->dump_packet_data)
 	    PrintRawData("   data", pdata, plast, TRUE);
     }
 }
