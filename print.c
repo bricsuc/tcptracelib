@@ -157,11 +157,14 @@ printip_packet(
     struct ip *pip,
     void *plast)
 {
+    tcptrace_runtime_options_t *options = context->options;
+
     /* print an ipv6 header */
     if (PIP_ISV6(pip)) {
 	if ((char *)pip+sizeof(struct ipv6)-1 > (char *)plast) {
-	    if (warn_printtrunc)
+	    if (options->warn_printtrunc) {
 		printf("\t[packet truncated too short for IP details]\n");
+            }
 	    context->ctrunc++;
 	    return;
 	}
@@ -172,8 +175,9 @@ printip_packet(
     if (PIP_ISV4(pip)) {
 	/* make sure we have enough of the packet */
 	if ((char *)pip+sizeof(struct ip)-1 > (char *)plast) {
-	    if (warn_printtrunc)
+	    if (options->warn_printtrunc) {
 		printf("\t[packet truncated too short for IP details]\n");
+            }
 	    context->ctrunc++;
 	    return;
 	}
@@ -195,11 +199,13 @@ printipv4(
 {
     u_short offset;
     Bool mf;
+    tcptrace_runtime_options_t *options = context->options;
     
     /* make sure we have enough of the packet */
     if ((char *)pip+sizeof(struct ip)-1 > (char *)plast) {
-	if (warn_printtrunc)
+	if (options->warn_printtrunc) {
 	    printf("\t[packet truncated too short for IP details]\n");
+        }
 	context->ctrunc++;
 	return;
     }
@@ -227,8 +233,9 @@ printipv4(
     printf("\t     LEN: %d\n", ntohs(pip->ip_len));
     printf("\t      ID: %d\n", ntohs(pip->ip_id));
     printf("\t   CKSUM: 0x%04x", ntohs(pip->ip_sum));
-    if (context->options->verify_checksums)
+    if (options->verify_checksums) {
 	printf(" (%s)", ip_cksum_valid(pip,plast)?"CORRECT":"WRONG");
+    }
     printf("\n");
 
     /* fragmentation stuff */
@@ -362,9 +369,7 @@ printtcp_packet(
     struct ipv6 *pipv6;
     tcb *otherdir = NULL;
 
-    tcptrace_runtime_options_t *options;
-
-    options = context->options;
+    tcptrace_runtime_options_t *options = context->options;
 
     /* find the tcp header */
     if (gettcp(context, pip, &ptcp, &plast)) {
@@ -373,8 +378,9 @@ printtcp_packet(
 
     /* make sure we have enough of the packet */
     if ((char *)ptcp+sizeof(struct tcphdr)-1 > (char *)plast) {
-	if (warn_printtrunc)
+	if (options->warn_printtrunc) {
 	    printf("\t[packet truncated too short for TCP details]\n");
+        }
 	context->ctrunc++;
 	return;
     }
@@ -528,9 +534,7 @@ printudp_packet(
     unsigned udp_length;
     unsigned udp_data_length;
     u_char *pdata;
-    tcptrace_runtime_options_t *options;
-
-    options = context->options;
+    tcptrace_runtime_options_t *options = context->options;
 
     /* find the udp header */
     if (getudp(context, pip, &pudp, &plast)) {
@@ -539,8 +543,9 @@ printudp_packet(
 
     /* make sure we have enough of the packet */
     if ((char *)pudp+sizeof(struct udphdr)-1 > (char *)plast) {
-	if (warn_printtrunc)
+	if (options->warn_printtrunc) {
 	    printf("\t[packet truncated too short for UDP details]\n");
+        }
 	context->ctrunc++;
 	return;
     }

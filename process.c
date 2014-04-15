@@ -109,7 +109,7 @@ order the files in time if you have trouble\n", filename);
 		} else {
 		    static int warned = 0;
 
-		    if (warn_ooo) {
+		    if (options->warn_ooo) {
 			fprintf(stderr, "\
 Warning, packet %ld in file %s comes BEFORE the previous packet\n\
 That will likely confuse the program, so be careful!\n",
@@ -410,6 +410,9 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->resolve_ipaddresses = TRUE;
 
     options->print_rtt = FALSE;
+    options->print_owin = FALSE;
+    options->printbrief = TRUE;
+    options->printsuppress = FALSE;
 
     options->ignore_incomplete = FALSE;
 
@@ -417,6 +420,10 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->printallofem = FALSE;
     options->printticks = FALSE;
 
+    options->warn_ooo = FALSE;
+    options->warn_printtrunc = FALSE;
+    options->warn_printbadmbz = FALSE;
+    options->warn_printhwdups = FALSE;
     options->warn_printbadcsum = FALSE;
 
     options->verify_checksums = FALSE;

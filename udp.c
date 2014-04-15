@@ -249,13 +249,15 @@ udpdotrace(
     u_short	uh_sport;	/* source port */
     u_short	uh_dport;	/* destination port */
     u_short	uh_ulen;	/* data length */
+    tcptrace_runtime_options_t *options = context->options;
 
     /* make sure we have enough of the packet */
     if ((char *)pudp + sizeof(struct udphdr)-1 > (char *)plast) {
-	if (warn_printtrunc)
+	if (options->warn_printtrunc) {
 	    fprintf(stderr,
 		    "UDP packet %lu truncated too short to trace, ignored\n",
 		    context->pnum);
+        }
 	context->ctrunc++;
 	return(NULL);
     }
@@ -334,22 +336,23 @@ udptrace_done(tcptrace_context_t *context) {
     udp_pair *pup;
     int ix;
     double etime;
+    tcptrace_runtime_options_t *options = context->options;
 
-    if (context->options->do_udp) { // Just a quick sanity check to make sure if we need to do 
+    if (options->do_udp) { // Just a quick sanity check to make sure if we need to do 
 	         // anything at all..
-	 if(!run_continuously) {
-	      if (!printsuppress) {
+	 if (!run_continuously) {
+	      if (!options->printsuppress) {
 		   if (udp_trace_count == 0) {
 			fprintf(stdout,"no traced UDP packets\n");
 			return;
 		   } else {
-			if ((tcp_trace_count > 0) && (!printbrief))
+			if ((tcp_trace_count > 0) && (!options->printbrief))
 			     printf("\n============================================================\n");
 			fprintf(stdout,"UDP connection info:\n");
 		   }
 	      }
 	      
-	      if (!printbrief)
+	      if (!options->printbrief)
 		   fprintf(stdout,"%d UDP %s traced:\n",
 			   num_udp_pairs + 1,
 			   num_udp_pairs==0?"connection":"connections");
@@ -362,20 +365,21 @@ udptrace_done(tcptrace_context_t *context) {
 	      fprintf(stdout,
 		      "*** %lu packets were too short to process at some point\n",
 		      context->ctrunc);
-	      if (!warn_printtrunc)
+	      if (!options->warn_printtrunc) {
 		   fprintf(stdout,"\t(use -w option to show details)\n");
+              }
 	 }
 	 if (debug>1)
 	      fprintf(stdout,"average search length: %d\n",
 		      search_count / packet_count);
 	 
 	 /* print each connection */
-	 if(!run_continuously) {
-	      if (!printsuppress) {
+	 if (!run_continuously) {
+	      if (!options->printsuppress) {
 		   for (ix = 0; ix <= num_udp_pairs; ++ix) {
 			pup = utp[ix];
 			if (!pup->ignore_pair) {
-			     if (printbrief) {
+			     if (options->printbrief) {
 				  fprintf(stdout,"%3d: ", ix+1);
 				  UDPPrintBrief(pup);
 			     } else {

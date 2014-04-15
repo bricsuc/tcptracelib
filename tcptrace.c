@@ -105,16 +105,16 @@ Bool hex = TRUE;
 /* Bool ignore_non_comp = FALSE; */
 /* Bool dump_packet_data = FALSE; */
 /* Bool print_rtt = FALSE; */
-Bool print_owin = FALSE;
-Bool printbrief = TRUE;
-Bool printsuppress = FALSE;
+/* Bool print_owin = FALSE; */
+/* Bool printbrief = TRUE; */
+/* Bool printsuppress = FALSE; */
 /* Bool printem = FALSE; */
 /* Bool printallofem = FALSE; */
 /* Bool printticks = FALSE; */
-Bool warn_ooo = FALSE;
-Bool warn_printtrunc = FALSE;
-Bool warn_printbadmbz = FALSE;
-Bool warn_printhwdups = FALSE;
+/* Bool warn_ooo = FALSE; */
+/* Bool warn_printtrunc = FALSE; */
+/* Bool warn_printbadmbz = FALSE; */
+/* Bool warn_printhwdups = FALSE; */
 /* Bool warn_printbadcsum = FALSE; */
 Bool warn_printbad_syn_fin_seq = FALSE;
 Bool docheck_hw_dups = TRUE;
@@ -237,13 +237,13 @@ static struct ext_bool_op {
      "count a duplicate ACK carrying data as a triple dupack"},
     {"check_hwdups", &docheck_hw_dups, 0, TRUE,
      "check for 'hardware' dups"},
-    {"warn_ooo", &warn_ooo, 0, TRUE,
+    {"warn_ooo", NULL, __T_OPTIONS_OFFSET(warn_ooo), TRUE,
      "print warnings when packets timestamps are out of order"},
-    {"warn_printtrunc", &warn_printtrunc, 0, TRUE,
+    {"warn_printtrunc", NULL, __T_OPTIONS_OFFSET(warn_printtrunc), TRUE,
      "print warnings when packets are too short to analyze"},
-    {"warn_printbadmbz", &warn_printbadmbz, 0, TRUE,
+    {"warn_printbadmbz", NULL, __T_OPTIONS_OFFSET(warn_printbadmbz), TRUE,
      "print warnings when MustBeZero TCP fields are NOT 0"},
-    {"warn_printhwdups", &warn_printhwdups, 0, TRUE,
+    {"warn_printhwdups", NULL, __T_OPTIONS_OFFSET(warn_printhwdups), TRUE,
      "print warnings for hardware duplicates"},
     {"warn_printbadcsum", NULL, __T_OPTIONS_OFFSET(warn_printbadcsum), TRUE,
      "print warnings when packets with bad checksums"},
@@ -1816,10 +1816,10 @@ ParseArgs(
 		  case 'R': graph_rtt = TRUE; break;
 		  case 'S': graph_tsg = TRUE; break;
 		  case 'T': graph_tput = TRUE; break;
-		  case 'W': print_owin = TRUE; break;
+		  case 'W': options->print_owin = TRUE; break;
 		  case 'X': hex = TRUE; break;
 		  case 'Z': dump_rtt = TRUE; break;
-		  case 'b': printbrief = TRUE; break;
+		  case 'b': options->printbrief = TRUE; break;
 		  case 'c': options->ignore_incomplete = TRUE; break;
 		  case 'd': options->debug++; debug++; break;
 		  case 'e': save_tcp_data = TRUE; break;
@@ -1855,7 +1855,7 @@ ParseArgs(
 		      }
  }*/		      *(argv[i]+1) = '\00'; 
 		     break;
-		  case 'l': printbrief = FALSE; break;
+		  case 'l': options->printbrief = FALSE; break;
 		  case 'm':
 		    BadArg(argsource,
 			   "-m option is obsolete (no longer necessary)\n");
@@ -1874,19 +1874,19 @@ ParseArgs(
 		    }
 		    *(argv[i]+1) = '\00'; break;
 		  case 'p': options->printallofem = TRUE; break;
-		  case 'q': printsuppress = TRUE; break;
+		  case 'q': options->printsuppress = TRUE; break;
 		  case 'r': options->print_rtt = TRUE; break;
 		  case 's': use_short_names = TRUE; break;
 		  case 't': options->printticks = TRUE; break;
 		  case 'u': options->do_udp = TRUE; break;
 		  case 'v': Version(); exit(0); break;
 		  case 'w':
-		    warn_printtrunc = TRUE;
-		    warn_printbadmbz = TRUE;
-		    warn_printhwdups = TRUE;
-		    global_context.options->warn_printbadcsum = TRUE;
+		    options->warn_printtrunc = TRUE;
+		    options->warn_printbadmbz = TRUE;
+		    options->warn_printhwdups = TRUE;
+		    options->warn_printbadcsum = TRUE;
 		    warn_printbad_syn_fin_seq = TRUE;
-		    warn_ooo = TRUE;
+		    options->warn_ooo = TRUE;
 		    break;
 		  case 'x':
 		    BadArg(argsource,
@@ -1932,29 +1932,29 @@ ParseArgs(
 		  case 'R': graph_rtt = !TRUE; break;
 		  case 'S': graph_tsg = !TRUE; break;
 		  case 'T': graph_tput = !TRUE; break;
-		  case 'W': print_owin = !TRUE; break;
+		  case 'W': options->print_owin = !TRUE; break;
 		  case 'X': hex = !TRUE; break;
 		  case 'Z': dump_rtt = !TRUE; break;
-		  case 'b': printbrief = !TRUE; break;
+		  case 'b': options->printbrief = !TRUE; break;
 		  case 'c': options->ignore_incomplete = !TRUE; break;
 		  case 'e': save_tcp_data = FALSE; break;
-		  case 'l': printbrief = !FALSE; break;
+		  case 'l': options->printbrief = !FALSE; break;
 		  case 'n':
 		    options->resolve_ipaddresses = !FALSE;
 		    resolve_ports = !FALSE;
 		    break;
 		  case 'p': options->printallofem = !TRUE; break;
-		  case 'q': printsuppress = !TRUE; break;
+		  case 'q': options->printsuppress = !TRUE; break;
 		  case 'r': options->print_rtt = !TRUE; break;
 		  case 's': use_short_names = !TRUE; break;
 		  case 't': options->printticks = !TRUE; break;
 		  case 'u': options->do_udp = !TRUE; break;
 		  case 'w':
-		    warn_printtrunc = !TRUE;
-		    warn_printbadmbz = !TRUE;
-		    warn_printhwdups = !TRUE;
-		    global_context.options->warn_printbadcsum = !TRUE;
-		    warn_ooo = !TRUE;
+		    options->warn_printtrunc = !TRUE;
+		    options->warn_printbadmbz = !TRUE;
+		    options->warn_printhwdups = !TRUE;
+		    options->warn_printbadcsum = !TRUE;
+		    options->warn_ooo = !TRUE;
 		    break;
 		  case 'y': plot_tput_instant = !plot_tput_instant; break;
 		  case 'z':
@@ -1995,8 +1995,8 @@ DumpFlags(void)
     int i;
     tcptrace_runtime_options_t *options = global_context.options;
 
-    fprintf(stderr,"printbrief:       %s\n", BOOL2STR(printbrief));
-    fprintf(stderr,"printsuppress:    %s\n", BOOL2STR(printsuppress));
+    fprintf(stderr,"printbrief:       %s\n", BOOL2STR(options->printbrief));
+    fprintf(stderr,"printsuppress:    %s\n", BOOL2STR(options->printsuppress));
     fprintf(stderr,"print_rtt:        %s\n", BOOL2STR(options->print_rtt));
     fprintf(stderr,"graph rtt:        %s\n", BOOL2STR(graph_rtt));
     fprintf(stderr,"graph tput:       %s\n", BOOL2STR(graph_tput));

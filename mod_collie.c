@@ -107,6 +107,7 @@ collie_init(
     int i;
     int enable=0;
     char *args = NULL;
+    tcptrace_runtime_options_t *options = context->options;
 
     for (i=1; i < argc; ++i) {
 	if (!argv[i])
@@ -128,10 +129,10 @@ collie_init(
     ParseArgs(args);
 
     /* we don't want the normal output */
-    printsuppress = TRUE;
+    options->printsuppress = TRUE;
 
     /* please also include UDP packets */
-    context->options->do_udp = TRUE;
+    options->do_udp = TRUE;
 
     return(1);	/* TRUE means call collie_read and collie_done later */
 }

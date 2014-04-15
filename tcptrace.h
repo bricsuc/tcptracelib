@@ -687,17 +687,17 @@ extern Bool resolve_ports;
 extern Bool triple_dupack_allows_data;
 /* extern Bool verify_checksums; */ /* de-globalized, now in runtime_options */
 /* extern Bool print_rtt; */        /* de-globalized, now in runtime_options */
-extern Bool print_owin;
-extern Bool printbrief;
-extern Bool printsuppress;
+/* extern Bool print_owin; */       /* de-globalized, now in runtime_options */
+/* extern Bool printbrief; */       /* "" */
+/* extern Bool printsuppress; */    /* "" */
 /* extern Bool printem; */       /* de-globalized, now in runtime_options */
 /* extern Bool printallofem; */  /* de-globalized, "" */
 /* extern Bool printticks; */    /* de-globalized, "" */
 /* extern Bool dump_packet_data; */ /* de-globalized */
-extern Bool warn_ooo;
-extern Bool warn_printtrunc;
-extern Bool warn_printbadmbz;
-extern Bool warn_printhwdups;
+/* extern Bool warn_ooo; */      /* "" */
+/* extern Bool warn_printtrunc; */
+/* extern Bool warn_printbadmbz; */
+/* extern Bool warn_printhwdups; */
 extern Bool warn_printbad_syn_fin_seq;
 extern Bool show_out_order;
 extern Bool show_rexmit;
@@ -750,6 +750,15 @@ typedef struct tcptrace_runtime_options_t {
     Bool resolve_ipaddresses;
 
     Bool print_rtt;
+    Bool print_owin;
+    Bool printbrief;
+    Bool printsuppress;
+    Bool warn_ooo;
+    Bool warn_printtrunc;
+    Bool warn_printbadmbz;
+    Bool warn_printhwdups;
+
+    Bool warn_printbadcsum;
 
     Bool printem;
     Bool printallofem;
@@ -757,7 +766,6 @@ typedef struct tcptrace_runtime_options_t {
 
     Bool ignore_incomplete;
     Bool verify_checksums;
-    Bool warn_printbadcsum;
     Bool dump_packet_data;
 
 } tcptrace_runtime_options_t;

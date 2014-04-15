@@ -352,7 +352,7 @@ PrintTrace(
 	  StatLineI("avg win adv","bytes",
 		    pab->packets==0?0:pab->win_tot/pab->packets,
 		    pba->packets==0?0:pba->win_tot/pba->packets);
-    if (print_owin) {
+    if (options->print_owin) {
 	StatLineI("max owin","bytes", pab->owin_max, pba->owin_max);
 	StatLineI("min non-zero owin","bytes", pab->owin_min, pba->owin_min);
 	StatLineI("avg owin","bytes",
@@ -967,6 +967,8 @@ UDPFormatBrief(
 void
 PrintSVHeader(tcptrace_context_t *context)
 {
+   tcptrace_runtime_options_t *options = context->options;
+
    /* NOTE: If you have added new fields of output to be printed in 
     * PrintTrace(), make sure you update the header-list here too, so that the
     * new field you have added also has a header in the --csv/--tsv/--sv 
@@ -1114,9 +1116,10 @@ PrintSVHeader(tcptrace_context_t *context)
     for (i=0; i<SV_HEADER1_COLUMN_COUNT; i++)
       fprintf(stdout, "%s%s", svHeader1[i], sp);
   
-    if (print_owin) {
-       for(i=0; i<SV_OWIN_HEADER_COLUMN_COUNT; i++)
-         fprintf(stdout, "%s%s", svOWINHeader[i], sp);
+    if (options->print_owin) {
+       for (i = 0; i < SV_OWIN_HEADER_COLUMN_COUNT; i++) {
+           fprintf(stdout, "%s%s", svOWINHeader[i], sp);
+       }
     }
 
     for (i=0; i<SV_HEADER2_COLUMN_COUNT; i++)
@@ -1136,11 +1139,11 @@ PrintSVHeader(tcptrace_context_t *context)
    /* Set the number of columns expected to be printed. */
    sv_expected_count=SV_HEADER1_COLUMN_COUNT + SV_HEADER2_COLUMN_COUNT;
   
-   if (context->options->print_rtt) {
+   if (options->print_rtt) {
      sv_expected_count += SV_RTT_HEADER_COLUMN_COUNT;
    }
 
-   if (print_owin)
+   if (options->print_owin)
      sv_expected_count += SV_OWIN_HEADER_COLUMN_COUNT;
 
    if (debug>3) {

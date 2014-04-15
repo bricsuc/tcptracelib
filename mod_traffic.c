@@ -301,6 +301,7 @@ traffic_init(
     int i;
     int enable=0;
     char *args = NULL;
+    tcptrace_runtime_options_t *options = context->options;
 
     for (i=1; i < argc; ++i) {
 	if (!argv[i])
@@ -447,7 +448,7 @@ traffic_init(
     }
 
     /* we don't want the normal output */
-    printsuppress = TRUE;
+    options->printsuppress = TRUE;
 
     /* create any lines that I want to draw */
     MakeTrafficLines(ports[0]);

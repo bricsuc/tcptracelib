@@ -1406,12 +1406,15 @@ dotrace(
     seqnum	old_this_windowend; /* for graphing */
     ptp_ptr	*tcp_ptr = NULL;
 
+    tcptrace_runtime_options_t *options = context->options;
+
     /* make sure we have enough of the packet */
     if ((char *)ptcp + sizeof(struct tcphdr)-1 > (char *)plast) {
-	if (warn_printtrunc)
+	if (options->warn_printtrunc) {
 	    fprintf(stderr,
 		    "TCP packet %lu truncated too short to trace, ignored\n",
 		    context->pnum);
+        }
 	context->ctrunc++;
 	return(NULL);
     }
@@ -2510,7 +2513,7 @@ trace_done(tcptrace_context_t *context)
   
   comment = context->comment_prefix;
   if (!run_continuously) {
-    if (!printsuppress) {
+    if (!options->printsuppress) {
 	if (tcp_trace_count == 0) {
 	    fprintf(stdout,"%sno traced TCP packets\n", comment);
 	    return;
@@ -2519,7 +2522,7 @@ trace_done(tcptrace_context_t *context)
 	}
     }
 
-    if (!printbrief)
+    if (!options->printbrief)
 	fprintf(stdout,"%s%d TCP %s traced:\n",
 		comment,
 		num_tcp_pairs + 1,
@@ -2529,8 +2532,9 @@ trace_done(tcptrace_context_t *context)
 		"%s*** %lu packets were too short to process at some point\n",
 		comment,
 		context->ctrunc);
-	if (!warn_printtrunc)
+	if (!options->warn_printtrunc) {
 	    fprintf(stdout,"%s\t(use -w option to show details)\n", comment);
+        }
     }
 
     /* generate statistics for data storage efficiency */
@@ -2632,7 +2636,7 @@ trace_done(tcptrace_context_t *context)
    
   if (!run_continuously) {
     /* print each connection */
-    if (!printsuppress) {
+    if (!options->printsuppress) {
         Bool first = TRUE; /* Used with <SP>-separated-values
 			    * Keeps track of whether header has already
 			    * been printed */
@@ -2640,7 +2644,7 @@ trace_done(tcptrace_context_t *context)
 	    ptp = ttp[ix];
 
 	    if (!ptp->ignore_pair) {
-		if ((printbrief) && (!options->ignore_incomplete || ConnComplete(ptp))) {
+		if ((options->printbrief) && (!options->ignore_incomplete || ConnComplete(ptp))) {
 		    fprintf(stdout,"%3d: ", ix+1);
 		    PrintBrief(ptp);
 		} else if (!options->ignore_incomplete || ConnComplete(ptp)) {
@@ -2854,6 +2858,7 @@ ParseOptions(
     u_char *pdata;
     u_char *popt;
     u_char *plen;
+    tcptrace_runtime_options_t *options = context->options;
 
     popt  = (u_char *)ptcp + sizeof(struct tcphdr);
     pdata = (u_char *)ptcp + TH_OFF(ptcp)*4;
@@ -2867,7 +2872,7 @@ ParseOptions(
     tcpo.cc = tcpo.ccnew = tcpo.ccecho = -1;
 
     /* a quick sanity check, the unused (MBZ) bits must BZ! */
-    if (warn_printbadmbz) {
+    if (options->warn_printbadmbz) {
 	if (TH_X2(ptcp) != 0) {
 	    fprintf(stderr,
 		    "TCP packet %lu: 4 reserved bits are not zero (0x%01x)\n",
@@ -2896,7 +2901,7 @@ TCP packet %lu: reserved bits are not all zero.  \n\
 
 	/* check for truncation error */
 	if ((char *)popt > (char *)plast) {
-	    if (warn_printtrunc)
+	    if (options->warn_printtrunc)
 		fprintf(stderr,"\
 ParseOptions: packet %lu too short to parse remaining options\n", context->pnum);
 	    context->ctrunc++;
@@ -2905,12 +2910,12 @@ ParseOptions: packet %lu too short to parse remaining options\n", context->pnum)
 
 #define CHECK_O_LEN(opt) \
 	if (*plen == 0) { \
-	    if (warn_printtrunc) fprintf(stderr, "\
+	    if (options->warn_printtrunc) fprintf(stderr, "\
 ParseOptions: packet %lu %s option has length 0, skipping other options\n", \
                                            context->pnum,opt); \
 	    popt = pdata; break;} \
 	if ((char *)popt + *plen - 1 > (char *)(plast)) { \
-	    if (warn_printtrunc) \
+	    if (options->warn_printtrunc) \
 		fprintf(stderr, "\
 ParseOptions: packet %lu %s option truncated, skipping other options\n", \
               context->pnum,opt); \
@@ -2989,7 +2994,7 @@ ParseOptions: packet %lu %s option truncated, skipping other options\n", \
 		++psack;
 		if ((char *)psack > ((char *)plast+1)) {
 		    /* this SACK block isn't all here */
-		    if (warn_printtrunc)
+		    if (options->warn_printtrunc)
 			fprintf(stderr,
 				"packet %lu: SACK block truncated\n",
 				context->pnum);
@@ -3170,6 +3175,7 @@ check_hw_dups(
 {
     int i;
     struct str_hardware_dups *pshd;
+    tcptrace_runtime_options_t *options = context->options;
 
     /* see if we've seen this one before */
     for (i=0; i < SEGS_TO_REMEMBER; ++i) {
@@ -3179,7 +3185,7 @@ check_hw_dups(
 	    (pshd->hwdup_seq != 0) && (pshd->hwdup_id != 0)) {
 	    /* count it */
 	    ++tcb->num_hardware_dups;
-	    if (warn_printhwdups) {
+	    if (options->warn_printhwdups) {
 		printf("%s->%s: saw hardware duplicate of TCP seq %lu, IP ID %u (packet %lu == %lu)\n",
 		       tcb->host_letter,tcb->ptwin->host_letter,
 		       seq, id, context->pnum, pshd->hwdup_packnum);
