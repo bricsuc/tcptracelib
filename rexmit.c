@@ -572,6 +572,7 @@ ack_in (tcptrace_context_t *context,
 	unsigned tcp_data_length,
 	u_long eff_win)
 {
+    tcptrace_runtime_options_t *options = context->options;
     quadrant *pquad;
     quadrant *pquad_prev;
     segment *pseg;
@@ -635,7 +636,7 @@ ack_in (tcptrace_context_t *context,
 		    if (pseg->acked == 4) {
 			/* some people say these CAN'T have data */
 			if ((tcp_data_length == 0)
-			    || triple_dupack_allows_data) {
+			    || options->triple_dupack_allows_data) {
 			    ++ptcb->rtt_triple_dupack;
 			    ret = TRIPLE;
 			}

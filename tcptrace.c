@@ -131,7 +131,7 @@ Bool show_rwinline = TRUE;
 /* Bool resolve_ipaddresses = TRUE; */
 /* Bool resolve_ports = TRUE; */
 /* Bool verify_checksums = FALSE; */
-Bool triple_dupack_allows_data = FALSE;
+/* Bool triple_dupack_allows_data = FALSE; */
 Bool run_continuously = FALSE;
 Bool xplot_all_files = FALSE;
 Bool conn_num_threshold = FALSE;
@@ -217,7 +217,7 @@ static struct ext_bool_op {
      "mark packets with URGENT bit set on the time sequence graphs"},
     {"showrttdongles", &show_rtt_dongles, 0,  TRUE,
      "mark non-RTT-generating ACKs with special symbols"},
-    {"showdupack3", &show_triple_dupack, 0,  TRUE,
+    {"showdupack3", NULL, __T_OPTIONS_OFFSET(show_triple_dupack), TRUE,
      "mark triple dupacks on time sequence graphs"},
     {"showzerolensegs", &graph_zero_len_pkts, 0,  TRUE,
      "show zero length packets on time sequence graphs"},
@@ -233,7 +233,7 @@ static struct ext_bool_op {
      "resolve port numbers into names"},
     {"checksum", NULL, __T_OPTIONS_OFFSET(verify_checksums), TRUE,
      "verify IP and TCP checksums"},
-    {"dupack3_data", &triple_dupack_allows_data, 0, TRUE,
+    {"dupack3_data", NULL, __T_OPTIONS_OFFSET(triple_dupack_allows_data), TRUE,
      "count a duplicate ACK carrying data as a triple dupack"},
     {"check_hwdups", NULL, __T_OPTIONS_OFFSET(docheck_hw_dups), TRUE,
      "check for 'hardware' dups"},

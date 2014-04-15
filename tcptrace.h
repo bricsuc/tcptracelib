@@ -684,7 +684,7 @@ extern Bool hex;
 /* extern Bool ignore_non_comp; */
 /* extern Bool resolve_ipaddresses; */
 /* extern Bool resolve_ports; */
-extern Bool triple_dupack_allows_data;
+/* extern Bool triple_dupack_allows_data; */
 /* extern Bool verify_checksums; */ /* de-globalized, now in runtime_options */
 /* extern Bool print_rtt; */        /* de-globalized, now in runtime_options */
 /* extern Bool print_owin; */       /* de-globalized, now in runtime_options */
@@ -705,7 +705,7 @@ extern Bool show_zero_window;
 extern Bool show_urg;
 extern Bool show_sacks;
 extern Bool show_rtt_dongles;
-extern Bool show_triple_dupack;
+/* extern Bool show_triple_dupack; */
 extern Bool show_zwnd_probes;
 extern Bool use_short_names;
 /* extern Bool save_tcp_data; */
@@ -760,6 +760,9 @@ typedef struct tcptrace_runtime_options_t {
     Bool warn_printhwdups;
     Bool warn_printbadcsum;
     Bool warn_printbad_syn_fin_seq;
+
+    Bool show_triple_dupack;
+    Bool triple_dupack_allows_data;
 
     Bool docheck_hw_dups;
     Bool save_tcp_data;

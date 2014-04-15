@@ -113,7 +113,7 @@ Bool show_rexmit = TRUE;
 Bool show_out_order = TRUE;
 Bool show_sacks = TRUE;
 Bool show_rtt_dongles = FALSE;
-Bool show_triple_dupack = TRUE;
+/* Bool show_triple_dupack = TRUE; */  /* deglobalized */
 Bool show_zwnd_probes = TRUE;
 Bool nonames = FALSE;
 Bool use_short_names = FALSE;
@@ -2303,7 +2303,7 @@ dotrace(
 		}
 	    } else {
 		plotter_dtick(to_tsgpl, context->current_time, SeqRep(otherdir,ack));
-		if (show_triple_dupack && (ack_type == TRIPLE)) {
+		if (options->show_triple_dupack && (ack_type == TRIPLE)) {
 		    plotter_text(to_tsgpl, context->current_time,
 				 SeqRep(otherdir,ack),
 				 "a", "3");  /* '3' is for triple dupack */
