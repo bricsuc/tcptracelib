@@ -74,6 +74,7 @@ static char const GCC_UNUSED rcsid[] =
 
 char *
 ServiceName(
+     tcptrace_context_t *context,
      portnum port)
 {
     static int cache = -1;
@@ -81,8 +82,9 @@ ServiceName(
     struct servent *pse;
     static char port_buf[20];
     char *sb_port;
+    tcptrace_runtime_options_t *options = context->options;
 
-    if (!resolve_ports) {
+    if (!options->resolve_ports) {
 	snprintf(port_buf,sizeof(port_buf),"%hu",port);
 	return(port_buf);
     }
@@ -233,7 +235,7 @@ EndpointName(
     char *sb_port;
 
     sb_host = tcptrace_hostname(context, ipaddress);
-    sb_port = ServiceName(port);
+    sb_port = ServiceName(context, port);
 
     snprintf(name_buf,sizeof(name_buf),"%s:%s", sb_host, sb_port);
 

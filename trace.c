@@ -540,13 +540,13 @@ NewTTP(
 
     /* fill in connection name fields */
     ptp->a_hostname = strdup(tcptrace_hostname(context, ptp->addr_pair.a_address));
-    ptp->a_portname = strdup(ServiceName(ptp->addr_pair.a_port));
+    ptp->a_portname = strdup(ServiceName(context, ptp->addr_pair.a_port));
     ptp->a_endpoint =
 	strdup(EndpointName(context,
                             ptp->addr_pair.a_address,
 			    ptp->addr_pair.a_port));
     ptp->b_hostname = strdup(tcptrace_hostname(context, ptp->addr_pair.b_address));
-    ptp->b_portname = strdup(ServiceName(ptp->addr_pair.b_port));
+    ptp->b_portname = strdup(ServiceName(context, ptp->addr_pair.b_port));
     ptp->b_endpoint = 
 	strdup(EndpointName(context,
                             ptp->addr_pair.b_address,
@@ -1556,7 +1556,7 @@ dotrace(
 	/* error checking - better not change! */
 	if ((thisdir->syn_count > 1) && (thisdir->syn != start)) {
 	    /* it changed, that shouldn't happen! */
-	    if (warn_printbad_syn_fin_seq)
+	    if (options->warn_printbad_syn_fin_seq)
 		fprintf(stderr, "\
 %s->%s: rexmitted SYN had diff. seqnum! (was %lu, now %lu, etime: %d sec)\n",
 			thisdir->host_letter,thisdir->ptwin->host_letter,
@@ -1575,7 +1575,7 @@ dotrace(
 	/* error checking - better not change! */
 	if ((thisdir->fin_count > 1) && (thisdir->fin != fin)) {
 	    /* it changed, that shouldn't happen! */
-	    if (warn_printbad_syn_fin_seq)
+	    if (options->warn_printbad_syn_fin_seq)
 		fprintf(stderr, "\
 %s->%s: rexmitted FIN had diff. seqnum! (was %lu, now %lu, etime: %d sec)\n",
 			thisdir->host_letter,thisdir->ptwin->host_letter,
@@ -1732,8 +1732,9 @@ dotrace(
 
     /* check for hardware duplicates */
     /* only works for IPv4, IPv6 has no mandatory ID field */
-    if (PIP_ISV4(pip) && docheck_hw_dups)
+    if (PIP_ISV4(pip) && options->docheck_hw_dups) {
 	hw_dup = check_hw_dups(context, pip->ip_id, th_seq, thisdir);
+    }
 
 
     /* Kevin Lahey's ECN code */
@@ -1761,8 +1762,9 @@ dotrace(
 	    ++thisdir->trunc_segs;
 	}
 
-	if (save_tcp_data)
+	if (options->save_tcp_data) {
 	    ExtractContents(start,tcp_data_length,saved,pdata,thisdir);
+        }
     }
 
     /* do rexmit stats */
@@ -2680,8 +2682,10 @@ trace_done(tcptrace_context_t *context)
 	       * see if we missed segments during packet capture causing the
 	       * X2Y_contents.dat files that we drop to contain voids in them.
 	       * We shall emit a warning upon such an event below. */
-	      if (save_tcp_data && !incomplete_pkt_capture && MissingData(ptp)) 
-		incomplete_pkt_capture = TRUE;
+	      if (options->save_tcp_data && !incomplete_pkt_capture &&
+                  MissingData(ptp)) {
+		    incomplete_pkt_capture = TRUE;
+              }
 	    }	  
 	}
     }

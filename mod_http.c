@@ -213,6 +213,7 @@ http_init(
 {
     int i;
     int enable=0;
+    tcptrace_runtime_options_t *options = context->options;
 
     /* look for "-xhttp[N]" */
     for (i=1; i < argc; ++i) {
@@ -241,7 +242,7 @@ http_init(
 
     /* We need to save the contents for accurate reconstruction of questions */
     /* and answers */
-    save_tcp_data = TRUE;
+    options->save_tcp_data = TRUE;
 
 
     return(1);	/* TRUE means call http_read and http_done later */

@@ -179,7 +179,7 @@ realtime_init(
   /* DNS lookups are time expensive, we want to disable them in real-time 
      module */
   options->resolve_ipaddresses = FALSE;
-  resolve_ports = FALSE;
+  options->resolve_ports = FALSE;
 
   /* we want to run the program in real-time mode */
   run_continuously = TRUE;

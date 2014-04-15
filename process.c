@@ -409,6 +409,11 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
 
     options->resolve_ipaddresses = TRUE;
 
+    /* this doesn't seem to work on my Linux system-- */
+    /* getservbyport() appears to fail */
+    /* (it would be nice to remove all of that stuff from the code anyway) */
+    options->resolve_ports = TRUE;
+
     options->print_rtt = FALSE;
     options->print_owin = FALSE;
     options->printbrief = TRUE;
@@ -425,6 +430,10 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->warn_printbadmbz = FALSE;
     options->warn_printhwdups = FALSE;
     options->warn_printbadcsum = FALSE;
+    options->warn_printbad_syn_fin_seq = FALSE;
+
+    options->docheck_hw_dups = TRUE;
+    options->save_tcp_data = FALSE;
 
     options->verify_checksums = FALSE;
 

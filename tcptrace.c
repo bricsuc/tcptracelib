@@ -116,9 +116,9 @@ Bool hex = TRUE;
 /* Bool warn_printbadmbz = FALSE; */
 /* Bool warn_printhwdups = FALSE; */
 /* Bool warn_printbadcsum = FALSE; */
-Bool warn_printbad_syn_fin_seq = FALSE;
-Bool docheck_hw_dups = TRUE;
-Bool save_tcp_data = FALSE;
+/* Bool warn_printbad_syn_fin_seq = FALSE; */
+/* Bool docheck_hw_dups = TRUE; */
+/* Bool save_tcp_data = FALSE; */
 Bool graph_time_zero = FALSE;
 Bool graph_seq_zero = FALSE;
 Bool print_seq_zero = FALSE;
@@ -129,7 +129,7 @@ Bool show_title = TRUE;
 Bool show_rwinline = TRUE;
 /* Bool do_udp = FALSE; */
 /* Bool resolve_ipaddresses = TRUE; */
-Bool resolve_ports = TRUE;
+/* Bool resolve_ports = TRUE; */
 /* Bool verify_checksums = FALSE; */
 Bool triple_dupack_allows_data = FALSE;
 Bool run_continuously = FALSE;
@@ -229,13 +229,13 @@ static struct ext_bool_op {
      "show yellow receive-window line in owin graphs"},
     {"res_addr", NULL, __T_OPTIONS_OFFSET(resolve_ipaddresses), TRUE,
      "resolve IP addresses into names (may be slow)"},
-    {"res_port", &resolve_ports, 0, TRUE,
+    {"res_port", NULL, __T_OPTIONS_OFFSET(resolve_ports), TRUE,
      "resolve port numbers into names"},
     {"checksum", NULL, __T_OPTIONS_OFFSET(verify_checksums), TRUE,
      "verify IP and TCP checksums"},
     {"dupack3_data", &triple_dupack_allows_data, 0, TRUE,
      "count a duplicate ACK carrying data as a triple dupack"},
-    {"check_hwdups", &docheck_hw_dups, 0, TRUE,
+    {"check_hwdups", NULL, __T_OPTIONS_OFFSET(docheck_hw_dups), TRUE,
      "check for 'hardware' dups"},
     {"warn_ooo", NULL, __T_OPTIONS_OFFSET(warn_ooo), TRUE,
      "print warnings when packets timestamps are out of order"},
@@ -247,7 +247,7 @@ static struct ext_bool_op {
      "print warnings for hardware duplicates"},
     {"warn_printbadcsum", NULL, __T_OPTIONS_OFFSET(warn_printbadcsum), TRUE,
      "print warnings when packets with bad checksums"},
-    {"warn_printbad_syn_fin_seq", &warn_printbad_syn_fin_seq, 0, TRUE,
+    {"warn_printbad_syn_fin_seq", NULL, __T_OPTIONS_OFFSET(warn_printbad_syn_fin_seq), TRUE,
      "print warnings when SYNs or FINs rexmitted with different sequence numbers"},
     {"dump_packet_data", NULL, __T_OPTIONS_OFFSET(dump_packet_data), TRUE,
      "print all packets AND dump the TCP/UDP data"},
@@ -1822,7 +1822,7 @@ ParseArgs(
 		  case 'b': options->printbrief = TRUE; break;
 		  case 'c': options->ignore_incomplete = TRUE; break;
 		  case 'd': options->debug++; debug++; break;
-		  case 'e': save_tcp_data = TRUE; break;
+		  case 'e': options->save_tcp_data = TRUE; break;
 		  case 'f':
 		    filter_output = TRUE;
 		    if (*(argv[i]+1)) {
@@ -1862,7 +1862,7 @@ ParseArgs(
 		    *(argv[i]+1) = '\00'; break;
 		  case 'n':
 		    options->resolve_ipaddresses = FALSE;
-		    resolve_ports = FALSE;
+		    options->resolve_ports = FALSE;
 		    break;
 		  case 'o':
 		    if (run_continuously) {
@@ -1885,7 +1885,7 @@ ParseArgs(
 		    options->warn_printbadmbz = TRUE;
 		    options->warn_printhwdups = TRUE;
 		    options->warn_printbadcsum = TRUE;
-		    warn_printbad_syn_fin_seq = TRUE;
+		    options->warn_printbad_syn_fin_seq = TRUE;
 		    options->warn_ooo = TRUE;
 		    break;
 		  case 'x':
@@ -1937,11 +1937,11 @@ ParseArgs(
 		  case 'Z': dump_rtt = !TRUE; break;
 		  case 'b': options->printbrief = !TRUE; break;
 		  case 'c': options->ignore_incomplete = !TRUE; break;
-		  case 'e': save_tcp_data = FALSE; break;
+		  case 'e': options->save_tcp_data = FALSE; break;
 		  case 'l': options->printbrief = !FALSE; break;
 		  case 'n':
 		    options->resolve_ipaddresses = !FALSE;
-		    resolve_ports = !FALSE;
+		    options->resolve_ports = !FALSE;
 		    break;
 		  case 'p': options->printallofem = !TRUE; break;
 		  case 'q': options->printsuppress = !TRUE; break;
@@ -2012,7 +2012,7 @@ DumpFlags(void)
     fprintf(stderr,"printallofem:     %s\n", BOOL2STR(options->printallofem));
     fprintf(stderr,"printticks:       %s\n", BOOL2STR(options->printticks));
     fprintf(stderr,"use_short_names:  %s\n", BOOL2STR(use_short_names));
-    fprintf(stderr,"save_tcp_data:    %s\n", BOOL2STR(save_tcp_data));
+    fprintf(stderr,"save_tcp_data:    %s\n", BOOL2STR(options->save_tcp_data));
     fprintf(stderr,"graph_time_zero:  %s\n", BOOL2STR(graph_time_zero));
     fprintf(stderr,"graph_seq_zero:   %s\n", BOOL2STR(graph_seq_zero));
     fprintf(stderr,"beginning pnum:   %lu\n", options->beginpnum);

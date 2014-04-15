@@ -120,13 +120,13 @@ NewUTP(
     pup->a2b.host_letter = strdup(NextHostLetter());
     pup->b2a.host_letter = strdup(NextHostLetter());
     pup->a_hostname = strdup(tcptrace_hostname(context, pup->addr_pair.a_address));
-    pup->a_portname = strdup(ServiceName(pup->addr_pair.a_port));
+    pup->a_portname = strdup(ServiceName(context, pup->addr_pair.a_port));
     pup->a_endpoint =
 	strdup(EndpointName(context,
                             pup->addr_pair.a_address,
 			    pup->addr_pair.a_port));
     pup->b_hostname = strdup(tcptrace_hostname(context, pup->addr_pair.b_address));
-    pup->b_portname = strdup(ServiceName(pup->addr_pair.b_port));
+    pup->b_portname = strdup(ServiceName(context, pup->addr_pair.b_port));
     pup->b_endpoint = 
 	strdup(EndpointName(context,
                             pup->addr_pair.b_address,

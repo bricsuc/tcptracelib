@@ -683,7 +683,7 @@ extern Bool graph_tline;
 extern Bool hex;
 /* extern Bool ignore_non_comp; */
 /* extern Bool resolve_ipaddresses; */
-extern Bool resolve_ports;
+/* extern Bool resolve_ports; */
 extern Bool triple_dupack_allows_data;
 /* extern Bool verify_checksums; */ /* de-globalized, now in runtime_options */
 /* extern Bool print_rtt; */        /* de-globalized, now in runtime_options */
@@ -698,7 +698,7 @@ extern Bool triple_dupack_allows_data;
 /* extern Bool warn_printtrunc; */
 /* extern Bool warn_printbadmbz; */
 /* extern Bool warn_printhwdups; */
-extern Bool warn_printbad_syn_fin_seq;
+/* extern Bool warn_printbad_syn_fin_seq; */
 extern Bool show_out_order;
 extern Bool show_rexmit;
 extern Bool show_zero_window;
@@ -708,7 +708,7 @@ extern Bool show_rtt_dongles;
 extern Bool show_triple_dupack;
 extern Bool show_zwnd_probes;
 extern Bool use_short_names;
-extern Bool save_tcp_data;
+/* extern Bool save_tcp_data; */
 extern Bool graph_time_zero;
 extern Bool graph_seq_zero;
 extern Bool print_seq_zero;
@@ -718,7 +718,7 @@ extern Bool filter_output;
 /* extern Bool do_udp; */ /* de-globalized, now in runtime_options */
 extern Bool show_title;
 extern Bool show_rwinline;
-extern Bool docheck_hw_dups;
+/* extern Bool docheck_hw_dups; */
 /* constants for real-time (continuous) mode */
 extern Bool run_continuously;
 extern Bool conn_num_threshold;
@@ -748,6 +748,7 @@ typedef struct tcptrace_runtime_options_t {
     Bool do_udp;
 
     Bool resolve_ipaddresses;
+    Bool resolve_ports;
 
     Bool print_rtt;
     Bool print_owin;
@@ -757,8 +758,11 @@ typedef struct tcptrace_runtime_options_t {
     Bool warn_printtrunc;
     Bool warn_printbadmbz;
     Bool warn_printhwdups;
-
     Bool warn_printbadcsum;
+    Bool warn_printbad_syn_fin_seq;
+
+    Bool docheck_hw_dups;
+    Bool save_tcp_data;
 
     Bool printem;
     Bool printallofem;
@@ -931,7 +935,7 @@ u_int SynCount(tcp_pair *ptp);
 u_int FinCount(tcp_pair *ptp);
 char *ts2ascii(timeval *);
 char *ts2ascii_date(timeval *);
-char *ServiceName(portnum);
+char *ServiceName(tcptrace_context_t *, portnum);
 char *tcptrace_hostname(tcptrace_context_t *, ipaddr);
 char *HostAddr(ipaddr);
 char *HostLetter(llong);

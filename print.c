@@ -69,7 +69,7 @@ static void printeth_packet(struct ether_header *);
 static void printip_packet(tcptrace_context_t *context, struct ip *, void *plast);
 static void printtcp_packet(tcptrace_context_t *context, struct ip *, void *plast, tcb *tcb);
 static void printudp_packet(tcptrace_context_t *context, struct ip *, void *plast);
-static char *ParenServiceName(portnum);
+static char *ParenServiceName(tcptrace_context_t *, portnum);
 static char *ParenHostName(tcptrace_context_t *context, struct ipaddr addr);
 static void printipv4(tcptrace_context_t *context, struct ip *pip, void *plast);
 static void printipv6(struct ipv6 *pipv6, void *plast);
@@ -400,10 +400,10 @@ printtcp_packet(
 
     printf("\tTCP SPRT: %u %s\n",
 	   ntohs(ptcp->th_sport),
-	   ParenServiceName(ntohs(ptcp->th_sport)));
+	   ParenServiceName(context, ntohs(ptcp->th_sport)));
     printf("\t    DPRT: %u %s\n",
 	   ntohs(ptcp->th_dport),
-	   ParenServiceName(ntohs(ptcp->th_dport)));
+	   ParenServiceName(context, ntohs(ptcp->th_dport)));
     printf("\t     FLG: %c%c%c%c%c%c%c%c (0x%02x)\n",
 	   FLAG6_SET(ptcp)? '?':' ',
 	   FLAG7_SET(ptcp)? '?':' ',
@@ -552,10 +552,10 @@ printudp_packet(
 
     printf("\tUDP SPRT: %u %s\n",
 	   ntohs(pudp->uh_sport),
-	   ParenServiceName(ntohs(pudp->uh_sport)));
+	   ParenServiceName(context, ntohs(pudp->uh_sport)));
     printf("\t    DPRT: %u %s\n",
 	   ntohs(pudp->uh_dport),
-	   ParenServiceName(ntohs(pudp->uh_dport)));
+	   ParenServiceName(context, ntohs(pudp->uh_dport)));
     pdata = (u_char *)pudp + sizeof(struct udphdr);
     udp_length = ntohs(pudp->uh_ulen);
     udp_data_length = udp_length - sizeof(struct udphdr);
@@ -626,12 +626,13 @@ printpacket(
 
 static char *
 ParenServiceName(
+     tcptrace_context_t *context,
      portnum port)
 {
     char *pname;
     static char buf[80];
 
-    pname = ServiceName(port);
+    pname = ServiceName(context, port);
     if (!pname || isdigit((int)(*pname)))
 	return("");
 
