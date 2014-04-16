@@ -135,7 +135,7 @@ Bool show_rwinline = TRUE;
 /* Bool run_continuously = FALSE; */
 /* Bool xplot_all_files = FALSE; */
 /* Bool conn_num_threshold = FALSE; */
-Bool ns_hdrs = TRUE;
+/* Bool ns_hdrs = TRUE; */
 Bool dup_ack_handling = TRUE;
 Bool csv = FALSE;
 Bool tsv = FALSE;
@@ -259,7 +259,7 @@ static struct ext_bool_op {
      "limit the maximum number of connections kept at a time in real-time mode"},
     {"xplot_all_files", NULL, __T_OPTIONS_OFFSET(xplot_all_files), TRUE,
      "display all generated xplot files at the end"},
-    {"ns_hdrs", &ns_hdrs, 0, TRUE,
+    {"ns_hdrs", NULL, __T_OPTIONS_OFFSET(ns_hdrs), TRUE,
      "assume that ns has the useHeaders_flag true (uses IP+TCP headers)"},
     {"csv", &csv, 0, TRUE,
      "display the long output as comma separated values"},
@@ -2024,7 +2024,7 @@ DumpFlags(void)
     fprintf(stderr,"beginning pnum:   %lu\n", options->beginpnum);
     fprintf(stderr,"ending pnum:      %lu\n", options->endpnum);
     fprintf(stderr,"throughput intvl: %d\n", thru_interval);
-    fprintf(stderr,"NS simulator hdrs:%s\n", BOOL2STR(ns_hdrs));
+    fprintf(stderr,"NS simulator hdrs:%s\n", BOOL2STR(options->ns_hdrs));
     fprintf(stderr,"number modules:   %u\n", (unsigned)NUM_MODULES);
     fprintf(stderr,"debug:            %s\n", BOOL2STR(debug));
 	

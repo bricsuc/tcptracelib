@@ -69,7 +69,7 @@ tcptrace_process_file(
     /* read each packet */
     while (1) {
         /* read the next packet */
-	ret = (*ppread)(&context->current_time,&len,&tlen,&phys,&phystype,&pip,&plast);
+	ret = (*ppread)(context, &context->current_time,&len,&tlen,&phys,&phystype,&pip,&plast);
 	if (ret == 0) /* EOF */
 	    break;
 
@@ -447,5 +447,6 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->run_continuously = FALSE;
     options->conn_num_threshold = FALSE;
     options->xplot_all_files = FALSE;
+    options->ns_hdrs = TRUE;
 }
 

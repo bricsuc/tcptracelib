@@ -723,7 +723,7 @@ extern Bool show_rwinline;
 /* extern Bool run_continuously; */
 /* extern Bool conn_num_threshold; */
 /* extern Bool xplot_all_files; */
-extern Bool ns_hdrs;
+/* extern Bool ns_hdrs; */
 extern Bool dup_ack_handling;
 extern Bool csv;
 extern Bool tsv;
@@ -779,20 +779,9 @@ typedef struct tcptrace_runtime_options_t {
     Bool run_continuously;
     Bool conn_num_threshold;
     Bool xplot_all_files;
+    Bool ns_hdrs;
 
 } tcptrace_runtime_options_t;
-
-/* the type for a packet reading routine */
-typedef int pread_f(struct timeval *, int *, int *, void **,
-		   int *, struct ip **, void **);
-
-typedef struct tcptrace_working_file {
-    pread_f *reader_function;
-    u_long filesize;
-    Bool is_stdin;
-    u_long pnum;       /* number of packets read in file */
-} tcptrace_working_file;
-
 
 #define __TCPTRACE_COMMENT_PREFIX_MAX 5
 
@@ -823,6 +812,18 @@ typedef struct raw_packet_t {
     struct ip *pip;
     struct timeval *timestamp;
 } raw_packet_t;
+
+/* the type for a packet reading routine */
+typedef int pread_f(tcptrace_context_t *context,
+                    struct timeval *, int *, int *, void **,
+		    int *, struct ip **, void **);
+
+typedef struct tcptrace_working_file {
+    pread_f *reader_function;
+    u_long filesize;
+    Bool is_stdin;
+    u_long pnum;       /* number of packets read in file */
+} tcptrace_working_file;
 
 /* extended variables with values */
 extern char *output_file_dir;
