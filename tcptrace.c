@@ -205,13 +205,13 @@ static struct ext_bool_op {
     Bool bool_default;
     char *bool_descr;
 } extended_bools[] = {
-    {"showsacks", &show_sacks, 0, TRUE,
+    {"showsacks", NULL, __T_OPTIONS_OFFSET(show_sacks), TRUE,
      "show SACK blocks on time sequence graphs"},
-    {"showrexmit", &show_rexmit, 0, TRUE,
+    {"showrexmit", NULL, __T_OPTIONS_OFFSET(show_rexmit), TRUE,
      "mark retransmits on time sequence graphs"},
-    {"showoutorder", &show_out_order, 0, TRUE,
+    {"showoutorder", NULL, __T_OPTIONS_OFFSET(show_out_order), TRUE,
      "mark out-of-order on time sequence graphs"},
-    {"showzerowindow", &show_zero_window, 0, TRUE,
+    {"showzerowindow", NULL, __T_OPTIONS_OFFSET(show_zero_window), TRUE,
      "mark zero windows on time sequence graphs"},
     {"showurg", &show_urg, 0, TRUE,
      "mark packets with URGENT bit set on the time sequence graphs"},

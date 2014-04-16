@@ -699,11 +699,11 @@ extern Bool hex;
 /* extern Bool warn_printbadmbz; */
 /* extern Bool warn_printhwdups; */
 /* extern Bool warn_printbad_syn_fin_seq; */
-extern Bool show_out_order;
-extern Bool show_rexmit;
-extern Bool show_zero_window;
+/* extern Bool show_out_order; */
+/* extern Bool show_rexmit; */
+/* extern Bool show_zero_window; */
 extern Bool show_urg;
-extern Bool show_sacks;
+/* extern Bool show_sacks; */
 extern Bool show_rtt_dongles;
 /* extern Bool show_triple_dupack; */
 extern Bool show_zwnd_probes;
@@ -760,6 +760,11 @@ typedef struct tcptrace_runtime_options_t {
     Bool warn_printhwdups;
     Bool warn_printbadcsum;
     Bool warn_printbad_syn_fin_seq;
+
+    Bool show_zero_window;
+    Bool show_out_order;
+    Bool show_rexmit;
+    Bool show_sacks;
 
     Bool show_triple_dupack;
     Bool triple_dupack_allows_data;

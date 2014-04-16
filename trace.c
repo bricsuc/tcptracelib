@@ -108,10 +108,10 @@ static void RemoveTcpPair(const ptp_ptr *tcp_ptr);
 static Bool MissingData(tcp_pair *ptp);
 
 /* options */
-Bool show_zero_window = TRUE;
-Bool show_rexmit = TRUE;
-Bool show_out_order = TRUE;
-Bool show_sacks = TRUE;
+/* Bool show_zero_window = TRUE; */
+/* Bool show_rexmit = TRUE; */
+/* Bool show_out_order = TRUE; */
+/* Bool show_sacks = TRUE; */
 Bool show_rtt_dongles = FALSE;
 /* Bool show_triple_dupack = TRUE; */  /* deglobalized */
 Bool show_zwnd_probes = TRUE;
@@ -1862,7 +1862,7 @@ dotrace(
     }
 
     /* plot out-of-order segments, if asked */
-    if (out_order && (from_tsgpl != NO_PLOTTER) && show_out_order) {
+    if (out_order && (from_tsgpl != NO_PLOTTER) && options->show_out_order) {
 	plotter_perm_color(from_tsgpl, out_order_color);
 	plotter_text(from_tsgpl, context->current_time, SeqRep(thisdir,end),
 		     "a", "O");
@@ -1889,7 +1889,7 @@ dotrace(
 	/* don't color the SYNs and FINs, it's confusing, we'll do them */
 	/* differently below... */
 	if (!(FIN_SET(ptcp)||SYN_SET(ptcp)) &&
-	    from_tsgpl != NO_PLOTTER && show_rexmit) {
+	    from_tsgpl != NO_PLOTTER && options->show_rexmit) {
 	    plotter_perm_color(from_tsgpl, retrans_color);
 	    plotter_text(from_tsgpl, context->current_time, SeqRep(thisdir,end),
 			 "a", hw_dup?"HD":"R");
@@ -2249,7 +2249,7 @@ dotrace(
       
 	if (eff_win == 0) {
 	    ++thisdir->win_zero_ct;
-	    if (to_tsgpl != NO_PLOTTER && show_zero_window) {
+	    if (to_tsgpl != NO_PLOTTER && options->show_zero_window) {
 		plotter_temp_color(to_tsgpl, text_color);
 		plotter_text(to_tsgpl,
 			     context->current_time, SeqRep(otherdir,winend),
@@ -2372,7 +2372,7 @@ dotrace(
 	}
 
 	/* draw sacks, if appropriate */
-	if (to_tsgpl != NO_PLOTTER && show_sacks
+	if (to_tsgpl != NO_PLOTTER && options->show_sacks
 	    && (ptcpo->sack_count > 0)) {
 	    int scount;
 	    seqnum sack_top = ptcpo->sacks[0].sack_right;

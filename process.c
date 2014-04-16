@@ -431,6 +431,11 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->warn_printbadcsum = FALSE;
     options->warn_printbad_syn_fin_seq = FALSE;
 
+    options->show_out_order = TRUE;
+    options->show_rexmit = TRUE;
+    options->show_zero_window = TRUE;
+    options->show_sacks = TRUE;
+
     options->show_triple_dupack = TRUE;
 
     options->triple_dupack_allows_data = FALSE;
