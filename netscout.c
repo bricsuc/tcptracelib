@@ -115,6 +115,7 @@ struct netscout_packet_header {
 /* currently only works for ETHERNET */
 static int
 pread_netscout(
+    tcptrace_context_t  *context,
     struct timeval	*ptime,
     int		 	*plen,
     int		 	*ptlen,
