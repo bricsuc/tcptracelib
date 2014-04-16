@@ -93,6 +93,7 @@ static unsigned linenum;
 /* currently only works for ETHERNET */
 static int
 pread_ns(
+    tcptrace_context_t  *context,
     struct timeval	*ptime,
     int		 	*plen,
     int		 	*ptlen,
@@ -103,6 +104,7 @@ pread_ns(
 {
     static int packlen = 0;
     double c, d, e;
+    tcptrace_runtime_options_t *options = context->options;
 
     while (1) {
 	/* read the packet info */
@@ -160,13 +162,13 @@ pread_ns(
 	if (!is_tcp && !is_ack)
 	    continue;
 	
-	if ((!ns_hdrs && is_tcp) || (ns_hdrs && packlen ==0))
+	if ((!options->ns_hdrs && is_tcp) || (options->ns_hdrs && packlen ==0))
 		*plen = *plen + sizeof(struct ip) + sizeof(struct tcphdr);
 	
 	if (packlen == 0 && is_tcp)
 		packlen = *plen - sizeof(struct ip) - sizeof(struct tcphdr);
 	
-	if (ns_hdrs && is_tcp)
+	if (options->ns_hdrs && is_tcp)
 		packlen = *plen- sizeof(struct ip) - sizeof(struct tcphdr);
 
 	if (is_ack) /* this is explicitly for SACK that creates packets > 40 Bytes*/
