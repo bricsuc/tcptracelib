@@ -182,7 +182,7 @@ realtime_init(
   options->resolve_ports = FALSE;
 
   /* we want to run the program in real-time mode */
-  run_continuously = TRUE;
+  options->run_continuously = TRUE;
 
   /* if you want to set a threshold on the number of connections the program
    * stores, uncomment this with and modify depending on your needs (must be

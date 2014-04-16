@@ -512,7 +512,7 @@ NewTTP(
     ptp = MakeTcpPair();
     ++num_tcp_pairs;
 
-    if (!run_continuously) {
+    if (!options->run_continuously) {
       /* make a new one, if possible */
       if ((num_tcp_pairs+1) >= max_tcp_pairs) {
 	MoreTcpPairs(num_tcp_pairs+1);
@@ -777,6 +777,7 @@ FindTTP(
     int dir, conn_status;
     hash hval;
     *tcp_ptr = NULL;
+    tcptrace_runtime_options_t *options = context->options;
 
     if (debug > 10) {
 	printf("trace.c: FindTTP() called\n");
@@ -824,7 +825,7 @@ FindTTP(
 	    tcb *thisdir;
 	    tcb *otherdir;
 	    tcp_pair *ptp;
-	    if (run_continuously) {
+	    if (options->run_continuously) {
 		ptp_ptr *ptr = (ptp_ptr *)ptph->ptp;
 		ptp = ptr->ptp;
 	    }
@@ -845,7 +846,7 @@ FindTTP(
 	    /* (this shouldn't happen anymore, they aren't on the list */
 	    if (ptp->inactive) {
 	     
-		if (!run_continuously)
+		if (!options->run_continuously)
 		    continue;
 		else {
 		    *tcp_ptr = (ptp_ptr *)ptph->ptp;
@@ -859,7 +860,7 @@ FindTTP(
 	    /* were pointed out by Brian Utterback and later by */
 	    /* myself and Mark Allman */
 	  
-	    if (!run_continuously) { 
+	    if (!options->run_continuously) { 
 		/* check for NEW connection on these same endpoints */
 		/* 1) At least 4 minutes idle time */
 		/*  OR */
@@ -933,7 +934,7 @@ FindTTP(
 		}
 	    }
 	  
-	    if (run_continuously) 
+	    if (options->run_continuously) 
 		(*tcp_ptr) = (ptp_ptr *)ptph->ptp;
 	  
 	    *pdir = dir;
@@ -959,7 +960,7 @@ FindTTP(
     }
     ptph = MakePtpSnap();
   
-    if (run_continuously) {
+    if (options->run_continuously) {
 	ptp_ptr *ptr = (ptp_ptr *)MakePtpPtr();
 	ptr->prev = NULL;
 
@@ -977,7 +978,7 @@ FindTTP(
 	ptr->ptp = NewTTP(context, pip, ptcp);
 	ptph->addr_pair = ptr->ptp->addr_pair;
 	ptph->ptp = (void *)ptr;
-	if (conn_num_threshold) {
+	if (options->conn_num_threshold) {
 	    active_conn_count++;
 	    if (active_conn_count > max_conn_num) {
 		ptp_ptr *last_ptr = live_conn_list_tail;
@@ -1014,7 +1015,7 @@ FindTTP(
 
 
     *pdir = A2B;
-    if (run_continuously) {
+    if (options->run_continuously) {
 	*tcp_ptr = (ptp_ptr *)ptph->ptp;
 	return ((*tcp_ptr)->ptp);
     }
@@ -1030,6 +1031,7 @@ UpdateConnLists(
 {
   time_t real_time;
   static int minutes = 0;
+  tcptrace_runtime_options_t *options = context->options;
 
   if (0) {
     printf("trace.c: UpdateConnLists() called\n");
@@ -1048,7 +1050,7 @@ UpdateConnLists(
 		     &live_conn_list_tail);
       tcp_ptr->ptp->inactive = TRUE;
 
-      if (conn_num_threshold) {
+      if (options->conn_num_threshold) {
 	active_conn_count--;
 	closed_conn_count++;
 	if (closed_conn_count > max_conn_num) {
@@ -1104,7 +1106,7 @@ UpdateConnLists(
               ++minutes, (int)context->current_time.tv_sec, (int)real_time, 
               (int)(real_time - context->current_time.tv_sec));
     }
-    if (conn_num_threshold) {
+    if (options->conn_num_threshold) {
       RemoveOldConns(context,
                      &live_conn_list_head, 
 		     &live_conn_list_tail, 
@@ -1148,6 +1150,7 @@ UpdateConnList(
 {
   ptp_ptr *ptr_prev;
   ptp_ptr *ptr_next;
+  tcptrace_runtime_options_t *options = context->options;
 
   if (0) {
     printf("UpdateConnList() called\n");
@@ -1440,7 +1443,7 @@ dotrace(
 
     ++tcp_trace_count;
 
-    if (run_continuously && (tcp_ptr == NULL)) {
+    if (options->run_continuously && (tcp_ptr == NULL)) {
       fprintf(stderr, "Did not initialize tcp pair pointer\n");
       exit(1);
     }
@@ -2185,7 +2188,7 @@ dotrace(
 	if (ACK_SET(ptcp))
 	    ++thisdir->ack_pkts;
 
-        if (run_continuously) {
+        if (options->run_continuously) {
             UpdateConnLists(context, tcp_ptr, ptcp); 
         }
 	return(ptp_save);
@@ -2491,8 +2494,8 @@ dotrace(
 			(thisdir->owin_count?(thisdir->owin_tot/thisdir->owin_count):0)); 
 	}
     }
-    if (run_continuously) {
-      UpdateConnLists(context, tcp_ptr, ptcp);
+    if (options->run_continuously) {
+        UpdateConnLists(context, tcp_ptr, ptcp);
     }
 
     return(ptp_save);
@@ -2514,7 +2517,7 @@ trace_done(tcptrace_context_t *context)
   options = context->options;
   
   comment = context->comment_prefix;
-  if (!run_continuously) {
+  if (!options->run_continuously) {
     if (!options->printsuppress) {
 	if (tcp_trace_count == 0) {
 	    fprintf(stdout,"%sno traced TCP packets\n", comment);
@@ -2618,7 +2621,7 @@ trace_done(tcptrace_context_t *context)
 	}
 
       if (filter_output) {
-	 if (!run_continuously) {
+	 if (!options->run_continuously) {
 	    /* mark the connections to ignore */
 	    for (ix = 0; ix <= num_tcp_pairs; ++ix) {
 	       ptp = ttp[ix];
@@ -2636,7 +2639,7 @@ trace_done(tcptrace_context_t *context)
       }
     }
    
-  if (!run_continuously) {
+  if (!options->run_continuously) {
     /* print each connection */
     if (!options->printsuppress) {
         Bool first = TRUE; /* Used with <SP>-separated-values
@@ -2742,15 +2745,16 @@ MoreTcpPairs(
 
 
 void
-trace_init(void)
+trace_init(tcptrace_context_t *context)
 {
+    tcptrace_runtime_options_t *options = context->options;
     static Bool initted = FALSE;
 
     if (0) {
       printf("trace_init called\n");
     }
 
-    if (run_continuously) {
+    if (options->run_continuously) {
       if (ignore_pairs) {
 	free(ignore_pairs);
 	ignore_pairs = NULL;
@@ -2772,7 +2776,7 @@ trace_init(void)
 
     /* create an array to keep track of which ones to ignore */
     ignore_pairs = (Bool *) MallocZ(max_tcp_pairs * sizeof(Bool));
-    if (!run_continuously) {
+    if (!options->run_continuously) {
         /* create an array to hold any pairs that we might create */
         ttp = (tcp_pair **) MallocZ(max_tcp_pairs * sizeof(tcp_pair *));
       

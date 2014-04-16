@@ -720,9 +720,9 @@ extern Bool show_title;
 extern Bool show_rwinline;
 /* extern Bool docheck_hw_dups; */
 /* constants for real-time (continuous) mode */
-extern Bool run_continuously;
-extern Bool conn_num_threshold;
-extern Bool xplot_all_files;
+/* extern Bool run_continuously; */
+/* extern Bool conn_num_threshold; */
+/* extern Bool xplot_all_files; */
 extern Bool ns_hdrs;
 extern Bool dup_ack_handling;
 extern Bool csv;
@@ -774,6 +774,11 @@ typedef struct tcptrace_runtime_options_t {
     Bool ignore_incomplete;
     Bool verify_checksums;
     Bool dump_packet_data;
+
+    /* real-time mode options */
+    Bool run_continuously;
+    Bool conn_num_threshold;
+    Bool xplot_all_files;
 
 } tcptrace_runtime_options_t;
 
@@ -861,7 +866,7 @@ char *Ether_Ntoa(struct ether_addr *e);
 void *MallocZ(int);
 void *ReallocZ(void *oldptr, int obytes, int nbytes);
 
-void trace_init(void);
+void trace_init(tcptrace_context_t *context);
 void trace_done(tcptrace_context_t *context);
 
 void seglist_init(tcb *);
@@ -936,6 +941,7 @@ int ConnReset(tcp_pair *);
 int ConnComplete(tcp_pair *);
 u_int SynCount(tcp_pair *ptp);
 u_int FinCount(tcp_pair *ptp);
+/* most, if not all, of the following char * functions are not threadsafe */
 char *ts2ascii(timeval *);
 char *ts2ascii_date(timeval *);
 char *ServiceName(tcptrace_context_t *, portnum);

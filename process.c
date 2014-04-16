@@ -442,5 +442,10 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->verify_checksums = FALSE;
 
     options->dump_packet_data = FALSE;
+
+    /* realtime options */
+    options->run_continuously = FALSE;
+    options->conn_num_threshold = FALSE;
+    options->xplot_all_files = FALSE;
 }
 

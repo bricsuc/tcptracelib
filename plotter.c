@@ -353,8 +353,8 @@ plotter_done(tcptrace_context_t *context)
     options = context->options;
 
 
-    if(plotter_ix>0) {
-        if(xplot_all_files) {
+    if (plotter_ix>0) {
+        if (options->xplot_all_files) {
             xplot_cmd_buff=DSNew();
             DSAppendString(xplot_cmd_buff,"xplot");
             DSAppendString(xplot_cmd_buff," ");
@@ -390,8 +390,8 @@ plotter_done(tcptrace_context_t *context)
 		perror(fname);
 	}
 
-	if(xplot_all_files){
-		if(output_file_dir!=NULL) {
+	if (options->xplot_all_files){
+		if (output_file_dir!=NULL) {
 			DSAppendString(xplot_cmd_buff,output_file_dir);
 			DSAppendString(xplot_cmd_buff,"/");
 		}
@@ -400,8 +400,8 @@ plotter_done(tcptrace_context_t *context)
 	}
     }
 
-	if(plotter_ix>0) {
-		if(xplot_all_files) {
+	if (plotter_ix > 0) {
+		if (options->xplot_all_files) {
 			fprintf(stdout,"%s\n",DSVal(xplot_cmd_buff));
 			system(DSVal(xplot_cmd_buff));
 			DSDestroy(&xplot_cmd_buff);

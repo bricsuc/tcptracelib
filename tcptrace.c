@@ -132,9 +132,9 @@ Bool show_rwinline = TRUE;
 /* Bool resolve_ports = TRUE; */
 /* Bool verify_checksums = FALSE; */
 /* Bool triple_dupack_allows_data = FALSE; */
-Bool run_continuously = FALSE;
-Bool xplot_all_files = FALSE;
-Bool conn_num_threshold = FALSE;
+/* Bool run_continuously = FALSE; */
+/* Bool xplot_all_files = FALSE; */
+/* Bool conn_num_threshold = FALSE; */
 Bool ns_hdrs = TRUE;
 Bool dup_ack_handling = TRUE;
 Bool csv = FALSE;
@@ -251,13 +251,13 @@ static struct ext_bool_op {
      "print warnings when SYNs or FINs rexmitted with different sequence numbers"},
     {"dump_packet_data", NULL, __T_OPTIONS_OFFSET(dump_packet_data), TRUE,
      "print all packets AND dump the TCP/UDP data"},
-    {"continuous", &run_continuously, 0, TRUE,
+    {"continuous", NULL, __T_OPTIONS_OFFSET(run_continuously), TRUE,
      "run continuously and don't provide a summary"},
     {"print_seq_zero", &print_seq_zero, 0, TRUE,
      "print sequence numbers as offset from initial sequence number"},
-    {"limit_conn_num", &conn_num_threshold, 0, TRUE,
+    {"limit_conn_num", NULL, __T_OPTIONS_OFFSET(conn_num_threshold), TRUE,
      "limit the maximum number of connections kept at a time in real-time mode"},
-    {"xplot_all_files", &xplot_all_files, 0, TRUE,
+    {"xplot_all_files", NULL, __T_OPTIONS_OFFSET(xplot_all_files), TRUE,
      "display all generated xplot files at the end"},
     {"ns_hdrs", &ns_hdrs, 0, TRUE,
      "assume that ns has the useHeaders_flag true (uses IP+TCP headers)"},
@@ -755,7 +755,7 @@ main(
 	Help(NULL);
 
     /* initialize internals */
-    trace_init();
+    trace_init(context);
     udptrace_init();
     plot_init();
 
@@ -932,6 +932,7 @@ Ignore(
        char *opt)
 {
      char *o_arg;
+     tcptrace_runtime_options_t *options = global_context.options;
 		      
      /* next part of arg is a filename or number list */
      if (*opt == '\00') {
@@ -939,7 +940,7 @@ Ignore(
 		 "Expected filename or number list *immediately* after -i / --iTCP\n");
      }
 
-     if (run_continuously) {
+     if (options->run_continuously) {
 	  fprintf(stderr, 
 		  "Warning: cannot ignore connections in continuous mode\n");
      }
@@ -1000,6 +1001,7 @@ GrabOnly(
     char *opt)
 {
      char *o_arg;
+     tcptrace_runtime_options_t *options = global_context.options;
      
      /* next part of arg is a filename or number list */
      if (*opt == '\00') {
@@ -1007,7 +1009,7 @@ GrabOnly(
 		 "Expected filename or number list *immediately* after -o / --oTCP\n");
      }
 
-     if (run_continuously) {
+     if (options->run_continuously) {
 	  fprintf(stderr, 
 		  "Warning: cannot 'grab-only' connections in continuous mode\n");
      }
@@ -1071,6 +1073,7 @@ static void
 	       char *opt)
 {
      char *o_arg;
+     tcptrace_runtime_options_t *options = global_context.options;
      
      /* next part of arg is a filename or number list */
      if (*opt == '\00') {
@@ -1078,7 +1081,7 @@ static void
 		 "Expected filename or number list *immediately* after --iUDP\n");
      }
 
-     if (run_continuously) {
+     if (options->run_continuously) {
 	  fprintf(stderr, 
 		  "Warning: cannot ignore UDP connections in continuous mode\n");
      }
@@ -1140,13 +1143,14 @@ static void
 		 char *opt)
 {
      char *o_arg;
+     tcptrace_runtime_options_t *options = global_context.options;
      
      /* next part of arg is a filename or number list */
      if (*opt == '\00') {
 	  BadArg(argsource,"Expected filename or number list *immediately* after --oUDP\n");
      }
 
-     if (run_continuously) {
+     if (options->run_continuously) {
 	  fprintf(stderr, 
 		  "Warning: cannot 'grab-only' UDP connections in continuous mode\n");
      }
@@ -1693,8 +1697,10 @@ VerifyMaxConnNum(
     char *varname, 
     char *value)
 {
+    tcptrace_runtime_options_t *options = global_context.options;
+
     max_conn_num = VerifyPositive(varname, value);
-    conn_num_threshold = TRUE;
+    options->conn_num_threshold = TRUE;
 }
 
 
@@ -1838,7 +1844,7 @@ ParseArgs(
 		  case 'i': Ignore(argsource,argv[i]+1);
 /*			      {
 		      int conn = -1;
-		      if (run_continuously) {
+		      if (options->run_continuously) {
 			fprintf(stderr, "Warning: cannot ignore connections in continuous mode\n");
 		      }
 		      else
@@ -1865,7 +1871,7 @@ ParseArgs(
 		    options->resolve_ports = FALSE;
 		    break;
 		  case 'o':
-		    if (run_continuously) {
+		    if (options->run_continuously) {
 		        fprintf(stderr, "Warning: cannot use 'grab only' flag in continuous mode\n");
 		    }
 		    else {

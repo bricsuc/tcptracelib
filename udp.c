@@ -340,7 +340,7 @@ udptrace_done(tcptrace_context_t *context) {
 
     if (options->do_udp) { // Just a quick sanity check to make sure if we need to do 
 	         // anything at all..
-	 if (!run_continuously) {
+	 if (!options->run_continuously) {
 	      if (!options->printsuppress) {
 		   if (udp_trace_count == 0) {
 			fprintf(stdout,"no traced UDP packets\n");
@@ -374,7 +374,7 @@ udptrace_done(tcptrace_context_t *context) {
 		      search_count / packet_count);
 	 
 	 /* print each connection */
-	 if (!run_continuously) {
+	 if (!options->run_continuously) {
 	      if (!options->printsuppress) {
 		   for (ix = 0; ix <= num_udp_pairs; ++ix) {
 			pup = utp[ix];
