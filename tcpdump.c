@@ -233,6 +233,7 @@ static int callback(
 /* currently only works for ETHERNET and FDDI */
 static int
 pread_tcpdump(
+    tcptrace_context_t *context,
     struct timeval	*ptime,
     int		 	*plen,
     int		 	*ptlen,

@@ -134,6 +134,7 @@ static struct ether_header *pep;
 /* currently only works for ETHERNET */
 static int
 pread_nlanr(
+    tcptrace_context_t  *context,
     struct timeval	*ptime,
     int		 	*plen,
     int		 	*ptlen,

@@ -135,6 +135,7 @@ static int find_ip_fddi(char* buf, int iplen) {
 /* currently only works for ETHERNET and FDDI */
 static int
 pread_snoop(
+    tcptrace_context_t  *context,
     struct timeval	*ptime,
     int		 	*plen,
     int		 	*ptlen,

@@ -165,6 +165,7 @@ static int fcs_bits = FCS_BITS;
 /* return the next packet header */
 static int
 pread_erf(
+    tcptrace_context_t  *context,
     struct timeval	*ptime,
     int		 	*plen,
     int		 	*ptlen,

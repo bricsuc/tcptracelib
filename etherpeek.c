@@ -163,6 +163,7 @@ static int *pip_buf;
 /* currently only works for ETHERNET */
 static int
 pread_EP(
+    tcptrace_context_t  *context,
     struct timeval	*ptime,
     int		 	*plen,
     int		 	*ptlen,
