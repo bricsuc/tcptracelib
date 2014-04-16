@@ -624,7 +624,7 @@ ack_in (tcptrace_context_t *context,
 	if (pseg->acked) {
 	    /* default will be the BSD version, it can be changed by giving 
 	       '--turn_off_BSD_dupack' switch */
-	    dup_ack_type = (dup_ack_handling) ? BSD_VERSION : LEGACY_VERSION;
+	    dup_ack_type = (options->dup_ack_handling) ? BSD_VERSION : LEGACY_VERSION;
 
 	    /* default type is the specifications based on BSD code */
 	    switch (dup_ack_type) {

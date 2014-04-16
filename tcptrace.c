@@ -136,9 +136,9 @@ Bool show_rwinline = TRUE;
 /* Bool xplot_all_files = FALSE; */
 /* Bool conn_num_threshold = FALSE; */
 /* Bool ns_hdrs = TRUE; */
-Bool dup_ack_handling = TRUE;
-Bool csv = FALSE;
-Bool tsv = FALSE;
+/* Bool dup_ack_handling = TRUE; */
+/* Bool csv = FALSE; */
+/* Bool tsv = FALSE; */
 u_long remove_live_conn_interval = REMOVE_LIVE_CONN_INTERVAL;
 u_long nonreal_live_conn_interval = NONREAL_LIVE_CONN_INTERVAL;
 u_long remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL;
@@ -261,11 +261,11 @@ static struct ext_bool_op {
      "display all generated xplot files at the end"},
     {"ns_hdrs", NULL, __T_OPTIONS_OFFSET(ns_hdrs), TRUE,
      "assume that ns has the useHeaders_flag true (uses IP+TCP headers)"},
-    {"csv", &csv, 0, TRUE,
+    {"csv", NULL, __T_OPTIONS_OFFSET(csv), TRUE,
      "display the long output as comma separated values"},
-    {"tsv", &tsv, 0, TRUE,
+    {"tsv", NULL, __T_OPTIONS_OFFSET(tsv), TRUE,
      "display the long output as tab separated values"},
-    {"turn_off_BSD_dupack", &dup_ack_handling, 0, FALSE,
+    {"turn_off_BSD_dupack", NULL, __T_OPTIONS_OFFSET(dup_ack_handling), FALSE,
      "turn off the BSD version of the duplicate ack handling"},
 };
 
@@ -771,7 +771,7 @@ main(
 
     /* (this is admittedly dumb, but less dumb than what was here before) */
     comment = context->comment_prefix;
-    if (csv || tsv || (sv != NULL)) {
+    if (options->csv || options->tsv || (sv != NULL)) {
         strncpy(comment, "# ", __TCPTRACE_COMMENT_PREFIX_MAX);
         comment[__TCPTRACE_COMMENT_PREFIX_MAX - 1] = '\0';
     }

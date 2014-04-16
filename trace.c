@@ -2653,7 +2653,7 @@ trace_done(tcptrace_context_t *context)
 		    fprintf(stdout,"%3d: ", ix+1);
 		    PrintBrief(ptp);
 		} else if (!options->ignore_incomplete || ConnComplete(ptp)) {
-		    if(csv || tsv || (sv != NULL)) {
+		    if(options->csv || options->tsv || (sv != NULL)) {
 		       if (first) {
 			  PrintSVHeader(context);
 			  first = FALSE;

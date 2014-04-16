@@ -724,9 +724,9 @@ extern Bool show_rwinline;
 /* extern Bool conn_num_threshold; */
 /* extern Bool xplot_all_files; */
 /* extern Bool ns_hdrs; */
-extern Bool dup_ack_handling;
-extern Bool csv;
-extern Bool tsv;
+/* extern Bool dup_ack_handling; */
+/* extern Bool csv; */
+/* extern Bool tsv; */
 extern u_long remove_live_conn_interval;
 extern u_long nonreal_live_conn_interval;
 extern u_long remove_closed_conn_interval;
@@ -780,6 +780,10 @@ typedef struct tcptrace_runtime_options_t {
     Bool conn_num_threshold;
     Bool xplot_all_files;
     Bool ns_hdrs;
+    Bool dup_ack_handling;
+
+    Bool csv;
+    Bool tsv;
 
 } tcptrace_runtime_options_t;
 
@@ -923,7 +927,7 @@ tcp_pair *dotrace(tcptrace_context_t *context, struct ip *, struct tcphdr *ptcp,
 void PrintRawData(char *label, void *pfirst, void *plast, Bool octal);
 void PrintRawDataHex(char *label, void *pfirst, void *plast);
 void PrintTrace(tcptrace_context_t *context, tcp_pair *);
-void UDPPrintTrace(udp_pair *);
+void UDPPrintTrace(tcptrace_context_t *, udp_pair *);
 void PrintSVHeader(tcptrace_context_t *context);
 void PrintBrief(tcp_pair *);
 void UDPPrintBrief(udp_pair *);

@@ -50,7 +50,6 @@ tcptrace_process_file(
     }
 
     ppread = working_file.reader_function;
-    /* filesize = working_file.filesize; */
     is_stdin = working_file.is_stdin;
     working_file.pnum = 0;
 
@@ -447,6 +446,10 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->run_continuously = FALSE;
     options->conn_num_threshold = FALSE;
     options->xplot_all_files = FALSE;
-    options->ns_hdrs = TRUE;
+    options->ns_hdrs = TRUE; /* realtime or just applicable to format? */
+    options->dup_ack_handling = TRUE;
+
+    options->csv = FALSE;
+    options->tsv = FALSE;
 }
 

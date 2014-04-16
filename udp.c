@@ -387,7 +387,7 @@ udptrace_done(tcptrace_context_t *context) {
 				       fprintf(stdout,
 					       "================================\n");
 				  fprintf(stdout,"UDP connection %d:\n", ix+1);
-				  UDPPrintTrace(pup);
+				  UDPPrintTrace(context, pup);
 			     }
 			}
 		   }
