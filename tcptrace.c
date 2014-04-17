@@ -213,15 +213,15 @@ static struct ext_bool_op {
      "mark out-of-order on time sequence graphs"},
     {"showzerowindow", NULL, __T_OPTIONS_OFFSET(show_zero_window), TRUE,
      "mark zero windows on time sequence graphs"},
-    {"showurg", &show_urg, 0, TRUE,
+    {"showurg", NULL, __T_OPTIONS_OFFSET(show_urg), TRUE,
      "mark packets with URGENT bit set on the time sequence graphs"},
-    {"showrttdongles", &show_rtt_dongles, 0,  TRUE,
+    {"showrttdongles", NULL, __T_OPTIONS_OFFSET(show_rtt_dongles), TRUE,
      "mark non-RTT-generating ACKs with special symbols"},
     {"showdupack3", NULL, __T_OPTIONS_OFFSET(show_triple_dupack), TRUE,
      "mark triple dupacks on time sequence graphs"},
     {"showzerolensegs", &graph_zero_len_pkts, 0,  TRUE,
      "show zero length packets on time sequence graphs"},
-    {"showzwndprobes", &show_zwnd_probes, 0, TRUE,
+    {"showzwndprobes", NULL, __T_OPTIONS_OFFSET(show_zwnd_probes), TRUE,
      "show zero window probe packets on time sequence graphs"},
     {"showtitle", &show_title, 0, TRUE,
      "show title on the graphs"},
@@ -1882,7 +1882,7 @@ ParseArgs(
 		  case 'p': options->printallofem = TRUE; break;
 		  case 'q': options->printsuppress = TRUE; break;
 		  case 'r': options->print_rtt = TRUE; break;
-		  case 's': use_short_names = TRUE; break;
+		  case 's': options->use_short_names = TRUE; break;
 		  case 't': options->printticks = TRUE; break;
 		  case 'u': options->do_udp = TRUE; break;
 		  case 'v': Version(); exit(0); break;
@@ -1952,7 +1952,7 @@ ParseArgs(
 		  case 'p': options->printallofem = !TRUE; break;
 		  case 'q': options->printsuppress = !TRUE; break;
 		  case 'r': options->print_rtt = !TRUE; break;
-		  case 's': use_short_names = !TRUE; break;
+		  case 's': options->use_short_names = !TRUE; break;
 		  case 't': options->printticks = !TRUE; break;
 		  case 'u': options->do_udp = !TRUE; break;
 		  case 'w':
@@ -2017,7 +2017,7 @@ DumpFlags(void)
     fprintf(stderr,"printem:          %s\n", BOOL2STR(options->printem));
     fprintf(stderr,"printallofem:     %s\n", BOOL2STR(options->printallofem));
     fprintf(stderr,"printticks:       %s\n", BOOL2STR(options->printticks));
-    fprintf(stderr,"use_short_names:  %s\n", BOOL2STR(use_short_names));
+    fprintf(stderr,"use_short_names:  %s\n", BOOL2STR(options->use_short_names));
     fprintf(stderr,"save_tcp_data:    %s\n", BOOL2STR(options->save_tcp_data));
     fprintf(stderr,"graph_time_zero:  %s\n", BOOL2STR(graph_time_zero));
     fprintf(stderr,"graph_seq_zero:   %s\n", BOOL2STR(graph_seq_zero));

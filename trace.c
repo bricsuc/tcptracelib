@@ -112,13 +112,17 @@ static Bool MissingData(tcp_pair *ptp);
 /* Bool show_rexmit = TRUE; */
 /* Bool show_out_order = TRUE; */
 /* Bool show_sacks = TRUE; */
-Bool show_rtt_dongles = FALSE;
+/* Bool show_rtt_dongles = FALSE; */
 /* Bool show_triple_dupack = TRUE; */  /* deglobalized */
-Bool show_zwnd_probes = TRUE;
-Bool nonames = FALSE;
-Bool use_short_names = FALSE;
-Bool show_urg = TRUE;
+/* Bool show_zwnd_probes = TRUE; */
+/* Bool use_short_names = FALSE; */
+/* Bool show_urg = TRUE; */
 int thru_interval = 10;	/* in segments */
+
+/* This seems to control one thing only--displaying the cache if the
+   debug level > 2. There's no command line option for it. Made it static;
+   if this is to become an option, then it needs a better name.  */
+static Bool nonames = FALSE;
 
 
 /* what colors to use */
@@ -1903,7 +1907,7 @@ dotrace(
     }
    
     if (probe) {
-        if (from_tsgpl != NO_PLOTTER && show_zwnd_probes) {
+        if (from_tsgpl != NO_PLOTTER && options->show_zwnd_probes) {
 	    plotter_perm_color(from_tsgpl,probe_color);
 	    plotter_text(from_tsgpl, context->current_time, SeqRep (thisdir,end),
 			  "b", "P");
@@ -2019,8 +2023,8 @@ dotrace(
     }
    
     /* Plotting URGENT data */
-    if(urg) {
-        if(from_tsgpl != NO_PLOTTER && show_urg){
+    if (urg) {
+        if (from_tsgpl != NO_PLOTTER && options->show_urg) {
 	    plotter_perm_color(from_tsgpl,urg_color);
 	    plotter_text(from_tsgpl, context->current_time, SeqRep (thisdir,end),
 			   "a", "U");
@@ -2280,7 +2284,7 @@ dotrace(
 		plotter_line(to_tsgpl,
 			     context->current_time, SeqRep(otherdir,thisdir->ack),
 			     context->current_time, SeqRep(otherdir,ack));
-		if (show_rtt_dongles) {
+		if (options->show_rtt_dongles) {
 		    /* draw dongles for "interesting" acks */
 		    switch (ack_type) {
 		      case NORMAL:	/* normal case */

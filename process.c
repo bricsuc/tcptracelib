@@ -435,6 +435,10 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->show_rexmit = TRUE;
     options->show_zero_window = TRUE;
     options->show_sacks = TRUE;
+    options->show_rtt_dongles = FALSE;
+    options->show_zwnd_probes = TRUE;
+    options->show_urg = TRUE;
+    options->use_short_names = FALSE;
 
     options->show_triple_dupack = TRUE;
 

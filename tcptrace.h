@@ -702,12 +702,12 @@ extern Bool hex;
 /* extern Bool show_out_order; */
 /* extern Bool show_rexmit; */
 /* extern Bool show_zero_window; */
-extern Bool show_urg;
+/* extern Bool show_urg; */
 /* extern Bool show_sacks; */
-extern Bool show_rtt_dongles;
+/* extern Bool show_rtt_dongles; */
 /* extern Bool show_triple_dupack; */
-extern Bool show_zwnd_probes;
-extern Bool use_short_names;
+/* extern Bool show_zwnd_probes; */
+/* extern Bool use_short_names; */
 /* extern Bool save_tcp_data; */
 extern Bool graph_time_zero;
 extern Bool graph_seq_zero;
@@ -765,6 +765,10 @@ typedef struct tcptrace_runtime_options_t {
     Bool show_out_order;
     Bool show_rexmit;
     Bool show_sacks;
+    Bool show_rtt_dongles;
+    Bool show_zwnd_probes;
+    Bool show_urg;
+    Bool use_short_names;
 
     Bool show_triple_dupack;
     Bool triple_dupack_allows_data;

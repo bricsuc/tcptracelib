@@ -166,10 +166,11 @@ tcptrace_hostname(
     char *sb_host;
     static char name_buf[100];
     char *adr;
+    tcptrace_runtime_options_t *options = context->options;
 
     adr = HostAddr(ipaddress);
 
-    if (!context->options->resolve_ipaddresses) {
+    if (!options->resolve_ipaddresses) {
 	return(adr);
     }
 	
@@ -203,7 +204,7 @@ tcptrace_hostname(
 	sb_host = adr;
     }
 
-    if (use_short_names) {
+    if (options->use_short_names) {
 	char *pdot;
 
 	if ((pdot = strchr(sb_host,'.')) != NULL) {
