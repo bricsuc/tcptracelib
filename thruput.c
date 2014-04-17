@@ -70,6 +70,7 @@ DoThru(
     double etime;
     double thruput;
     char *myname, *hisname;
+    tcptrace_runtime_options_t *options = context->options;
 
     /* init, if not already done */
     if (ZERO_TIME(&ptcb->thru_firsttime)) {
@@ -95,7 +96,7 @@ DoThru(
 	ptcb->thru_plotter = new_plotter(ptcb,NULL,title,
 					 "time","thruput (bytes/sec)",
 					 THROUGHPUT_FILE_EXTENSION);
-	if (graph_time_zero) {
+	if (options->graph_time_zero) {
 	    /* set graph zero points */
 	    plotter_nothing(ptcb->thru_plotter, context->current_time);
 	}

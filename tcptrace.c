@@ -119,7 +119,7 @@ Bool hex = TRUE;
 /* Bool warn_printbad_syn_fin_seq = FALSE; */
 /* Bool docheck_hw_dups = TRUE; */
 /* Bool save_tcp_data = FALSE; */
-Bool graph_time_zero = FALSE;
+/* Bool graph_time_zero = FALSE; */
 Bool graph_seq_zero = FALSE;
 Bool print_seq_zero = FALSE;
 Bool graph_zero_len_pkts = TRUE;
@@ -1902,15 +1902,15 @@ ParseArgs(
 		  case 'z':
 		    if (strcmp(argv[i],"z") == 0) {
 			/* backward compat, just zero the time */
-			graph_time_zero = TRUE;
+			options->graph_time_zero = TRUE;
 		    } else if (strcasecmp(argv[i],"zx") == 0) {
-			graph_time_zero = TRUE;
+			options->graph_time_zero = TRUE;
 		    } else if (strcasecmp(argv[i],"zy") == 0) {
 			graph_seq_zero = TRUE;
 		    } else if ((strcasecmp(argv[i],"zxy") == 0) ||
 			       (strcasecmp(argv[i],"zyx") == 0)) {
 			/* set BOTH to zero */
-			graph_time_zero = TRUE;
+			options->graph_time_zero = TRUE;
 			graph_seq_zero = TRUE;
 		    } else {
 			BadArg(argsource, "only -z -zx -zy and -zxy are legal\n");
@@ -1966,15 +1966,15 @@ ParseArgs(
 		  case 'z':
 		    if (strcmp(argv[i],"z") == 0) {
 			/* backward compat, just zero the time */
-			graph_time_zero = !TRUE;
+			options->graph_time_zero = !TRUE;
 		    } else if (strcasecmp(argv[i],"zx") == 0) {
-			graph_time_zero = !TRUE;
+			options->graph_time_zero = !TRUE;
 		    } else if (strcasecmp(argv[i],"zy") == 0) {
 			graph_seq_zero = !TRUE;
 		    } else if ((strcasecmp(argv[i],"zxy") == 0) ||
 			       (strcasecmp(argv[i],"zyx") == 0)) {
 			/* set BOTH to zero */
-			graph_time_zero = !TRUE;
+			options->graph_time_zero = !TRUE;
 			graph_seq_zero = !TRUE;
 		    } else {
 			BadArg(argsource, "only +z +zx +zy and +zxy are legal\n");
@@ -2019,7 +2019,7 @@ DumpFlags(void)
     fprintf(stderr,"printticks:       %s\n", BOOL2STR(options->printticks));
     fprintf(stderr,"use_short_names:  %s\n", BOOL2STR(options->use_short_names));
     fprintf(stderr,"save_tcp_data:    %s\n", BOOL2STR(options->save_tcp_data));
-    fprintf(stderr,"graph_time_zero:  %s\n", BOOL2STR(graph_time_zero));
+    fprintf(stderr,"graph_time_zero:  %s\n", BOOL2STR(options->graph_time_zero));
     fprintf(stderr,"graph_seq_zero:   %s\n", BOOL2STR(graph_seq_zero));
     fprintf(stderr,"beginning pnum:   %lu\n", options->beginpnum);
     fprintf(stderr,"ending pnum:      %lu\n", options->endpnum);

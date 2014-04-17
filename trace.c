@@ -575,17 +575,17 @@ NewTTP(
 		    ptp->a_endpoint, ptp->b_endpoint);
 	    ptp->a2b.tsg_plotter =
 		new_plotter(&ptp->a2b,NULL,title,
-			    graph_time_zero?"relative time":"time",
+			    options->graph_time_zero?"relative time":"time",
 			    graph_seq_zero?"sequence offset":"sequence number",
 			    PLOT_FILE_EXTENSION);
 	    snprintf(title,sizeof(title),"%s_==>_%s (time sequence graph)",
 		    ptp->b_endpoint, ptp->a_endpoint);
 	    ptp->b2a.tsg_plotter =
 		new_plotter(&ptp->b2a,NULL,title,
-			    graph_time_zero?"relative time":"time",
+			    options->graph_time_zero?"relative time":"time",
 			    graph_seq_zero?"sequence offset":"sequence number",
 			    PLOT_FILE_EXTENSION);
-	    if (graph_time_zero) {
+	    if (options->graph_time_zero) {
 		/* set graph zero points */
 		plotter_nothing(ptp->a2b.tsg_plotter, context->current_time);
 		plotter_nothing(ptp->b2a.tsg_plotter, context->current_time);
@@ -601,17 +601,17 @@ NewTTP(
 		    ptp->a_endpoint, ptp->b_endpoint);
 	    ptp->a2b.owin_plotter =
 		new_plotter(&ptp->a2b,NULL,title,
-			    graph_time_zero?"relative time":"time",
+			    options->graph_time_zero?"relative time":"time",
 			    "Outstanding Data (bytes)",
 			    OWIN_FILE_EXTENSION);
 	    snprintf(title,sizeof(title),"%s_==>_%s (outstanding data)",
 		    ptp->b_endpoint, ptp->a_endpoint);
 	    ptp->b2a.owin_plotter =
 		new_plotter(&ptp->b2a,NULL,title,
-			    graph_time_zero?"relative time":"time",
+			    options->graph_time_zero?"relative time":"time",
 			    "Outstanding Data (bytes)",
 			    OWIN_FILE_EXTENSION);
-	    if (graph_time_zero) {
+	    if (options->graph_time_zero) {
 		/* set graph zero points */
 		plotter_nothing(ptp->a2b.owin_plotter, context->current_time);
 		plotter_nothing(ptp->b2a.owin_plotter, context->current_time);
@@ -698,17 +698,17 @@ NewTTP(
 		ptp->a_endpoint, ptp->b_endpoint);
 	ptp->a2b.segsize_plotter =
 	    new_plotter(&ptp->a2b,NULL,title,
-			graph_time_zero?"relative time":"time",
+			options->graph_time_zero?"relative time":"time",
 			"segment size (bytes)",
 			SEGSIZE_FILE_EXTENSION);
 	snprintf(title,sizeof(title),"%s_==>_%s (segment size graph)",
 		ptp->b_endpoint, ptp->a_endpoint);
 	ptp->b2a.segsize_plotter =
 	    new_plotter(&ptp->b2a,NULL,title,
-			graph_time_zero?"relative time":"time",
+			options->graph_time_zero?"relative time":"time",
 			"segment size (bytes)",
 			SEGSIZE_FILE_EXTENSION);
-	if (graph_time_zero) {
+	if (options->graph_time_zero) {
 	    /* set graph zero points */
 	    plotter_nothing(ptp->a2b.segsize_plotter, context->current_time);
 	    plotter_nothing(ptp->b2a.segsize_plotter, context->current_time);

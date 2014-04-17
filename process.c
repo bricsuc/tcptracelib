@@ -431,6 +431,8 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->warn_printbadcsum = FALSE;
     options->warn_printbad_syn_fin_seq = FALSE;
 
+    options->graph_time_zero = FALSE;
+
     options->show_out_order = TRUE;
     options->show_rexmit = TRUE;
     options->show_zero_window = TRUE;

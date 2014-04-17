@@ -709,7 +709,7 @@ extern Bool hex;
 /* extern Bool show_zwnd_probes; */
 /* extern Bool use_short_names; */
 /* extern Bool save_tcp_data; */
-extern Bool graph_time_zero;
+/* extern Bool graph_time_zero; */
 extern Bool graph_seq_zero;
 extern Bool print_seq_zero;
 extern Bool graph_zero_len_pkts;
@@ -775,6 +775,8 @@ typedef struct tcptrace_runtime_options_t {
 
     Bool docheck_hw_dups;
     Bool save_tcp_data;
+
+    Bool graph_time_zero;
 
     Bool printem;
     Bool printallofem;

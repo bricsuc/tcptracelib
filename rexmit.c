@@ -760,6 +760,7 @@ graph_rtt_sample (tcptrace_context_t *context,
 		  unsigned long etime_rtt)
 {
     char title[210];
+    tcptrace_runtime_options_t *options = context->options;
 
     /* if the FILE is NULL, open file */
     if (ptcb->rtt_plotter == NO_PLOTTER) {
@@ -778,7 +779,7 @@ graph_rtt_sample (tcptrace_context_t *context,
 			 RTT_GRAPH_FILE_EXTENSION);
 	plotter_perm_color (ptcb->rtt_plotter, "red");
 
-	if (graph_time_zero) {
+	if (options->graph_time_zero) {
 	    /* set graph zero points */
 	    plotter_nothing (ptcb->rtt_plotter, context->current_time);
 	}
