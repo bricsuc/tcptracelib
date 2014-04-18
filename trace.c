@@ -90,7 +90,7 @@ static void MoreTcpPairs(int num_needed);
 static void ExtractContents(u_long seq, u_long tcp_data_bytes,
 			    u_long saved_data_bytes, void *pdata, tcb *ptcb);
 static Bool check_hw_dups(tcptrace_context_t *context, u_short id, seqnum seq, tcb *ptcb);
-static u_long SeqRep(tcb *ptcb, u_long seq);
+static u_long SeqRep(tcptrace_context_t *context, tcb *ptcb, u_long seq);
 static void UpdateConnLists(tcptrace_context_t *context, ptp_ptr *tcp_ptr, struct tcphdr *ptcp);
 static void UpdateConnList(tcptrace_context_t *context,
                            ptp_ptr *tcp_ptr, 
@@ -576,14 +576,14 @@ NewTTP(
 	    ptp->a2b.tsg_plotter =
 		new_plotter(&ptp->a2b,NULL,title,
 			    options->graph_time_zero?"relative time":"time",
-			    graph_seq_zero?"sequence offset":"sequence number",
+			    options->graph_seq_zero?"sequence offset":"sequence number",
 			    PLOT_FILE_EXTENSION);
 	    snprintf(title,sizeof(title),"%s_==>_%s (time sequence graph)",
 		    ptp->b_endpoint, ptp->a_endpoint);
 	    ptp->b2a.tsg_plotter =
 		new_plotter(&ptp->b2a,NULL,title,
 			    options->graph_time_zero?"relative time":"time",
-			    graph_seq_zero?"sequence offset":"sequence number",
+			    options->graph_seq_zero?"sequence offset":"sequence number",
 			    PLOT_FILE_EXTENSION);
 	    if (options->graph_time_zero) {
 		/* set graph zero points */
@@ -1868,11 +1868,11 @@ dotrace(
     /* plot out-of-order segments, if asked */
     if (out_order && (from_tsgpl != NO_PLOTTER) && options->show_out_order) {
 	plotter_perm_color(from_tsgpl, out_order_color);
-	plotter_text(from_tsgpl, context->current_time, SeqRep(thisdir,end),
+	plotter_text(from_tsgpl, context->current_time, SeqRep(context,thisdir,end),
 		     "a", "O");
 	if (bottom_letters)
 	    plotter_text(from_tsgpl, context->current_time,
-			 SeqRep(thisdir,thisdir->min_seq)-1500,
+			 SeqRep(context,thisdir,thisdir->min_seq)-1500,
 			 "c", "O");
     }
 
@@ -1895,11 +1895,11 @@ dotrace(
 	if (!(FIN_SET(ptcp)||SYN_SET(ptcp)) &&
 	    from_tsgpl != NO_PLOTTER && options->show_rexmit) {
 	    plotter_perm_color(from_tsgpl, retrans_color);
-	    plotter_text(from_tsgpl, context->current_time, SeqRep(thisdir,end),
+	    plotter_text(from_tsgpl, context->current_time, SeqRep(context,thisdir,end),
 			 "a", hw_dup?"HD":"R");
 	    if (bottom_letters)
 		plotter_text(from_tsgpl, context->current_time,
-			     SeqRep(thisdir,thisdir->min_seq)-1500,
+			     SeqRep(context,thisdir,thisdir->min_seq)-1500,
 			     "c", hw_dup?"HD":"R");
 	}
     } else {
@@ -1909,7 +1909,7 @@ dotrace(
     if (probe) {
         if (from_tsgpl != NO_PLOTTER && options->show_zwnd_probes) {
 	    plotter_perm_color(from_tsgpl,probe_color);
-	    plotter_text(from_tsgpl, context->current_time, SeqRep (thisdir,end),
+	    plotter_text(from_tsgpl, context->current_time, SeqRep(context,thisdir,end),
 			  "b", "P");
 	 }
      }
@@ -1926,22 +1926,22 @@ dotrace(
 	    if (ACK_SET(ptcp)) {
 		plotter_temp_color(from_tsgpl, ack_color);
 		plotter_dot(from_tsgpl,
-			    ptp_save->first_time, SeqRep(thisdir,start));
+			    ptp_save->first_time, SeqRep(context,thisdir,start));
 	    }
 	    plotter_perm_color(from_tsgpl,
 			       hw_dup?hw_dup_color:
 			       retrans_num_bytes>0?retrans_color:
 			       synfin_color);
-	    plotter_diamond(from_tsgpl, context->current_time, SeqRep(thisdir,start));
+	    plotter_diamond(from_tsgpl, context->current_time, SeqRep(context,thisdir,start));
 	    plotter_text(from_tsgpl, context->current_time,
-			 SeqRep(thisdir,start+1), "a",
+			 SeqRep(context,thisdir,start+1), "a",
 			 hw_dup?"HD SYN":
 			 retrans_num_bytes>0?"R SYN":
 			 "SYN");
-	    plotter_uarrow(from_tsgpl, context->current_time, SeqRep(thisdir,start+1));
+	    plotter_uarrow(from_tsgpl, context->current_time, SeqRep(context,thisdir,start+1));
 	    plotter_line(from_tsgpl,
-			 context->current_time, SeqRep(thisdir,start),
-			 context->current_time, SeqRep(thisdir,start+1));
+			 context->current_time, SeqRep(context,thisdir,start),
+			 context->current_time, SeqRep(context,thisdir,start+1));
 	} else if (FIN_SET(ptcp)) {	/* FIN  */
 	   /* Wed Sep 18, 2002 - bugfix
 	    * Check if data is present in the last packet.
@@ -1950,10 +1950,10 @@ dotrace(
 	    */
 	    if(tcp_data_length > 0) { /* DATA + FIN */
 	       /* Data - default color */
-	       plotter_darrow(from_tsgpl, context->current_time, SeqRep(thisdir,start));
+	       plotter_darrow(from_tsgpl, context->current_time, SeqRep(context,thisdir,start));
 	       plotter_line(from_tsgpl,
-			    context->current_time, SeqRep(thisdir,start),
-			    context->current_time, SeqRep(thisdir,end));
+			    context->current_time, SeqRep(context,thisdir,start),
+			    context->current_time, SeqRep(context,thisdir,end));
 	       /* FIN - synfin color */
 	       plotter_perm_color(from_tsgpl,
 				  hw_dup?hw_dup_color:
@@ -1966,14 +1966,14 @@ dotrace(
 				  hw_dup?hw_dup_color:
 				  retrans_num_bytes>0?retrans_color:
 				  synfin_color);
-	       plotter_darrow(from_tsgpl, context->current_time, SeqRep(thisdir,end));
+	       plotter_darrow(from_tsgpl, context->current_time, SeqRep(context,thisdir,end));
 	    }
 	    plotter_line(from_tsgpl,
-			 context->current_time, SeqRep(thisdir,end),
-			 context->current_time, SeqRep(thisdir,end+1));
-	    plotter_box(from_tsgpl, context->current_time, SeqRep(thisdir,end+1));
+			 context->current_time, SeqRep(context,thisdir,end),
+			 context->current_time, SeqRep(context,thisdir,end+1));
+	    plotter_box(from_tsgpl, context->current_time, SeqRep(context,thisdir,end+1));
 	    plotter_text(from_tsgpl, context->current_time,
-			 SeqRep(thisdir,end+1), "a",
+			 SeqRep(context,thisdir,end+1), "a",
 			 hw_dup?"HD FIN":
 			 retrans_num_bytes>0?"R FIN":
 			 "FIN");
@@ -1984,29 +1984,29 @@ dotrace(
 	    } else if (retrans) {
 		plotter_perm_color(from_tsgpl, retrans_color);
 	    }
-	    plotter_darrow(from_tsgpl, context->current_time, SeqRep(thisdir,start));
+	    plotter_darrow(from_tsgpl, context->current_time, SeqRep(context,thisdir,start));
 	    if (PUSH_SET(ptcp)) {
 		/* colored diamond is PUSH */
 		plotter_temp_color(from_tsgpl, push_color);
 		plotter_diamond(from_tsgpl,
-				context->current_time, SeqRep(thisdir,end));
+				context->current_time, SeqRep(context,thisdir,end));
 		plotter_temp_color(from_tsgpl, push_color);
-		plotter_dot(from_tsgpl, context->current_time, SeqRep(thisdir,end));
+		plotter_dot(from_tsgpl, context->current_time, SeqRep(context,thisdir,end));
 	    } else {
-		plotter_uarrow(from_tsgpl, context->current_time, SeqRep(thisdir,end));
+		plotter_uarrow(from_tsgpl, context->current_time, SeqRep(context,thisdir,end));
 	    }
 	    plotter_line(from_tsgpl,
-			 context->current_time, SeqRep(thisdir,start),
-			 context->current_time, SeqRep(thisdir,end));
+			 context->current_time, SeqRep(context,thisdir,start),
+			 context->current_time, SeqRep(context,thisdir,end));
 	} else if (tcp_data_length == 0) {
 	    /* for Brian Utterback */
 	    if (graph_zero_len_pkts) {
 		/* draw zero-length packets */
 		/* shows up as an X, really two arrow heads */
 		plotter_darrow(from_tsgpl,
-			       context->current_time, SeqRep(thisdir,start));
+			       context->current_time, SeqRep(context,thisdir,start));
 		plotter_uarrow(from_tsgpl,
-			       context->current_time, SeqRep(thisdir,start));
+			       context->current_time, SeqRep(context,thisdir,start));
 	    }
 	}
 
@@ -2015,8 +2015,8 @@ dotrace(
 	if (cwr || ecn_ce) {
 	    plotter_perm_color(from_tsgpl, ecn_color);
 	    plotter_diamond(from_tsgpl,
-			    context->current_time, SeqRep(thisdir,start));
-	    plotter_text(from_tsgpl, context->current_time, SeqRep(thisdir, start), "a",
+			    context->current_time, SeqRep(context,thisdir,start));
+	    plotter_text(from_tsgpl, context->current_time, SeqRep(context, thisdir, start), "a",
 			 cwr ? (ecn_ce ? "CWR CE" : "CWR") : "CE");
 	}
        
@@ -2026,7 +2026,7 @@ dotrace(
     if (urg) {
         if (from_tsgpl != NO_PLOTTER && options->show_urg) {
 	    plotter_perm_color(from_tsgpl,urg_color);
-	    plotter_text(from_tsgpl, context->current_time, SeqRep (thisdir,end),
+	    plotter_text(from_tsgpl, context->current_time, SeqRep(context,thisdir,end),
 			   "a", "U");
 	 } 
     }
@@ -2180,13 +2180,13 @@ dotrace(
 	if (to_tsgpl != NO_PLOTTER) {
 	    plotter_temp_color(to_tsgpl, text_color);
 	    plotter_text(to_tsgpl,
-			 context->current_time, SeqRep(otherdir,plot_at),
+			 context->current_time, SeqRep(context,otherdir,plot_at),
 			 "a", "RST_IN");
 	}
 	if (from_tsgpl != NO_PLOTTER) {
 	    plotter_temp_color(from_tsgpl, text_color);
 	    plotter_text(from_tsgpl,
-			 context->current_time, SeqRep(thisdir,start),
+			 context->current_time, SeqRep(context,thisdir,start),
 			 "a", "RST_OUT");
 	}
 	if (ACK_SET(ptcp))
@@ -2256,13 +2256,13 @@ dotrace(
 	    if (to_tsgpl != NO_PLOTTER && options->show_zero_window) {
 		plotter_temp_color(to_tsgpl, text_color);
 		plotter_text(to_tsgpl,
-			     context->current_time, SeqRep(otherdir,winend),
+			     context->current_time, SeqRep(context,otherdir,winend),
 			     "a", "Z");
 		if (bottom_letters) {
 		    plotter_temp_color(to_tsgpl, text_color);
 		    plotter_text(to_tsgpl,
 				 context->current_time,
-				 SeqRep(otherdir,otherdir->min_seq)-1500,
+				 SeqRep(context,otherdir,otherdir->min_seq)-1500,
 				 "a", "Z");
 		}
 	    }
@@ -2278,12 +2278,12 @@ dotrace(
 	if (to_tsgpl != NO_PLOTTER && thisdir->time.tv_sec != -1) {
 	    plotter_perm_color(to_tsgpl, ack_color);
 	    plotter_line(to_tsgpl,
-			 thisdir->time, SeqRep(otherdir,thisdir->ack),
-			 context->current_time, SeqRep(otherdir,thisdir->ack));
+			 thisdir->time, SeqRep(context,otherdir,thisdir->ack),
+			 context->current_time, SeqRep(context,otherdir,thisdir->ack));
 	    if (thisdir->ack != ack) {
 		plotter_line(to_tsgpl,
-			     context->current_time, SeqRep(otherdir,thisdir->ack),
-			     context->current_time, SeqRep(otherdir,ack));
+			     context->current_time, SeqRep(context,otherdir,thisdir->ack),
+			     context->current_time, SeqRep(context,otherdir,ack));
 		if (options->show_rtt_dongles) {
 		    /* draw dongles for "interesting" acks */
 		    switch (ack_type) {
@@ -2299,20 +2299,20 @@ dotrace(
 		      case AMBIG:	/* ambiguous */
 			plotter_temp_color(to_tsgpl, ackdongle_ambig_color);
 			plotter_diamond(to_tsgpl, context->current_time,
-					SeqRep(otherdir,ack));
+					SeqRep(context,otherdir,ack));
 			break;
 		      case NOSAMP:	/* acks retransmitted stuff cumulatively */
 			plotter_temp_color(to_tsgpl, ackdongle_nosample_color);
 			plotter_diamond(to_tsgpl, context->current_time,
-					SeqRep(otherdir,ack));
+					SeqRep(context,otherdir,ack));
 			break;
 		    }
 		}
 	    } else {
-		plotter_dtick(to_tsgpl, context->current_time, SeqRep(otherdir,ack));
+		plotter_dtick(to_tsgpl, context->current_time, SeqRep(context,otherdir,ack));
 		if (options->show_triple_dupack && (ack_type == TRIPLE)) {
 		    plotter_text(to_tsgpl, context->current_time,
-				 SeqRep(otherdir,ack),
+				 SeqRep(context,otherdir,ack),
 				 "a", "3");  /* '3' is for triple dupack */
 		}
 	    }
@@ -2320,19 +2320,19 @@ dotrace(
 	    /* Kevin Lahey's code */
 	    if (ecn_echo && !SYN_SET(ptcp)) {
 	        plotter_perm_color(to_tsgpl, ecn_color);
-		plotter_diamond(to_tsgpl, context->current_time, SeqRep(otherdir, ack));
+		plotter_diamond(to_tsgpl, context->current_time, SeqRep(context,otherdir, ack));
 	    }
 
 	    plotter_perm_color(to_tsgpl, window_color);
 	    plotter_line(to_tsgpl,
-			 thisdir->time, SeqRep(otherdir,old_this_windowend),
-			 context->current_time, SeqRep(otherdir,old_this_windowend));
+			 thisdir->time, SeqRep(context,otherdir,old_this_windowend),
+			 context->current_time, SeqRep(context,otherdir,old_this_windowend));
 	    if (old_this_windowend != winend) {
 		plotter_line(to_tsgpl,
-			     context->current_time, SeqRep(otherdir,old_this_windowend),
-			     context->current_time, SeqRep(otherdir,winend));
+			     context->current_time, SeqRep(context,otherdir,old_this_windowend),
+			     context->current_time, SeqRep(context,otherdir,winend));
 	    } else {
-		plotter_utick(to_tsgpl, context->current_time, SeqRep(otherdir,winend));
+		plotter_utick(to_tsgpl, context->current_time, SeqRep(context,otherdir,winend));
 	    }
 	}
 
@@ -2385,18 +2385,18 @@ dotrace(
 	    for (scount = 0; scount < ptcpo->sack_count; ++scount) {
 		plotter_line(to_tsgpl,
 			     context->current_time,
-			     SeqRep(otherdir,ptcpo->sacks[scount].sack_left),
+			     SeqRep(context,otherdir,ptcpo->sacks[scount].sack_left),
 			     context->current_time,
-			     SeqRep(otherdir,ptcpo->sacks[scount].sack_right));
+			     SeqRep(context,otherdir,ptcpo->sacks[scount].sack_right));
 		/* make it easier to read multiple sacks by making them look like
 		   |-----|  (sideways)
 		*/
 		plotter_htick(to_tsgpl,
 			      context->current_time,
-			      SeqRep(otherdir,ptcpo->sacks[scount].sack_left));
+			      SeqRep(context,otherdir,ptcpo->sacks[scount].sack_left));
 		plotter_htick(to_tsgpl,
 			      context->current_time,
-			      SeqRep(otherdir,ptcpo->sacks[scount].sack_right));
+			      SeqRep(context,otherdir,ptcpo->sacks[scount].sack_right));
 
 		/* if there's more than one, label the order */
 		/* purple number to the right of the top ("right" edge) */
@@ -2405,7 +2405,7 @@ dotrace(
 		    snprintf(buf,sizeof(buf),"%u",scount+1);	/* 1-base, rather than 0-base */
 		    plotter_text(to_tsgpl,
 				 context->current_time,
-				 SeqRep(otherdir,ptcpo->sacks[scount].sack_right),
+				 SeqRep(context,otherdir,ptcpo->sacks[scount].sack_right),
 				 "r", buf);
 		}
 
@@ -2415,7 +2415,7 @@ dotrace(
 	    }
 	    /* change - just draw the 'S' above the highest one */
 	    plotter_text(to_tsgpl, context->current_time,
-			 SeqRep(otherdir,sack_top),
+			 SeqRep(context,otherdir,sack_top),
 			 "a", "S");  /* 'S' is for Sack */
 	}
 	thisdir->time = context->current_time;
@@ -3249,10 +3249,13 @@ ptp2ptcb(
 /* represent the sequence numbers absolute or relative to 0 */
 static u_long
 SeqRep(
+    tcptrace_context_t *context,
     tcb *ptcb,
     u_long seq)
 {
-    if (graph_seq_zero) {
+    tcptrace_runtime_options_t *options = context->options;
+
+    if (options->graph_seq_zero) {
 	return(seq - ptcb->min_seq);
     } else {
 	return(seq);

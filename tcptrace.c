@@ -120,7 +120,7 @@ Bool hex = TRUE;
 /* Bool docheck_hw_dups = TRUE; */
 /* Bool save_tcp_data = FALSE; */
 /* Bool graph_time_zero = FALSE; */
-Bool graph_seq_zero = FALSE;
+/* Bool graph_seq_zero = FALSE; */
 Bool print_seq_zero = FALSE;
 Bool graph_zero_len_pkts = TRUE;
 Bool plot_tput_instant = TRUE;
@@ -1906,12 +1906,12 @@ ParseArgs(
 		    } else if (strcasecmp(argv[i],"zx") == 0) {
 			options->graph_time_zero = TRUE;
 		    } else if (strcasecmp(argv[i],"zy") == 0) {
-			graph_seq_zero = TRUE;
+			options->graph_seq_zero = TRUE;
 		    } else if ((strcasecmp(argv[i],"zxy") == 0) ||
 			       (strcasecmp(argv[i],"zyx") == 0)) {
 			/* set BOTH to zero */
 			options->graph_time_zero = TRUE;
-			graph_seq_zero = TRUE;
+			options->graph_seq_zero = TRUE;
 		    } else {
 			BadArg(argsource, "only -z -zx -zy and -zxy are legal\n");
 		    }
@@ -1970,12 +1970,12 @@ ParseArgs(
 		    } else if (strcasecmp(argv[i],"zx") == 0) {
 			options->graph_time_zero = !TRUE;
 		    } else if (strcasecmp(argv[i],"zy") == 0) {
-			graph_seq_zero = !TRUE;
+			options->graph_seq_zero = !TRUE;
 		    } else if ((strcasecmp(argv[i],"zxy") == 0) ||
 			       (strcasecmp(argv[i],"zyx") == 0)) {
 			/* set BOTH to zero */
 			options->graph_time_zero = !TRUE;
-			graph_seq_zero = !TRUE;
+			options->graph_seq_zero = !TRUE;
 		    } else {
 			BadArg(argsource, "only +z +zx +zy and +zxy are legal\n");
 		    }
@@ -2020,7 +2020,7 @@ DumpFlags(void)
     fprintf(stderr,"use_short_names:  %s\n", BOOL2STR(options->use_short_names));
     fprintf(stderr,"save_tcp_data:    %s\n", BOOL2STR(options->save_tcp_data));
     fprintf(stderr,"graph_time_zero:  %s\n", BOOL2STR(options->graph_time_zero));
-    fprintf(stderr,"graph_seq_zero:   %s\n", BOOL2STR(graph_seq_zero));
+    fprintf(stderr,"graph_seq_zero:   %s\n", BOOL2STR(options->graph_seq_zero));
     fprintf(stderr,"beginning pnum:   %lu\n", options->beginpnum);
     fprintf(stderr,"ending pnum:      %lu\n", options->endpnum);
     fprintf(stderr,"throughput intvl: %d\n", thru_interval);

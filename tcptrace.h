@@ -710,7 +710,7 @@ extern Bool hex;
 /* extern Bool use_short_names; */
 /* extern Bool save_tcp_data; */
 /* extern Bool graph_time_zero; */
-extern Bool graph_seq_zero;
+/* extern Bool graph_seq_zero; */
 extern Bool print_seq_zero;
 extern Bool graph_zero_len_pkts;
 extern Bool plot_tput_instant;
@@ -777,6 +777,7 @@ typedef struct tcptrace_runtime_options_t {
     Bool save_tcp_data;
 
     Bool graph_time_zero;
+    Bool graph_seq_zero;
 
     Bool printem;
     Bool printallofem;

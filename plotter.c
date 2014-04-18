@@ -409,6 +409,7 @@ plotter_done(tcptrace_context_t *context)
     }
 
 	if (plotter_ix > 0) {
+                /* TODO: preferably remove this code and feature */
 		if (options->xplot_all_files) {
 			fprintf(stdout,"%s\n",DSVal(xplot_cmd_buff));
 			system(DSVal(xplot_cmd_buff));
@@ -931,7 +932,7 @@ WritePlotHeader(
       /* suggestion by Michele Clark at UNC - make them double instead */
       Mfprintf(f,"%s %s\n",
 	       options->graph_time_zero ? "dtime" : "timeval",
-	       ((strcmp(ppi->ylabel,"sequence number") == 0)&&(!graph_seq_zero))?
+	       ((strcmp(ppi->ylabel,"sequence number") == 0)&&(!options->graph_seq_zero))?
 	       "double":"signed");
    }
    
