@@ -932,6 +932,7 @@ Ignore(
        char *opt)
 {
      char *o_arg;
+     tcptrace_context_t *context = &global_context;
      tcptrace_runtime_options_t *options = global_context.options;
 		      
      /* next part of arg is a filename or number list */
@@ -974,14 +975,14 @@ Ignore(
 	       while (num1<=num2) {
 		    if (debug > 1)
 			 printf("setting IgnoreConn(%d)\n", num1);
-		    IgnoreConn(num1++);
+		    IgnoreConn(context, num1++);
 		    
 	       }
 	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
 	       /* single argument */
 	       if (debug)
 		    printf("setting IgnoreConn(%d)\n", num1);
-	       IgnoreConn(num1);
+	       IgnoreConn(context, num1);
 	  } else {
 	       /* error */
 	       BadArg(argsource,
@@ -1001,6 +1002,7 @@ GrabOnly(
     char *opt)
 {
      char *o_arg;
+     tcptrace_context_t *context = &global_context;
      tcptrace_runtime_options_t *options = global_context.options;
      
      /* next part of arg is a filename or number list */
@@ -1047,13 +1049,13 @@ GrabOnly(
 	       while (num1<=num2) {
 		    if (debug > 1)
 			 printf("setting OnlyConn(%d)\n", num1);
-		    OnlyConn(num1++);
+		    OnlyConn(context, num1++);
 	       }
 	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
 	       /* single argument */
 	       if (debug)
 		    printf("setting OnlyConn(%d)\n", num1);
-	       OnlyConn(num1);
+	       OnlyConn(context, num1);
 	  } else {
 	       /* error */
 	       BadArg(argsource,

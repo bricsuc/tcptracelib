@@ -609,6 +609,7 @@ PrintTrace(
 
 void
 PrintBrief(
+    tcptrace_context_t *context,
     tcp_pair *ptp)
 {
     tcb *pab = &ptp->a2b;
@@ -621,8 +622,8 @@ PrintBrief(
 	int len;
 	tcp_pair *tmp_ptp;
 	
-	for (ix = 0; ix <= num_tcp_pairs; ++ix) {
-	    tmp_ptp = ttp[ix];
+	for (ix = 0; ix <= context->num_tcp_pairs; ++ix) {
+	    tmp_ptp = context->ttp[ix];
 	    if (tmp_ptp->ignore_pair)
 		continue;
 	    

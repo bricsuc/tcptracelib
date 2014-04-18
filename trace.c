@@ -77,8 +77,8 @@ static int tline_left  = 0; /* left and right time lines for the time line chart
 static int tline_right = 0;
 
 /* provided globals  */
-int num_tcp_pairs = -1;	/* how many pairs we've allocated */
-tcp_pair **ttp = NULL;	/* array of pointers to allocated pairs */
+/* int num_tcp_pairs = -1; */	/* how many pairs we've allocated */
+/* tcp_pair **ttp = NULL; */	/* array of pointers to allocated pairs */
 int max_tcp_pairs = 64; /* initial value, automatically increases */
 u_long tcp_trace_count = 0;
 
@@ -86,7 +86,7 @@ u_long tcp_trace_count = 0;
 /* local routine definitions */
 static tcp_pair *NewTTP(tcptrace_context_t *context, struct ip *, struct tcphdr *);
 static tcp_pair *FindTTP(tcptrace_context_t *context, struct ip *, struct tcphdr *, int *, ptp_ptr **);
-static void MoreTcpPairs(int num_needed);
+static void MoreTcpPairs(tcptrace_context_t *, int num_needed);
 static void ExtractContents(u_long seq, u_long tcp_data_bytes,
 			    u_long saved_data_bytes, void *pdata, tcb *ptcb);
 static Bool check_hw_dups(tcptrace_context_t *context, u_short id, seqnum seq, tcb *ptcb);
@@ -514,16 +514,16 @@ NewTTP(
       printf("trace.c:NewTTP() calling MakeTcpPair()\n");
     }
     ptp = MakeTcpPair();
-    ++num_tcp_pairs;
+    context->num_tcp_pairs++;
 
     if (!options->run_continuously) {
       /* make a new one, if possible */
-      if ((num_tcp_pairs+1) >= max_tcp_pairs) {
-	MoreTcpPairs(num_tcp_pairs+1);
+      if ((context->num_tcp_pairs+1) >= max_tcp_pairs) {
+	MoreTcpPairs(context, context->num_tcp_pairs+1);
       }
       /* create a new TCP pair record and remember where you put it */
-      ttp[num_tcp_pairs] = ptp;
-      ptp->ignore_pair = ignore_pairs[num_tcp_pairs];
+      context->ttp[context->num_tcp_pairs] = ptp;
+      ptp->ignore_pair = ignore_pairs[context->num_tcp_pairs];
     }
 
 
@@ -2536,8 +2536,8 @@ trace_done(tcptrace_context_t *context)
     if (!options->printbrief)
 	fprintf(stdout,"%s%d TCP %s traced:\n",
 		comment,
-		num_tcp_pairs + 1,
-		num_tcp_pairs==0?"connection":"connections");
+		context->num_tcp_pairs + 1,
+		context->num_tcp_pairs == 0 ? "connection" : "connections");
     if (context->ctrunc > 0) {
 	fprintf(stdout,
 		"%s*** %lu packets were too short to process at some point\n",
@@ -2588,8 +2588,8 @@ trace_done(tcptrace_context_t *context)
     }
 
     /* complete the "idle time" calculations using NOW */
-    for (ix = 0; ix <= num_tcp_pairs; ++ix) {
-	tcp_pair *ptp = ttp[ix];
+    for (ix = 0; ix <= context->num_tcp_pairs; ++ix) {
+	tcp_pair *ptp = context->ttp[ix];
 	tcb *thisdir; 
 	u_llong itime;
 
@@ -2629,8 +2629,8 @@ trace_done(tcptrace_context_t *context)
       if (options->filter_output) {
 	 if (!options->run_continuously) {
 	    /* mark the connections to ignore */
-	    for (ix = 0; ix <= num_tcp_pairs; ++ix) {
-	       ptp = ttp[ix];
+	    for (ix = 0; ix <= context->num_tcp_pairs; ++ix) {
+	       ptp = context->ttp[ix];
 	       if (PassesFilter(ptp)) {
 		  if (++count == 1)
 		      fprintf(f_passfilter,"%d", ix+1);
@@ -2651,13 +2651,13 @@ trace_done(tcptrace_context_t *context)
         Bool first = TRUE; /* Used with <SP>-separated-values
 			    * Keeps track of whether header has already
 			    * been printed */
-	for (ix = 0; ix <= num_tcp_pairs; ++ix) {
-	    ptp = ttp[ix];
+	for (ix = 0; ix <= context->num_tcp_pairs; ++ix) {
+	    ptp = context->ttp[ix];
 
 	    if (!ptp->ignore_pair) {
 		if ((options->printbrief) && (!options->ignore_incomplete || ConnComplete(ptp))) {
 		    fprintf(stdout,"%3d: ", ix+1);
-		    PrintBrief(ptp);
+		    PrintBrief(context, ptp);
 		} else if (!options->ignore_incomplete || ConnComplete(ptp)) {
 		    if(options->csv || options->tsv || (sv != NULL)) {
 		       if (first) {
@@ -2717,6 +2717,7 @@ trace_done(tcptrace_context_t *context)
 
 static void
 MoreTcpPairs(
+    tcptrace_context_t *context,
     int num_needed)
 {
     int new_max_tcp_pairs;
@@ -2734,7 +2735,7 @@ MoreTcpPairs(
 	       new_max_tcp_pairs);
 
     /* enlarge array to hold any pairs that we might create */
-    ttp = ReallocZ(ttp,
+    context->ttp = ReallocZ(context->ttp,
 		   max_tcp_pairs * sizeof(tcp_pair *),
 		   new_max_tcp_pairs * sizeof(tcp_pair *));
 
@@ -2742,9 +2743,11 @@ MoreTcpPairs(
     ignore_pairs = ReallocZ(ignore_pairs,
 			    max_tcp_pairs * sizeof(Bool),
 			    new_max_tcp_pairs * sizeof(Bool));
-    if (more_conns_ignored)
-	for (i=max_tcp_pairs; i < new_max_tcp_pairs;++i)
+    if (more_conns_ignored) {
+	for (i = max_tcp_pairs; i < new_max_tcp_pairs;++i) {
 	    ignore_pairs[i] = TRUE;
+        }
+    }
 
     max_tcp_pairs = new_max_tcp_pairs;
 }
@@ -2765,9 +2768,9 @@ trace_init(tcptrace_context_t *context)
 	free(ignore_pairs);
 	ignore_pairs = NULL;
       }
-      if (ttp) {
-	free(ttp);
-	ttp = NULL;
+      if (context->ttp) {
+	free(context->ttp);
+	context->ttp = NULL;
       }
       more_conns_ignored = FALSE;
     }
@@ -2778,13 +2781,13 @@ trace_init(tcptrace_context_t *context)
     initted = TRUE;
 
     /* create an array to hold any pairs that we might create */
-    ttp = (tcp_pair **) MallocZ(max_tcp_pairs * sizeof(tcp_pair *));
+    context->ttp = (tcp_pair **) MallocZ(max_tcp_pairs * sizeof(tcp_pair *));
 
     /* create an array to keep track of which ones to ignore */
     ignore_pairs = (Bool *) MallocZ(max_tcp_pairs * sizeof(Bool));
     if (!options->run_continuously) {
         /* create an array to hold any pairs that we might create */
-        ttp = (tcp_pair **) MallocZ(max_tcp_pairs * sizeof(tcp_pair *));
+        context->ttp = (tcp_pair **) MallocZ(max_tcp_pairs * sizeof(tcp_pair *));
       
         /* create an array to keep track of which ones to ignore */
         ignore_pairs = (Bool *) MallocZ(max_tcp_pairs * sizeof(Bool));
@@ -2797,6 +2800,7 @@ trace_init(tcptrace_context_t *context)
 
 void
 IgnoreConn(
+    tcptrace_context_t *context,
     int ix)
 {
     if (debug) fprintf(stderr,"ignoring conn %d\n", ix);
@@ -2805,7 +2809,7 @@ IgnoreConn(
 	
     --ix;
 
-    MoreTcpPairs(ix);
+    MoreTcpPairs(context, ix);
 
     more_conns_ignored = FALSE;
     ignore_pairs[ix] = TRUE;
@@ -2814,6 +2818,7 @@ IgnoreConn(
 
 void
 OnlyConn(
+    tcptrace_context_t *context,
     int ix_only)
 {
     int ix;
@@ -2825,7 +2830,7 @@ OnlyConn(
 	
     --ix_only;
 
-    MoreTcpPairs(ix_only);
+    MoreTcpPairs(context, ix_only);
 
     if (!cleared) {
 	for (ix = 0; ix < max_tcp_pairs; ++ix) {

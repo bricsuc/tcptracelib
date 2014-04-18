@@ -546,8 +546,9 @@ typedef struct stcp_pair tcp_pair;
 typedef struct tcphdr tcphdr;
 
 
-extern int num_tcp_pairs;	/* how many pairs are in use */
-extern tcp_pair **ttp;		/* array of pointers to allocated pairs */
+/* now in tcptrace_context_t */
+/* extern int num_tcp_pairs; */	/* how many pairs are in use */
+/* extern tcp_pair **ttp; */	/* array of pointers to allocated pairs */
 
 /* Wed Aug 20, 2003 - Ramani*/
 /*  Prior to version 6.4.11, the data structure for storing the snapshots of 
@@ -839,6 +840,9 @@ typedef struct tcptrace_context_t {
     /* see tcptrace.c/main() for explanation of this comment stuff */
     char comment_prefix[__TCPTRACE_COMMENT_PREFIX_MAX];
 
+    int num_tcp_pairs;
+    tcp_pair **ttp;
+
 } tcptrace_context_t;
 
 /* raw packet, read from file */
@@ -960,10 +964,10 @@ void PrintRawDataHex(char *label, void *pfirst, void *plast);
 void PrintTrace(tcptrace_context_t *context, tcp_pair *);
 void UDPPrintTrace(tcptrace_context_t *, udp_pair *);
 void PrintSVHeader(tcptrace_context_t *context);
-void PrintBrief(tcp_pair *);
+void PrintBrief(tcptrace_context_t *, tcp_pair *);
 void UDPPrintBrief(udp_pair *);
-void OnlyConn(int);
-void IgnoreConn(int);
+void OnlyConn(tcptrace_context_t *, int);
+void IgnoreConn(tcptrace_context_t *, int);
 void OnlyUDPConn(int);
 void IgnoreUDPConn(int);
 

@@ -394,6 +394,9 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
 
     context->current_filename = NULL;
 
+    context->num_tcp_pairs = -1;
+    context->ttp = NULL;
+
 }
 
 /* initialize the tcptrace runtime options */
