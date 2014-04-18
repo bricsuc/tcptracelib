@@ -425,8 +425,11 @@ plotter_temp_color(
     PLOTTER pl,
     char *color)
 {
-    if (colorplot)
-	temp_color = color;
+    tcptrace_context_t *context = &global_context;  /* XXX */
+
+    if (context->options->colorplot) {
+        temp_color = color;
+    }
 }
 
 
@@ -435,10 +438,11 @@ plotter_perm_color(
     PLOTTER pl,
     char *color)
 {
-   tcptrace_context_t *context = &global_context;  /* XXX */
+    tcptrace_context_t *context = &global_context;  /* XXX */
 
-   if (colorplot)
+    if (context->options->colorplot) {
 	CallDoPlot(context, pl, color, 0);
+    }
 }
 
 
@@ -936,13 +940,14 @@ WritePlotHeader(
 	       "double":"signed");
    }
    
-   if (show_title) {
-      if (xplot_title_prefix)
-	Mfprintf(f,"title\n%s %s\n",
+   if (options->show_title) {
+      if (xplot_title_prefix) {
+	  Mfprintf(f,"title\n%s %s\n",
 		 ExpandFormat(xplot_title_prefix),
 		 ppi->title);
-      else
-	Mfprintf(f,"title\n%s\n", ppi->title);
+      } else {
+          Mfprintf(f,"title\n%s\n", ppi->title);
+      }
    }
    
    Mfprintf(f,"xlabel\n%s\n", ppi->xlabel);

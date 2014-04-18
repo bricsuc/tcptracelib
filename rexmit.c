@@ -438,6 +438,7 @@ rtt_ackin (tcptrace_context_t *context,
 {
     double etime_rtt;
     enum t_ack ret;
+    tcptrace_runtime_options_t *options = context->options;
 
     u_long current_size = 0;
 
@@ -523,12 +524,12 @@ rtt_ackin (tcptrace_context_t *context,
     }
 
     /* dump RTT samples, if asked */
-    if (dump_rtt && (etime_rtt != 0.0)) {
+    if (options->dump_rtt && (etime_rtt != 0.0)) {
 	dump_rtt_sample (ptcb, pseg, etime_rtt);
     }
 
     /* plot RTT samples, if asked */
-    if (graph_rtt && (pseg->retrans == 0)) {
+    if (options->graph_rtt && (pseg->retrans == 0)) {
 	graph_rtt_sample(context, ptcb, pseg, etime_rtt);
     }
 

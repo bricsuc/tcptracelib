@@ -144,7 +144,7 @@ DoThru(
     }
 
     /* immediate value in yellow ticks */
-    if (plot_tput_instant) {
+    if (options->plot_tput_instant) {
 	etime = elapsed(ptcb->thru_lasttime, context->current_time);
 	if (etime == 0.0)
 	    etime = 1000;	/* ick, what if "no time" has passed?? */

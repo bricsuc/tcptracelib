@@ -431,8 +431,26 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->warn_printbadcsum = FALSE;
     options->warn_printbad_syn_fin_seq = FALSE;
 
+    options->show_title = TRUE;
+    options->colorplot = TRUE;
+    options->dump_rtt = FALSE;
+    options->graph_rtt = FALSE;
+    options->graph_tput = FALSE;
+    options->graph_tsg = FALSE;
+    options->graph_segsize = FALSE;
+    options->graph_owin = FALSE;
+    options->graph_tline = FALSE;
+
+    options->hex = TRUE;
+
+    options->show_rwinline = TRUE;
+
     options->graph_time_zero = FALSE;
     options->graph_seq_zero = FALSE;
+    options->print_seq_zero = FALSE;
+    options->graph_zero_len_pkts = TRUE;
+    options->plot_tput_instant = TRUE;
+    options->filter_output = FALSE;
 
     options->show_out_order = TRUE;
     options->show_rexmit = TRUE;

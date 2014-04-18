@@ -672,15 +672,15 @@ extern udp_pair **utp;		/* array of pointers to allocated pairs */
 
 
 /* option flags */
-extern Bool colorplot;
-extern Bool dump_rtt;
-extern Bool graph_rtt;
-extern Bool graph_tput;
-extern Bool graph_tsg;
-extern Bool graph_segsize;
-extern Bool graph_owin;
-extern Bool graph_tline;
-extern Bool hex;
+/* extern Bool colorplot; */
+/* extern Bool dump_rtt; */
+/* extern Bool graph_rtt; */
+/* extern Bool graph_tput; */
+/* extern Bool graph_tsg; */
+/* extern Bool graph_segsize; */
+/* extern Bool graph_owin; */
+/* extern Bool graph_tline; */
+/* extern Bool hex; */
 /* extern Bool ignore_non_comp; */
 /* extern Bool resolve_ipaddresses; */
 /* extern Bool resolve_ports; */
@@ -711,13 +711,13 @@ extern Bool hex;
 /* extern Bool save_tcp_data; */
 /* extern Bool graph_time_zero; */
 /* extern Bool graph_seq_zero; */
-extern Bool print_seq_zero;
-extern Bool graph_zero_len_pkts;
-extern Bool plot_tput_instant;
-extern Bool filter_output;
+/* extern Bool print_seq_zero; */
+/* extern Bool graph_zero_len_pkts; */
+/* extern Bool plot_tput_instant; */
+/* extern Bool filter_output; */
 /* extern Bool do_udp; */ /* de-globalized, now in runtime_options */
-extern Bool show_title;
-extern Bool show_rwinline;
+/* extern Bool show_title; */
+/* extern Bool show_rwinline; */
 /* extern Bool docheck_hw_dups; */
 /* constants for real-time (continuous) mode */
 /* extern Bool run_continuously; */
@@ -761,6 +761,20 @@ typedef struct tcptrace_runtime_options_t {
     Bool warn_printbadcsum;
     Bool warn_printbad_syn_fin_seq;
 
+    Bool colorplot;
+    Bool dump_rtt;
+
+    Bool graph_rtt;
+    Bool graph_tput;
+    Bool graph_tsg;
+    Bool graph_segsize;
+    Bool graph_owin;
+    Bool graph_tline;
+
+    Bool hex;
+
+    Bool show_title;
+    Bool show_rwinline;
     Bool show_zero_window;
     Bool show_out_order;
     Bool show_rexmit;
@@ -778,6 +792,11 @@ typedef struct tcptrace_runtime_options_t {
 
     Bool graph_time_zero;
     Bool graph_seq_zero;
+    Bool print_seq_zero;
+    Bool graph_zero_len_pkts;
+    Bool plot_tput_instant;
+
+    Bool filter_output;
 
     Bool printem;
     Bool printallofem;

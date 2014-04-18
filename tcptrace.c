@@ -93,15 +93,15 @@ static char *FileToBuf(char *filename);
 
 
 /* option flags and default values */
-Bool colorplot = TRUE;
-Bool dump_rtt = FALSE;
-Bool graph_rtt = FALSE;
-Bool graph_tput = FALSE;
-Bool graph_tsg = FALSE;
-Bool graph_segsize = FALSE;
-Bool graph_owin = FALSE;
-Bool graph_tline = FALSE;
-Bool hex = TRUE;
+/* Bool colorplot = TRUE; */
+/* Bool dump_rtt = FALSE; */
+/* Bool graph_rtt = FALSE; */
+/* Bool graph_tput = FALSE; */
+/* Bool graph_tsg = FALSE; */
+/* Bool graph_segsize = FALSE; */
+/* Bool graph_owin = FALSE; */
+/* Bool graph_tline = FALSE; */
+/* Bool hex = TRUE; */
 /* Bool ignore_non_comp = FALSE; */
 /* Bool dump_packet_data = FALSE; */
 /* Bool print_rtt = FALSE; */
@@ -121,12 +121,12 @@ Bool hex = TRUE;
 /* Bool save_tcp_data = FALSE; */
 /* Bool graph_time_zero = FALSE; */
 /* Bool graph_seq_zero = FALSE; */
-Bool print_seq_zero = FALSE;
-Bool graph_zero_len_pkts = TRUE;
-Bool plot_tput_instant = TRUE;
-Bool filter_output = FALSE;
-Bool show_title = TRUE;
-Bool show_rwinline = TRUE;
+/* Bool print_seq_zero = FALSE; */
+/* Bool graph_zero_len_pkts = TRUE; */
+/* Bool plot_tput_instant = TRUE; */
+/* Bool filter_output = FALSE; */
+/* Bool show_title = TRUE; */
+/* Bool show_rwinline = TRUE; */
 /* Bool do_udp = FALSE; */
 /* Bool resolve_ipaddresses = TRUE; */
 /* Bool resolve_ports = TRUE; */
@@ -219,13 +219,13 @@ static struct ext_bool_op {
      "mark non-RTT-generating ACKs with special symbols"},
     {"showdupack3", NULL, __T_OPTIONS_OFFSET(show_triple_dupack), TRUE,
      "mark triple dupacks on time sequence graphs"},
-    {"showzerolensegs", &graph_zero_len_pkts, 0,  TRUE,
+    {"showzerolensegs", NULL, __T_OPTIONS_OFFSET(graph_zero_len_pkts),  TRUE,
      "show zero length packets on time sequence graphs"},
     {"showzwndprobes", NULL, __T_OPTIONS_OFFSET(show_zwnd_probes), TRUE,
      "show zero window probe packets on time sequence graphs"},
-    {"showtitle", &show_title, 0, TRUE,
+    {"showtitle", NULL, __T_OPTIONS_OFFSET(show_title), TRUE,
      "show title on the graphs"},
-    {"showrwinline", &show_rwinline, 0, TRUE,
+    {"showrwinline", NULL, __T_OPTIONS_OFFSET(show_rwinline), TRUE,
      "show yellow receive-window line in owin graphs"},
     {"res_addr", NULL, __T_OPTIONS_OFFSET(resolve_ipaddresses), TRUE,
      "resolve IP addresses into names (may be slow)"},
@@ -253,7 +253,7 @@ static struct ext_bool_op {
      "print all packets AND dump the TCP/UDP data"},
     {"continuous", NULL, __T_OPTIONS_OFFSET(run_continuously), TRUE,
      "run continuously and don't provide a summary"},
-    {"print_seq_zero", &print_seq_zero, 0, TRUE,
+    {"print_seq_zero", NULL, __T_OPTIONS_OFFSET(print_seq_zero), TRUE,
      "print sequence numbers as offset from initial sequence number"},
     {"limit_conn_num", NULL, __T_OPTIONS_OFFSET(conn_num_threshold), TRUE,
      "limit the maximum number of connections kept at a time in real-time mode"},
@@ -1784,8 +1784,8 @@ ParseArgs(
 		    if (options->beginpnum < 0)
 			BadArg(argsource, "-B  must be >= 0\n");
 		    *(argv[i]+1) = '\00'; break;
-		  case 'C': colorplot = TRUE; break;
-		  case 'D': hex = FALSE; break;
+		  case 'C': options->colorplot = TRUE; break;
+		  case 'D': options->hex = FALSE; break;
 		  case 'E':
 		    if (isdigit((int)(*(argv[i]+1))))
 			options->endpnum = atoi(argv[i]+1);
@@ -1794,20 +1794,20 @@ ParseArgs(
 		    if (options->endpnum < 0)
 			BadArg(argsource, "-E  must be >= 0\n");
 		    *(argv[i]+1) = '\00'; break;
-		  case 'F': graph_segsize = TRUE; break;
+		  case 'F': options->graph_segsize = TRUE; break;
 		  case 'G':
-		    graph_tput = TRUE;
-		    graph_tsg = TRUE;
-		    graph_rtt = TRUE;
-		    graph_owin = TRUE;
-		    graph_segsize = TRUE;
-		    graph_tline = TRUE;
+		    options->graph_tput = TRUE;
+		    options->graph_tsg = TRUE;
+		    options->graph_rtt = TRUE;
+		    options->graph_owin = TRUE;
+		    options->graph_segsize = TRUE;
+		    options->graph_tline = TRUE;
 		    break;
-		  case 'L': graph_tline = TRUE;
+		  case 'L': options->graph_tline = TRUE;
 		    fprintf(stderr, "\nWarning: You have chosen the option '-L' to plot Time Line Graphs.\n         This option is yet under development and may not reflect accurate results.\n         Please take a look at the file README.tline_graphs for more details.\n\n");
 		    break;
-		  case 'M': colorplot = FALSE; break;
-		  case 'N': graph_owin = TRUE; break;
+		  case 'M': options->colorplot = FALSE; break;
+		  case 'N': options->graph_owin = TRUE; break;
 		  case 'O':
 		    if (*(argv[i]+1)) {
 			/* -Ofile */
@@ -1819,18 +1819,18 @@ ParseArgs(
 		    }
 		    break;
 		  case 'P': options->printem = TRUE; break;
-		  case 'R': graph_rtt = TRUE; break;
-		  case 'S': graph_tsg = TRUE; break;
-		  case 'T': graph_tput = TRUE; break;
+		  case 'R': options->graph_rtt = TRUE; break;
+		  case 'S': options->graph_tsg = TRUE; break;
+		  case 'T': options->graph_tput = TRUE; break;
 		  case 'W': options->print_owin = TRUE; break;
-		  case 'X': hex = TRUE; break;
-		  case 'Z': dump_rtt = TRUE; break;
+		  case 'X': options->hex = TRUE; break;
+		  case 'Z': options->dump_rtt = TRUE; break;
 		  case 'b': options->printbrief = TRUE; break;
 		  case 'c': options->ignore_incomplete = TRUE; break;
 		  case 'd': options->debug++; debug++; break;
 		  case 'e': options->save_tcp_data = TRUE; break;
 		  case 'f':
-		    filter_output = TRUE;
+		    options->filter_output = TRUE;
 		    if (*(argv[i]+1)) {
 			/* -fEXPR */
 			ParseFilter(argv[i]+1);
@@ -1898,7 +1898,7 @@ ParseArgs(
 		    BadArg(argsource,
 			   "unknown module option (-x...)\n");
 		    break;
-		  case 'y': plot_tput_instant = FALSE; break;
+		  case 'y': options->plot_tput_instant = FALSE; break;
 		  case 'z':
 		    if (strcmp(argv[i],"z") == 0) {
 			/* backward compat, just zero the time */
@@ -1928,19 +1928,19 @@ ParseArgs(
 
 	    while (*(++argv[i]))
 		switch (*argv[i]) {
-		  case 'C': colorplot = !TRUE; break;
-		  case 'D': hex = !FALSE; break;
-		  case 'F': graph_segsize = !TRUE; break;
-		  case 'L': graph_tline = !TRUE; break;
-		  case 'M': colorplot = !FALSE; break;
-		  case 'N': graph_owin = !TRUE; break;
+		  case 'C': options->colorplot = !TRUE; break;
+		  case 'D': options->hex = !FALSE; break;
+		  case 'F': options->graph_segsize = !TRUE; break;
+		  case 'L': options->graph_tline = !TRUE; break;
+		  case 'M': options->colorplot = !FALSE; break;
+		  case 'N': options->graph_owin = !TRUE; break;
 		  case 'P': options->printem = !TRUE; break;
-		  case 'R': graph_rtt = !TRUE; break;
-		  case 'S': graph_tsg = !TRUE; break;
-		  case 'T': graph_tput = !TRUE; break;
+		  case 'R': options->graph_rtt = !TRUE; break;
+		  case 'S': options->graph_tsg = !TRUE; break;
+		  case 'T': options->graph_tput = !TRUE; break;
 		  case 'W': options->print_owin = !TRUE; break;
-		  case 'X': hex = !TRUE; break;
-		  case 'Z': dump_rtt = !TRUE; break;
+		  case 'X': options->hex = !TRUE; break;
+		  case 'Z': options->dump_rtt = !TRUE; break;
 		  case 'b': options->printbrief = !TRUE; break;
 		  case 'c': options->ignore_incomplete = !TRUE; break;
 		  case 'e': options->save_tcp_data = FALSE; break;
@@ -1962,7 +1962,9 @@ ParseArgs(
 		    options->warn_printbadcsum = !TRUE;
 		    options->warn_ooo = !TRUE;
 		    break;
-		  case 'y': plot_tput_instant = !plot_tput_instant; break;
+		  case 'y':
+                    options->plot_tput_instant = !options->plot_tput_instant;
+                    break;
 		  case 'z':
 		    if (strcmp(argv[i],"z") == 0) {
 			/* backward compat, just zero the time */
@@ -2004,15 +2006,15 @@ DumpFlags(void)
     fprintf(stderr,"printbrief:       %s\n", BOOL2STR(options->printbrief));
     fprintf(stderr,"printsuppress:    %s\n", BOOL2STR(options->printsuppress));
     fprintf(stderr,"print_rtt:        %s\n", BOOL2STR(options->print_rtt));
-    fprintf(stderr,"graph rtt:        %s\n", BOOL2STR(graph_rtt));
-    fprintf(stderr,"graph tput:       %s\n", BOOL2STR(graph_tput));
-    fprintf(stderr,"graph tsg:        %s\n", BOOL2STR(graph_tsg));
-    fprintf(stderr,"graph segsize:    %s\n", BOOL2STR(graph_segsize));
-    fprintf(stderr,"graph owin:       %s\n", BOOL2STR(graph_owin));
-    fprintf(stderr,"graph tline:      %s\n", BOOL2STR(graph_tline));
+    fprintf(stderr,"graph rtt:        %s\n", BOOL2STR(options->graph_rtt));
+    fprintf(stderr,"graph tput:       %s\n", BOOL2STR(options->graph_tput));
+    fprintf(stderr,"graph tsg:        %s\n", BOOL2STR(options->graph_tsg));
+    fprintf(stderr,"graph segsize:    %s\n", BOOL2STR(options->graph_segsize));
+    fprintf(stderr,"graph owin:       %s\n", BOOL2STR(options->graph_owin));
+    fprintf(stderr,"graph tline:      %s\n", BOOL2STR(options->graph_tline));
     fprintf(stderr,"plotem:           %s\n",
-	    colorplot?"(color)":"(b/w)");
-    fprintf(stderr,"hex printing:     %s\n", BOOL2STR(hex));
+	    options->colorplot?"(color)":"(b/w)");
+    fprintf(stderr,"hex printing:     %s\n", BOOL2STR(options->hex));
     fprintf(stderr,"ignore_incomplete:  %s\n", BOOL2STR(options->ignore_incomplete));
     fprintf(stderr,"printem:          %s\n", BOOL2STR(options->printem));
     fprintf(stderr,"printallofem:     %s\n", BOOL2STR(options->printallofem));

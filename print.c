@@ -65,7 +65,7 @@ static char const GCC_UNUSED rcsid[] =
 
 
 /* local routines */
-static void printeth_packet(struct ether_header *);
+static void printeth_packet(tcptrace_context_t *, struct ether_header *);
 static void printip_packet(tcptrace_context_t *context, struct ip *, void *plast);
 static void printtcp_packet(tcptrace_context_t *context, struct ip *, void *plast, tcb *tcb);
 static void printudp_packet(tcptrace_context_t *context, struct ip *, void *plast);
@@ -75,7 +75,7 @@ static void printipv4(tcptrace_context_t *context, struct ip *pip, void *plast);
 static void printipv6(struct ipv6 *pipv6, void *plast);
 static char *ipv6addr2str(struct in6_addr addr);
 static void printipv4_opt_addrs(tcptrace_context_t *context, char *popt, int ptr, int len);
-static char *PrintSeqRep(tcb *ptcb, u_long seq);
+static char *PrintSeqRep(tcptrace_context_t *context, tcb *ptcb, u_long seq);
 
 
 
@@ -135,13 +135,16 @@ ts2ascii_date(
 
 static void
 printeth_packet(
+    tcptrace_context_t *context,
     struct ether_header *pep)
 {
+    tcptrace_runtime_options_t *options = context->options;
+
     printf("\tETH Srce: %s\n", Ether_Ntoa((struct ether_addr *)&pep->ether_shost));
     printf("\tETH Dest: %s\n", Ether_Ntoa((struct ether_addr *)&pep->ether_dhost));
 
     printf(
-	hex?"\t    Type: 0x%x %s\n":"\t    Type: %d %s\n",
+	options->hex ? "\t    Type: 0x%x %s\n" : "\t    Type: %d %s\n",
 	ntohs(pep->ether_type),
 	(ntohs(pep->ether_type) == ETHERTYPE_IP)?"(IP)":
 	(ntohs(pep->ether_type) == ETHERTYPE_IPV6)?"(IPv6)":
@@ -219,7 +222,7 @@ printipv4(
 	   ParenHostName(context, *IPV4ADDR2ADDR(&pip->ip_dst)));
 
     printf(
-	hex?"\t    Type: 0x%x %s\n":"\t    Type: %d %s\n",
+	options->hex?"\t    Type: 0x%x %s\n":"\t    Type: %d %s\n",
 	pip->ip_p, 
 	(pip->ip_p == IPPROTO_UDP)?"(UDP)":
 	(pip->ip_p == IPPROTO_TCP)?"(TCP)":
@@ -414,8 +417,8 @@ printtcp_packet(
 	   SYN_SET(ptcp)?   'S':'-',
 	   FIN_SET(ptcp)?   'F':'-',
 	   ptcp->th_flags);
-    printf("\t     SEQ: %s\n", PrintSeqRep(thisdir,  ntohl(ptcp->th_seq)));
-    printf("\t     ACK: %s\n", PrintSeqRep(otherdir, ntohl(ptcp->th_ack)));
+    printf("\t     SEQ: %s\n", PrintSeqRep(context, thisdir,  ntohl(ptcp->th_seq)));
+    printf("\t     ACK: %s\n", PrintSeqRep(context, otherdir, ntohl(ptcp->th_ack)));
     printf("\t     WIN: %u\n", ntohs(ptcp->th_win));
     printf("\t    HLEN: %u", TH_OFF(ptcp)*4);
     if ((char *)ptcp + TH_OFF(ptcp)*4 - 1 > (char *)plast) {
@@ -484,10 +487,10 @@ printtcp_packet(
 	    printf(" SACKS(%d)", ptcpo->sack_count);
 	    for (i=0; i < ptcpo->sack_count; ++i) {
 		printf("[%s-",
-		       PrintSeqRep(otherdir,
+		       PrintSeqRep(context, otherdir,
 				   (u_long)ptcpo->sacks[i].sack_left));
 		printf("%s]",
-		       PrintSeqRep(otherdir,
+		       PrintSeqRep(context, otherdir,
 				   (u_long)ptcpo->sacks[i].sack_right));
 	    }
 	}
@@ -604,7 +607,7 @@ printpacket(
     if (phys) {
 	switch(phystype) {
 	  case PHYS_ETHER:
-	    printeth_packet(phys);
+	    printeth_packet(context, phys);
 	    break;
 	  default:
 	    printf("\tPhysical layer: %d (not understood)\n", phystype);
@@ -791,18 +794,20 @@ Ether_Ntoa (struct ether_addr *e)
 /* N.B.: will fail will sequence space wraps around more than once */
 static char *
 PrintSeqRep(
+    tcptrace_context_t *context,
     tcb *ptcb,
     u_long seq)
 {
     static char buf[20];
+    tcptrace_runtime_options_t *options = context->options;
     
-    if (ptcb && print_seq_zero && (ptcb->syn_count>0)) {
+    if (ptcb && options->print_seq_zero && (ptcb->syn_count>0)) {
 	/* Relative form */
-	sprintf(buf,hex?"0x%08lx(R)":"%lu(R)",
+	sprintf(buf, options->hex ? "0x%08lx(R)" : "%lu(R)",
 		seq - ptcb->syn);
     } else {
 	/* Absolute form */
-	sprintf(buf,hex?"0x%08lx":"%lu",seq);
+	sprintf(buf, options->hex ? "0x%08lx" : "%lu",seq);
     }
     return(buf);
 }

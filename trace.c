@@ -104,7 +104,7 @@ static void RemoveOldConns(tcptrace_context_t *context,
 			   const Bool num_conn_check,
 			   int *conn_count);
 static void RemoveConn(tcptrace_context_t *context, const ptp_ptr *tcp_ptr);
-static void RemoveTcpPair(const ptp_ptr *tcp_ptr);
+static void RemoveTcpPair(tcptrace_context_t *context, const ptp_ptr *tcp_ptr);
 static Bool MissingData(tcp_pair *ptp);
 
 /* options */
@@ -569,7 +569,7 @@ NewTTP(
 
     /* init time sequence graphs */
     ptp->a2b.tsg_plotter = ptp->b2a.tsg_plotter = NO_PLOTTER;
-    if (graph_tsg && !ptp->ignore_pair) {
+    if (options->graph_tsg && !ptp->ignore_pair) {
 	if (!options->ignore_incomplete || (SYN_SET(ptcp))) {
 	    snprintf(title,sizeof(title),"%s_==>_%s (time sequence graph)",
 		    ptp->a_endpoint, ptp->b_endpoint);
@@ -595,7 +595,7 @@ NewTTP(
 
     /* init owin graphs */
     ptp->a2b.owin_plotter = ptp->b2a.owin_plotter = NO_PLOTTER;
-    if (graph_owin && !ptp->ignore_pair) {
+    if (options->graph_owin && !ptp->ignore_pair) {
 	if (!options->ignore_incomplete || (SYN_SET(ptcp))) {
 	    snprintf(title,sizeof(title),"%s_==>_%s (outstanding data)",
 		    ptp->a_endpoint, ptp->b_endpoint);
@@ -621,7 +621,7 @@ NewTTP(
 	    ptp->b2a.owin_line =
 		new_line(ptp->b2a.owin_plotter, "owin", "red");
 
-	    if (show_rwinline) {
+	    if (options->show_rwinline) {
 	      ptp->a2b.rwin_line =
 	        new_line(ptp->a2b.owin_plotter, "rwin", "yellow");
 	      ptp->b2a.rwin_line =
@@ -641,7 +641,7 @@ NewTTP(
 
     /* init time line graphs (Avinash, 2 July 2002) */
     ptp->a2b.tline_plotter = ptp->b2a.tline_plotter = NO_PLOTTER;
-    if (graph_tline && !ptp->ignore_pair) {
+    if (options->graph_tline && !ptp->ignore_pair) {
 	if (!options->ignore_incomplete || (SYN_SET(ptcp))) {
 	    /* We don't want the standard a2b type name so we will specify
 	     * a filename of type a_b when we call new_plotter.
@@ -693,7 +693,7 @@ NewTTP(
    
     /* init segment size graphs */
     ptp->a2b.segsize_plotter = ptp->b2a.segsize_plotter = NO_PLOTTER;
-    if (graph_segsize && !ptp->ignore_pair) {
+    if (options->graph_segsize && !ptp->ignore_pair) {
 	snprintf(title,sizeof(title),"%s_==>_%s (segment size graph)",
 		ptp->a_endpoint, ptp->b_endpoint);
 	ptp->a2b.segsize_plotter =
@@ -1276,17 +1276,19 @@ RemoveConn(
    
    SnapRemove(&ptp_hashtable[hval], tcp_ptr->ptp->addr_pair);
    
-   RemoveTcpPair(tcp_ptr);
+   RemoveTcpPair(context, tcp_ptr);
 }
 
 
 
 static void
 RemoveTcpPair(
+              tcptrace_context_t *context,
 	      const ptp_ptr *tcp_ptr)
 {
   int	i = 0;
   tcp_pair *ptp = tcp_ptr->ptp;
+  tcptrace_runtime_options_t *options = context->options;
 
   if (0) {
     printf("trace.c: RemoveTcpPair(%p) called\n", tcp_ptr->ptp);
@@ -1307,7 +1309,7 @@ RemoveTcpPair(
     free(ptp->a2b.owin_line);
   }
   
-  if (show_rwinline) {
+  if (options->show_rwinline) {
     if (ptp->a2b.rwin_line) {
       free(ptp->a2b.rwin_line);
     }
@@ -1323,7 +1325,7 @@ RemoveTcpPair(
     free(ptp->b2a.owin_line);
   }
   
-  if (show_rwinline) {
+  if (options->show_rwinline) {
     if (ptp->b2a.rwin_line) {
       free(ptp->b2a.rwin_line);
     }
@@ -1715,8 +1717,8 @@ dotrace(
 	++thisdir->win_scaled_pkts;
     
     /* instantaneous throughput stats */
-    if (graph_tput) {
-	DoThru(context, thisdir,tcp_data_length);
+    if (options->graph_tput) {
+	DoThru(context, thisdir, tcp_data_length);
     }
 
     /* segment size graphs */
@@ -2000,7 +2002,7 @@ dotrace(
 			 context->current_time, SeqRep(context,thisdir,end));
 	} else if (tcp_data_length == 0) {
 	    /* for Brian Utterback */
-	    if (graph_zero_len_pkts) {
+	    if (options->graph_zero_len_pkts) {
 		/* draw zero-length packets */
 		/* shows up as an X, really two arrow heads */
 		plotter_darrow(from_tsgpl,
@@ -2490,7 +2492,7 @@ dotrace(
 	/* graph owin */
 	if (thisdir->owin_plotter != NO_PLOTTER) {
 	    extend_line(thisdir->owin_line, context->current_time, owin);
-	    if (show_rwinline) {
+	    if (options->show_rwinline) {
 	      extend_line(thisdir->rwin_line, context->current_time, 
 			  otherdir->win_last);
 	    }
@@ -2615,7 +2617,7 @@ trace_done(tcptrace_context_t *context)
   }
 
     /* if we're filtering, see which connections pass */
-    if (filter_output || options->ignore_incomplete) {
+    if (options->filter_output || options->ignore_incomplete) {
 
 	/* file to dump matching connection numbers into */
 	f_passfilter = fopen(PASS_FILTER_FILENAME,"w+");
@@ -2624,7 +2626,7 @@ trace_done(tcptrace_context_t *context)
 	    exit(-1);
 	}
 
-      if (filter_output) {
+      if (options->filter_output) {
 	 if (!options->run_continuously) {
 	    /* mark the connections to ignore */
 	    for (ix = 0; ix <= num_tcp_pairs; ++ix) {
@@ -2699,7 +2701,7 @@ trace_done(tcptrace_context_t *context)
   }
   
     /* if we're filtering, close the file */
-    if (filter_output || options->ignore_incomplete) {
+    if (options->filter_output || options->ignore_incomplete) {
 	fprintf(f_passfilter,"\n");
 	fclose(f_passfilter);
     }
