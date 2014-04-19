@@ -72,7 +72,7 @@ static Bool more_conns_ignored = FALSE;
 int num_udp_pairs = -1;	/* how many pairs we've allocated */
 udp_pair **utp = NULL;	/* array of pointers to allocated pairs */
 int max_udp_pairs = 64; /* initial value, automatically increases */
-u_long udp_trace_count = 0;
+/* u_long udp_trace_count = 0; */
 
 
 /* local routine definitions */
@@ -277,7 +277,7 @@ udpdotrace(
 	return(NULL);
     }
 
-    ++udp_trace_count;
+    context->udp_trace_count++;
 
     /* do time stats */
     if (ZERO_TIME(&pup_save->first_time)) {
@@ -342,11 +342,11 @@ udptrace_done(tcptrace_context_t *context) {
 	         // anything at all..
 	 if (!options->run_continuously) {
 	      if (!options->printsuppress) {
-		   if (udp_trace_count == 0) {
+		   if (context->udp_trace_count == 0) {
 			fprintf(stdout,"no traced UDP packets\n");
 			return;
 		   } else {
-			if ((tcp_trace_count > 0) && (!options->printbrief))
+			if ((context->tcp_trace_count > 0) && (!options->printbrief))
 			     printf("\n============================================================\n");
 			fprintf(stdout,"UDP connection info:\n");
 		   }

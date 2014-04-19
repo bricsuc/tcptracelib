@@ -80,7 +80,7 @@ static int tline_right = 0;
 /* int num_tcp_pairs = -1; */	/* how many pairs we've allocated */
 /* tcp_pair **ttp = NULL; */	/* array of pointers to allocated pairs */
 int max_tcp_pairs = 64; /* initial value, automatically increases */
-u_long tcp_trace_count = 0;
+/* u_long tcp_trace_count = 0; */
 
 
 /* local routine definitions */
@@ -1447,7 +1447,7 @@ dotrace(
 	return(NULL);
     }
 
-    ++tcp_trace_count;
+    context->tcp_trace_count++;
 
     if (options->run_continuously && (tcp_ptr == NULL)) {
       fprintf(stderr, "Did not initialize tcp pair pointer\n");
@@ -2525,7 +2525,7 @@ trace_done(tcptrace_context_t *context)
   comment = context->comment_prefix;
   if (!options->run_continuously) {
     if (!options->printsuppress) {
-	if (tcp_trace_count == 0) {
+	if (context->tcp_trace_count == 0) {
 	    fprintf(stdout,"%sno traced TCP packets\n", comment);
 	    return;
 	} else {

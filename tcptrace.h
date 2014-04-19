@@ -258,8 +258,8 @@ extern char **filenames;	/* all the files on the cmd line */
 /* extern timeval last_packet; */
 
 /* counters */
-extern u_long tcp_trace_count;
-extern u_long udp_trace_count;
+/* extern u_long tcp_trace_count; */
+/* extern u_long udp_trace_count; */
 
 typedef struct segment {
     seqnum	seq_firstbyte;	/* seqnumber of first byte */
@@ -842,6 +842,9 @@ typedef struct tcptrace_context_t {
 
     int num_tcp_pairs;
     tcp_pair **ttp;
+
+    u_long tcp_trace_count;
+    u_long udp_trace_count;
 
 } tcptrace_context_t;
 

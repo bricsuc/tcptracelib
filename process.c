@@ -397,6 +397,9 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
     context->num_tcp_pairs = -1;
     context->ttp = NULL;
 
+    context->tcp_trace_count = 0;
+    context->udp_trace_count = 0;
+
 }
 
 /* initialize the tcptrace runtime options */

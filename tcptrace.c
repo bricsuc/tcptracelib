@@ -817,9 +817,9 @@ main(
 
     /* general output */
     fprintf(stdout, "%s%lu packets seen, %lu TCP packets traced",
-	    comment, context->pnum, tcp_trace_count);
+	    comment, context->pnum, context->tcp_trace_count);
     if (options->do_udp) {
-	fprintf(stdout,", %lu UDP packets traced", udp_trace_count);
+	fprintf(stdout,", %lu UDP packets traced", context->udp_trace_count);
     }
     fprintf(stdout,"\n");
 
