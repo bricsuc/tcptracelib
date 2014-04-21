@@ -817,6 +817,9 @@ typedef struct tcptrace_runtime_options_t {
     Bool csv;
     Bool tsv;
 
+    /* "long-format" string/int options */
+    char *sv;
+
 } tcptrace_runtime_options_t;
 
 #define __TCPTRACE_COMMENT_PREFIX_MAX 5
@@ -841,6 +844,7 @@ typedef struct tcptrace_context_t {
     char comment_prefix[__TCPTRACE_COMMENT_PREFIX_MAX];
 
     int num_tcp_pairs;
+    int max_tcp_pairs;
     tcp_pair **ttp;
 
     u_long tcp_trace_count;

@@ -79,7 +79,7 @@ static int tline_right = 0;
 /* provided globals  */
 /* int num_tcp_pairs = -1; */	/* how many pairs we've allocated */
 /* tcp_pair **ttp = NULL; */	/* array of pointers to allocated pairs */
-int max_tcp_pairs = 64; /* initial value, automatically increases */
+/* int max_tcp_pairs = 64; */ /* initial value, automatically increases */
 /* u_long tcp_trace_count = 0; */
 
 
@@ -518,7 +518,7 @@ NewTTP(
 
     if (!options->run_continuously) {
       /* make a new one, if possible */
-      if ((context->num_tcp_pairs+1) >= max_tcp_pairs) {
+      if ((context->num_tcp_pairs + 1) >= context->max_tcp_pairs) {
 	MoreTcpPairs(context, context->num_tcp_pairs+1);
       }
       /* create a new TCP pair record and remember where you put it */
@@ -2659,7 +2659,7 @@ trace_done(tcptrace_context_t *context)
 		    fprintf(stdout,"%3d: ", ix+1);
 		    PrintBrief(context, ptp);
 		} else if (!options->ignore_incomplete || ConnComplete(ptp)) {
-		    if(options->csv || options->tsv || (sv != NULL)) {
+		    if(options->csv || options->tsv || (options->sv != NULL)) {
 		       if (first) {
 			  PrintSVHeader(context);
 			  first = FALSE;
@@ -2723,33 +2723,35 @@ MoreTcpPairs(
     int new_max_tcp_pairs;
     int i;
 
-    if (num_needed < max_tcp_pairs)
+    if (num_needed < context->max_tcp_pairs)
 	return;
 
-    new_max_tcp_pairs = max_tcp_pairs * 4;
-    while (new_max_tcp_pairs < num_needed)
+    new_max_tcp_pairs = context->max_tcp_pairs * 4;
+    while (new_max_tcp_pairs < num_needed) {
 	new_max_tcp_pairs *= 4;
+    }
     
-    if (debug)
+    if (debug) {
 	printf("trace: making more space for %d total TCP pairs\n",
 	       new_max_tcp_pairs);
+    }
 
     /* enlarge array to hold any pairs that we might create */
     context->ttp = ReallocZ(context->ttp,
-		   max_tcp_pairs * sizeof(tcp_pair *),
+		   context->max_tcp_pairs * sizeof(tcp_pair *),
 		   new_max_tcp_pairs * sizeof(tcp_pair *));
 
     /* enlarge array to keep track of which ones to ignore */
     ignore_pairs = ReallocZ(ignore_pairs,
-			    max_tcp_pairs * sizeof(Bool),
+			    context->max_tcp_pairs * sizeof(Bool),
 			    new_max_tcp_pairs * sizeof(Bool));
     if (more_conns_ignored) {
-	for (i = max_tcp_pairs; i < new_max_tcp_pairs;++i) {
+	for (i = context->max_tcp_pairs; i < new_max_tcp_pairs; ++i) {
 	    ignore_pairs[i] = TRUE;
         }
     }
 
-    max_tcp_pairs = new_max_tcp_pairs;
+    context->max_tcp_pairs = new_max_tcp_pairs;
 }
 
 
@@ -2781,16 +2783,16 @@ trace_init(tcptrace_context_t *context)
     initted = TRUE;
 
     /* create an array to hold any pairs that we might create */
-    context->ttp = (tcp_pair **) MallocZ(max_tcp_pairs * sizeof(tcp_pair *));
+    context->ttp = (tcp_pair **) MallocZ(context->max_tcp_pairs * sizeof(tcp_pair *));
 
     /* create an array to keep track of which ones to ignore */
-    ignore_pairs = (Bool *) MallocZ(max_tcp_pairs * sizeof(Bool));
+    ignore_pairs = (Bool *) MallocZ(context->max_tcp_pairs * sizeof(Bool));
     if (!options->run_continuously) {
         /* create an array to hold any pairs that we might create */
-        context->ttp = (tcp_pair **) MallocZ(max_tcp_pairs * sizeof(tcp_pair *));
+        context->ttp = (tcp_pair **) MallocZ(context->max_tcp_pairs * sizeof(tcp_pair *));
       
         /* create an array to keep track of which ones to ignore */
-        ignore_pairs = (Bool *) MallocZ(max_tcp_pairs * sizeof(Bool));
+        ignore_pairs = (Bool *) MallocZ(context->max_tcp_pairs * sizeof(Bool));
     }
 
     cainit();
@@ -2833,7 +2835,7 @@ OnlyConn(
     MoreTcpPairs(context, ix_only);
 
     if (!cleared) {
-	for (ix = 0; ix < max_tcp_pairs; ++ix) {
+	for (ix = 0; ix < context->max_tcp_pairs; ++ix) {
 	    ignore_pairs[ix] = TRUE;
 	}
 	cleared = TRUE;

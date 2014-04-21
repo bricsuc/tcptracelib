@@ -234,7 +234,7 @@ PrintTrace(
     /* Check if comma-separated-values or tab-separated-values
      * has been requested.
      */ 
-   if (csv_or_tsv || (sv != NULL)) {
+   if (csv_or_tsv || (options->sv != NULL)) {
        fprintf(stdout,"%s%s%s%s%s%s%s%s",
 	       ptp->a_hostname, sp, ptp->b_hostname, sp,
 	       ptp->a_portname, sp, ptp->b_portname, sp);
@@ -275,7 +275,7 @@ PrintTrace(
     }
    
     StatLineI(context, "total packets","", pab->packets, pba->packets);
-    if (pab->reset_count || pba->reset_count || csv_or_tsv || (sv != NULL)) {
+    if (pab->reset_count || pba->reset_count || csv_or_tsv || (options->sv != NULL)) {
 	StatLineI(context, "resets sent","", pab->reset_count, pba->reset_count);
     }
     StatLineI(context, "ack pkts sent","", pab->ack_pkts, pba->ack_pkts);
@@ -302,18 +302,18 @@ PrintTrace(
 		       pab->syn_count, pab->fin_count),bufl),
 	      (snprintf(bufr,sizeof(bufr),"%d/%d",
 		       pba->syn_count, pba->fin_count),bufr));
-    if (pab->f1323_ws || pba->f1323_ws || pab->f1323_ts || pba->f1323_ts || csv_or_tsv || (sv != NULL)) {
+    if (pab->f1323_ws || pba->f1323_ws || pab->f1323_ts || pba->f1323_ts || csv_or_tsv || (options->sv != NULL)) {
 	StatLineP(context, "req 1323 ws/ts","","%s",
 		  (snprintf(bufl,sizeof(bufl),"%c/%c",
 		      pab->f1323_ws?'Y':'N',pab->f1323_ts?'Y':'N'),bufl),
 		  (snprintf(bufr,sizeof(bufr),"%c/%c",
 		      pba->f1323_ws?'Y':'N',pba->f1323_ts?'Y':'N'),bufr));
     }
-    if (pab->f1323_ws || pba->f1323_ws || csv_or_tsv || (sv != NULL)) {
+    if (pab->f1323_ws || pba->f1323_ws || csv_or_tsv || (options->sv != NULL)) {
 	StatLineI(context, "adv wind scale","",
 		  (u_long)pab->window_scale, (u_long)pba->window_scale);
     }
-    if (pab->fsack_req || pba->fsack_req || csv_or_tsv || (sv != NULL)) {
+    if (pab->fsack_req || pba->fsack_req || csv_or_tsv || (options->sv != NULL)) {
 	StatLineP(context, "req sack","","%s",
 		  pab->fsack_req?"Y":"N",
 		  pba->fsack_req?"Y":"N");
@@ -483,11 +483,11 @@ PrintTrace(
 	      ZERO_TIME(&pba->last_time)?"NA":
 	      (snprintf(bufr,sizeof(bufr),"%8.1f",(double)pba->idle_max/1000.0),bufr));
 
-    if ((pab->num_hardware_dups != 0) || (pba->num_hardware_dups != 0)  || csv_or_tsv || (sv != NULL)) {
+    if ((pab->num_hardware_dups != 0) || (pba->num_hardware_dups != 0)  || csv_or_tsv || (options->sv != NULL)) {
 	StatLineI(context, "hardware dups","segs",
 		  pab->num_hardware_dups, pba->num_hardware_dups);
 
-        if (!(csv_or_tsv || (sv != NULL)))       
+        if (!(csv_or_tsv || (options->sv != NULL)))       
 	  fprintf(stdout,
 		  "       ** WARNING: presence of hardware duplicates makes these figures suspect!\n");
     }
@@ -502,7 +502,7 @@ PrintTrace(
 		  (double) (pba->unique_bytes) / etime);
 
     if (options->print_rtt) {
-        if(!(csv_or_tsv || (sv != NULL)))
+        if(!(csv_or_tsv || (options->sv != NULL)))
 	  fprintf(stdout,"\n");
 	StatLineI(context, "RTT samples","", pab->rtt_count, pba->rtt_count);
 	StatLineF(context, "RTT min","ms","%8.1f",
@@ -517,12 +517,12 @@ PrintTrace(
 	StatLineF(context, "RTT stdev","ms","%8.1f",
 		  Stdev(pab->rtt_sum, pab->rtt_sum2, pab->rtt_count) / 1000.0,
 		  Stdev(pba->rtt_sum, pba->rtt_sum2, pba->rtt_count) / 1000.0);
-        if(!(csv_or_tsv || (sv != NULL)))
+        if(!(csv_or_tsv || (options->sv != NULL)))
 	  fprintf(stdout,"\n");
 	StatLineF(context, "RTT from 3WHS","ms","%8.1f",
 		  (double)pab->rtt_3WHS/1000.0,
 		  (double)pba->rtt_3WHS/1000.0);
-        if(!(csv_or_tsv || (sv != NULL)))
+        if(!(csv_or_tsv || (options->sv != NULL)))
 	  fprintf(stdout,"\n");
 	StatLineI(context, "RTT full_sz smpls","", 
 		  pab->rtt_full_count, pba->rtt_full_count);
@@ -538,12 +538,12 @@ PrintTrace(
 	StatLineF(context, "RTT full_sz stdev","ms","%8.1f",
 		  Stdev(pab->rtt_full_sum, pab->rtt_full_sum2, pab->rtt_full_count) / 1000.0,
 		  Stdev(pba->rtt_full_sum, pba->rtt_full_sum2, pba->rtt_full_count) / 1000.0);
-        if(!(csv_or_tsv || (sv != NULL)))
+        if(!(csv_or_tsv || (options->sv != NULL)))
 	  fprintf(stdout,"\n");
 	StatLineI(context, "post-loss acks","",
 		  pab->rtt_nosample, pba->rtt_nosample);
-	if (pab->rtt_amback || pba->rtt_amback || csv_or_tsv || (sv != NULL)) {
-	   if(!(csv_or_tsv || (sv != NULL)))
+	if (pab->rtt_amback || pba->rtt_amback || csv_or_tsv || (options->sv != NULL)) {
+	   if(!(csv_or_tsv || (options->sv != NULL)))
 	     fprintf(stdout, "\
 \t  For the following 5 RTT statistics, only ACKs for\n\
 \t  multiply-transmitted segments (ambiguous ACKs) were\n\
@@ -593,7 +593,7 @@ PrintTrace(
 			pba->retr_tm_count) / 1000.0);
     }
    
-   if(csv_or_tsv || (sv != NULL)) {
+   if(csv_or_tsv || (options->sv != NULL)) {
       printf("\n");
       /* Error checking: print an error message if the count of printed fields
        * doesn't correspond to the actual fields expected.
@@ -802,10 +802,10 @@ StatLineFieldL(
     snprintf(valbuf,sizeof(valbuf),format,arg);
 
     /* print the field */
-    if(!(options->csv || options->tsv || (sv != NULL)))
+    if(!(options->csv || options->tsv || (options->sv != NULL)))
      printf("     ");
     StatLineOne(context, label, units, valbuf);
-    if (f_rightside && !(options->csv || options->tsv || (sv != NULL))) 
+    if (f_rightside && !(options->csv || options->tsv || (options->sv != NULL))) 
 	printf("\n");
 }
 #endif /* HAVE_LONG_LONG */
@@ -843,10 +843,10 @@ StatLineField(
     snprintf(valbuf,sizeof(valbuf),format,arg);
 
     /* print the field */
-    if(!(options->csv || options->tsv || (sv != NULL)))
+    if(!(options->csv || options->tsv || (options->sv != NULL)))
      printf("     ");
     StatLineOne(context, label, units, valbuf);
-    if (f_rightside && !(options->csv || options->tsv || (sv != NULL)))
+    if (f_rightside && !(options->csv || options->tsv || (options->sv != NULL)))
 	printf("\n");
 }
 
@@ -873,14 +873,14 @@ StatLineFieldF(
 	snprintf(valbuf,sizeof(valbuf),format,arg);
 
     /* print the field */
-    if(!(options->csv || options->tsv || (sv != NULL)))
+    if(!(options->csv || options->tsv || (options->sv != NULL)))
      printf("     ");
     if (printable) {
 	StatLineOne(context, label, units, valbuf);
     } else {
 	StatLineOne(context, label, "", "NA");
     }
-    if (f_rightside && !(options->csv || options->tsv || (sv != NULL))) {
+    if (f_rightside && !(options->csv || options->tsv || (options->sv != NULL))) {
 	printf("\n");
     }
 }
@@ -900,7 +900,7 @@ StatLineOne(
     snprintf(labbuf,sizeof(labbuf), "%s:", label);
 
     /* print the field */
-    if (options->csv || options->tsv || (sv != NULL)) {
+    if (options->csv || options->tsv || (options->sv != NULL)) {
        printf("%15s%s", value, sp);
        /* Count the fields printed until this point. Used as a guard with the
 	* <SP>-separated-values option to ensure correct alignment of headers
@@ -1117,7 +1117,7 @@ PrintSVHeader(tcptrace_context_t *context)
 	  snprintf(sp, sizeof(sp), "\t");
       }
    }
-   else if (sv != NULL)
+   else if (options->sv != NULL)
      {
 	/* Look for escape sequence and remove the extra '\',
 	 * the shell puts it in there.
@@ -1125,14 +1125,14 @@ PrintSVHeader(tcptrace_context_t *context)
 	 * the only useful one, else the user probably meant something
 	 * else and things get messy.
 	 */
-	if(strncmp(sv, "\\t", 2) == 0) {
+	if(strncmp(options->sv, "\\t", 2) == 0) {
 	   /* Initialize the separator buffer and set it */      
 	   sp = (char *)malloc(sizeof(char *) * 2);
 	   memset(sp, 0, sizeof(sp));
 	   snprintf(sp, sizeof(sp), "\t");
 	}
 	else /* Just use the string the user has provided */
-	  sp = strdup(sv);
+	  sp = strdup(options->sv);
      }
    
    /* Print the column headings (the field names) */

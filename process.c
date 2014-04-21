@@ -395,6 +395,7 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
     context->current_filename = NULL;
 
     context->num_tcp_pairs = -1;
+    context->max_tcp_pairs = 64;
     context->ttp = NULL;
 
     context->tcp_trace_count = 0;
@@ -487,5 +488,9 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
 
     options->csv = FALSE;
     options->tsv = FALSE;
+
+    /* "long-format" string/int options */
+    options->sv = NULL;
+
 }
 
