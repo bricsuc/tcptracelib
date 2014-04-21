@@ -169,7 +169,7 @@ char *output_file_dir = NULL;
 char *output_file_prefix = NULL;
 char *xplot_title_prefix = NULL;
 char *xplot_args = NULL;
-char *sv = NULL;
+/* char *sv = NULL; */
 
 /* globals */
 /* int num_modules = 0; */  /* deglobalized */
@@ -287,31 +287,32 @@ static void VerifyClosedConnInt(char *varname, char *value);
 static struct ext_var_op {
     char *var_optname;		/* what it's called when you set it */
     char **var_popt;		/* the variable itself */
+    unsigned long runtime_struct_offset;  /* offset into context struct */
     void (*var_verify)(char *varname,
 		       char *value);
 				/* function to call to verify that the
 				   value is OK (if non-null) */
     char *var_descr;		/* variable description */
 } extended_vars[] = {
-    {"output_dir", &output_file_dir, NULL,
+    {"output_dir", &output_file_dir, 0, NULL,
      "directory where all output files are placed"},
-    {"output_prefix", &output_file_prefix, NULL,
+    {"output_prefix", &output_file_prefix, 0, NULL,
      "prefix all output files with this string"},
-    {"xplot_title_prefix", &xplot_title_prefix, NULL,
+    {"xplot_title_prefix", &xplot_title_prefix, 0, NULL,
      "prefix to place in the titles of all xplot files"},
-    {"update_interval", &update_interval_st, VerifyUpdateInt,
+    {"update_interval", &update_interval_st, 0, VerifyUpdateInt,
      "time interval for updates in real-time mode"},
-    {"max_conn_num", &max_conn_num_st, VerifyMaxConnNum,
+    {"max_conn_num", &max_conn_num_st, 0, VerifyMaxConnNum,
      "maximum number of connections to keep at a time in real-time mode"},
-    {"remove_live_conn_interval", &live_conn_interval_st, VerifyLiveConnInt,
+    {"remove_live_conn_interval", &live_conn_interval_st, 0, VerifyLiveConnInt,
      "idle time after which an open connection is removed in real-time mode"},
-    {"endpoint_reuse_interval", &nonreal_conn_interval_st, VerifyNonrealLiveConnInt,
+    {"endpoint_reuse_interval", &nonreal_conn_interval_st, 0, VerifyNonrealLiveConnInt,
      "time interval of inactivity after which an open connection is considered closed"},
-     {"remove_closed_conn_interval", &closed_conn_interval_st, VerifyClosedConnInt,
+     {"remove_closed_conn_interval", &closed_conn_interval_st, 0, VerifyClosedConnInt,
      "time interval after which a closed connection is removed in real-time mode"},
-    {"xplot_args", &xplot_args, NULL,
+    {"xplot_args", &xplot_args, 0, NULL,
      "arguments to pass to xplot, if we are calling xplot from here"},
-    {"sv", &sv, NULL,
+    {"sv", NULL, __T_OPTIONS_OFFSET(sv), NULL,
      "separator to use for long output with <STR>-separated-values"},
    
 };
@@ -557,7 +558,7 @@ Stuff arguments that you always use into either the tcptrace resource file\n\
 ", TCPTRACE_RC_FILE, TCPTRACE_ENVARIABLE);
 }
 
-/* try to find an option's runtime location */
+/* try to find a boolean option's runtime location */
 static Bool *find_option_location(struct ext_bool_op *bopt) {
     Bool *option_location;
     option_location = bopt->bool_popt;
@@ -568,10 +569,35 @@ static Bool *find_option_location(struct ext_bool_op *bopt) {
     if (option_location == NULL) {
         if (bopt->runtime_struct_offset != 0) {
             /* if this is an offset, find the actual location */
-            option_location = (Bool *) global_context.options;
-            option_location += bopt->runtime_struct_offset;
+            unsigned char *p = (unsigned char *) global_context.options;
+
+            p = (Bool *) global_context.options;
+            p += bopt->runtime_struct_offset;
+            option_location = (Bool *) p;
         } else {
             return(NULL);
+        }
+    }
+    return(option_location);
+}
+
+/* try to find a string option's runtime location */
+static char **find_str_option_location(struct ext_var_op *popt) {
+    char **option_location;
+
+    option_location = popt->var_popt;
+
+    /* If the location for the option setting isn't directly in
+       the struct, then it might be at an offset into
+       global_context.options. Check that. */
+    if (option_location == NULL) {
+        if (popt->runtime_struct_offset != 0) {
+            /* if this is an offset, find the actual location */
+            unsigned char *p = (unsigned char *) global_context.options;
+            p += popt->runtime_struct_offset;
+            option_location = (char **) p;
+        } else {
+            option_location = NULL;
         }
     }
     return(option_location);
@@ -670,13 +696,18 @@ Dump File Names\n\
     fprintf(stderr," (unambiguous prefixes also work)\n");
     for (i=0; i < NUM_EXTENDED_VARS; ++i) {
 	char buf[256];		/* plenty large, but checked below with strncpy */
+        char **var_location;
+
 	struct ext_var_op *pvop = &extended_vars[i];
 	strncpy(buf,pvop->var_optname,sizeof(buf)-10);
 	strcat(buf,"=\"STR\"");
+
+        var_location = find_str_option_location(pvop);
+
 	fprintf(stderr,"  --%-20s %s (default: '%s')\n",
 		buf,
 		pvop->var_descr,
-		(*pvop->var_popt)?*pvop->var_popt:"<NULL>");
+		*var_location ? *var_location : "<NULL>");
     }
 
     fprintf(stderr,"\n\
@@ -771,7 +802,7 @@ main(
 
     /* (this is admittedly dumb, but less dumb than what was here before) */
     comment = context->comment_prefix;
-    if (options->csv || options->tsv || (sv != NULL)) {
+    if (options->csv || options->tsv || (options->sv != NULL)) {
         strncpy(comment, "# ", __TCPTRACE_COMMENT_PREFIX_MAX);
         comment[__TCPTRACE_COMMENT_PREFIX_MAX - 1] = '\0';
     }
@@ -1630,15 +1661,19 @@ ParseExtendedVar(
 
     /* either exact match or good prefix, do it */
     if (pvop_found != NULL) {
-	*pvop_found->var_popt = strdup(argval);
-	if (debug>2)
+        char **var_location;
+
+        var_location = find_str_option_location(pvop_found);
+
+	*var_location = strdup(argval);
+	if (debug > 2)
 	    fprintf(stderr,"Set extended variable '%s' to '%s'\n",
-		    argname, *pvop_found->var_popt);
+		    argname, *var_location);
 	if (pvop_found->var_verify) {
 	    /* call the verification routine */
 	    if (debug>2)
 		fprintf(stderr,"verifying extended variable '%s'\n", argname);
-	    (*pvop_found->var_verify)(argname,*pvop_found->var_popt);
+	    (*pvop_found->var_verify)(argname, *var_location);
 	}
 	free(arg);
 	return;
