@@ -109,7 +109,8 @@ static enum t_ack rtt_ackin (tcptrace_context_t *,
                              tcb *,
 			     segment *,
 			     Bool rexmit);
-static void dump_rtt_sample (tcb *,
+static void dump_rtt_sample (tcptrace_context_t *,
+                             tcb *,
 			     segment *,
 			     double);
 static void graph_rtt_sample (tcptrace_context_t *,
@@ -525,7 +526,7 @@ rtt_ackin (tcptrace_context_t *context,
 
     /* dump RTT samples, if asked */
     if (options->dump_rtt && (etime_rtt != 0.0)) {
-	dump_rtt_sample (ptcb, pseg, etime_rtt);
+	dump_rtt_sample(context, ptcb, pseg, etime_rtt);
     }
 
     /* plot RTT samples, if asked */
@@ -717,7 +718,8 @@ freequad (quadrant ** ppquad)
 
 /* dump RTT samples in milliseconds */
 static void
-dump_rtt_sample (tcb * ptcb,
+dump_rtt_sample (tcptrace_context_t *context,
+                 tcb * ptcb,
 		 segment * pseg,
 		 double etime_rtt)
 {
@@ -735,7 +737,7 @@ dump_rtt_sample (tcb * ptcb,
 		  ptcb->host_letter, ptcb->ptwin->host_letter,
 		  RTT_DUMP_FILE_EXTENSION);
 
-	if ((f = Mfopen (filename, "w")) == NULL) {
+	if ((f = Mfopen(context, filename, "w")) == NULL) {
 	    perror (filename);
 	    ptcb->rtt_dump_file = (MFILE *) - 1;
 	}
@@ -776,8 +778,8 @@ graph_rtt_sample (tcptrace_context_t *context,
 	snprintf (title, sizeof (title), "%s_==>_%s (rtt samples)",
 		  name_from, name_to);
 	ptcb->rtt_plotter =
-	    new_plotter (ptcb, NULL, title, "time", "rtt (ms)",
-			 RTT_GRAPH_FILE_EXTENSION);
+	    new_plotter(context, ptcb, NULL, title, "time", "rtt (ms)",
+                        RTT_GRAPH_FILE_EXTENSION);
 	plotter_perm_color (ptcb->rtt_plotter, "red");
 
 	if (options->graph_time_zero) {

@@ -109,7 +109,7 @@ static struct rttgraph_info *MakeRttgraphRec();
 static void MakeBuckets(struct hist *phist, u_int num_buckets);
 static void AddSample(struct samples *psamp, u_short sample);
 static void PlotHist(MFILE *f,struct hist *phist);
-static void PlotOne(struct rttgraph_info *prttg);
+static void PlotOne(tcptrace_context_t *context, struct rttgraph_info *prttg);
 
 
 
@@ -287,6 +287,7 @@ rttgraph_read(
 
 static void
 DoHist(
+    tcptrace_context_t *context,
     struct samples *psamp)
 {
     int i;
@@ -359,7 +360,7 @@ DoHist(
     }
 
 
-    if ((f = Mfopen("rtt.dat","w")) == NULL) {
+    if ((f = Mfopen(context, "rtt.dat", "w")) == NULL) {
 	perror("rtt.dat");
 	exit (1);
     }
@@ -368,7 +369,7 @@ DoHist(
     PlotHist(f,&hist3d.rtt);
     Mfclose(f);
 
-    if ((f = Mfopen("rtt3d.dat","w")) == NULL) {
+    if ((f = Mfopen(context, "rtt3d.dat", "w")) == NULL) {
 	perror("rtt.dat");
 	exit (1);
     }
@@ -434,6 +435,7 @@ PlotHist(
 
 static void
 PlotOne(
+    tcptrace_context_t *context,
     struct rttgraph_info *prttg)
 {
     tcp_pair *ptp = prttg->ptp;
@@ -441,12 +443,12 @@ PlotOne(
     printf("%s ==> %s (%s2%s)\n",
 	   ptp->a_endpoint, ptp->b_endpoint,
 	   ptp->a2b.host_letter, ptp->b2a.host_letter);
-    DoHist(&prttg->a2b.samples);
+    DoHist(context, &prttg->a2b.samples);
 
     printf("%s ==> %s (%s2%s)\n",
 	   ptp->b_endpoint, ptp->a_endpoint,
 	   ptp->b2a.host_letter, ptp->a2b.host_letter);
-    DoHist(&prttg->b2a.samples);
+    DoHist(context, &prttg->b2a.samples);
 }
 
 
@@ -457,7 +459,7 @@ rttgraph_done(tcptrace_context_t *context)
     struct rttgraph_info *prttg;
 
     for (prttg=rttgraphhead; prttg; prttg=prttg->next) {
-	PlotOne(prttg);
+	PlotOne(context, prttg);
     }
 }
 

@@ -331,49 +331,56 @@ traffic_init(
     /* open the output files */
     if (doplot_packets)
 	plotter_packets =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_PACKETS_FILENAME,
 			"packets per second over time by port",
 			"time","packets/second",
 			NULL);
     if (doplot_bytes)
 	plotter_bytes =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_BYTES_FILENAME,
 			"bytes per second over time by port",
 			"time","bytes/second",
 			NULL);
     if (doplot_active)
 	plotter_active =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_ACTIVE_FILENAME,
 			"active connections over time by port",
 			"time","active connections",
 			NULL);
     if (doplot_idle)
 	plotter_idle =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_IDLE_FILENAME,
 			"idle connections over time by port",
 			"time","idle connections",
 			NULL);
     if (doplot_open)
 	plotter_open =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_OPEN_FILENAME,
 			"open connections over time by port",
 			"time","open connections",
 			NULL);
     if (doplot_i_open)
 	plotter_i_open =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_I_OPEN_FILENAME,
 			"open connections over time by port - instantaneous",
 			"time","number of connections",
 			NULL);
     if (doplot_openclose) {
 	plotter_openclose =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_OPENCLOSE_FILENAME,
 			"connections opened and closed over time",
 			"time","number of connections",
@@ -384,7 +391,8 @@ traffic_init(
     }
     if (doplot_halfopen) {
 	plotter_halfopen =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_HALFOPEN_FILENAME,
 			"half open connections over time",
 			"time","number of half open connections",
@@ -394,7 +402,8 @@ traffic_init(
     }
     if (doplot_pureacks) {
 	plotter_pureacks =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_PUREACKS_FILENAME,
 			"pure acks (no data) per second over time",
 			"time","pureacks/second",
@@ -403,7 +412,8 @@ traffic_init(
 
     if (doplot_loss) {
 	plotter_loss =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_LOSS_FILENAME,
 			"packet loss per second over time",
 			"time","events/second",
@@ -414,7 +424,8 @@ traffic_init(
 
     if (doplot_rtt) {
 	plotter_rtt =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_RTT_FILENAME,
 			"RTT over time",
 			"time","RTT (msecs)",
@@ -426,7 +437,8 @@ traffic_init(
 
     if (doplot_data) {
 	plotter_data =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_DATA_FILENAME,
 			"Total Data Sent Over Time",
 			"time","total bytes",
@@ -440,7 +452,8 @@ traffic_init(
 	snprintf(title,sizeof(title),"connections still open after %d seconds\n",
 		longconn_duration);
 	plotter_long =
-	    new_plotter(NULL,
+	    new_plotter(context,
+                        NULL,
 			PLOTTER_LONG_FILENAME,
 			title,
 			"time","number of connections",
@@ -1000,7 +1013,7 @@ traffic_done(tcptrace_context_t *context)
 
     AgeTraffic(context);
 
-    pmf = Mfopen(PORT_FILENAME,"w");
+    pmf = Mfopen(context, PORT_FILENAME, "w");
     printf("Dumping port statistics into file %s\n", PORT_FILENAME);
 
     /* dump out the data */
@@ -1023,7 +1036,7 @@ bytes: %12lu  pkts: %10lu  conns: %8lu  tput: %8lu B/s\n",
     Mfclose(pmf);
 
     /* dump specific stats */
-    pmf = Mfopen(STATS_FILENAME,"w");
+    pmf = Mfopen(context, STATS_FILENAME, "w");
     printf("Dumping overall statistics into file %s\n", STATS_FILENAME);
 
     pti = ports[0];

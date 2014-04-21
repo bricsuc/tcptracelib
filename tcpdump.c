@@ -425,7 +425,7 @@ PcapSavePacket(
 	struct pcap_file_header fhdr;
 
 	/* try to open the file */
-	if ((f_savefile = Mfopen(filename, "w")) == NULL) {
+	if ((f_savefile = Mfopen(context, filename, "w")) == NULL) {
 	    perror(filename);
 	    exit(-1);
 	}

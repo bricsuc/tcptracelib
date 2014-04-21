@@ -92,6 +92,9 @@ static void Version(void);
 static char *FileToBuf(char *filename);
 
 
+/* global context (contains options and context for tcptrace client) */
+tcptrace_context_t global_context;
+
 /* option flags and default values */
 /* Bool colorplot = TRUE; */
 /* Bool dump_rtt = FALSE; */
@@ -139,15 +142,12 @@ static char *FileToBuf(char *filename);
 /* Bool dup_ack_handling = TRUE; */
 /* Bool csv = FALSE; */
 /* Bool tsv = FALSE; */
-u_long remove_live_conn_interval = REMOVE_LIVE_CONN_INTERVAL;
-u_long nonreal_live_conn_interval = NONREAL_LIVE_CONN_INTERVAL;
-u_long remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL;
-u_long update_interval = UPDATE_INTERVAL;
-u_long max_conn_num = MAX_CONN_NUM;
+/* u_long remove_live_conn_interval = REMOVE_LIVE_CONN_INTERVAL; */
+/* u_long nonreal_live_conn_interval = NONREAL_LIVE_CONN_INTERVAL; */
+/* u_long remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL; */
+/* u_long update_interval = UPDATE_INTERVAL; */
+/* u_long max_conn_num = MAX_CONN_NUM; */
 int debug = 0;
-
-/* global context (packets read across all files, etc) */
-tcptrace_context_t global_context;
 
 /* the following have been de-globalized */
 /* u_long pnum = 0; */
@@ -165,10 +165,10 @@ tcptrace_context_t global_context;
 /* timeval last_packet = {0,0}; */
 
 /* extended variables with values */
-char *output_file_dir = NULL;
-char *output_file_prefix = NULL;
-char *xplot_title_prefix = NULL;
-char *xplot_args = NULL;
+/* char *output_file_dir = NULL; */
+/* char *output_file_prefix = NULL; */
+/* char *xplot_title_prefix = NULL; */
+/* char *xplot_args = NULL; */
 /* char *sv = NULL; */
 
 /* globals */
@@ -181,10 +181,11 @@ char *ColorNames[NCOLORS] =
 /* static u_long filesize = 0; */
 char **filenames = NULL;
 int num_files = 0;
-u_int numfiles;
 /* char *cur_filename; */
 static char *progname;
 char *output_filename = NULL;
+
+/* these are local to this file (temporary storage for arg parsing) */
 static char *update_interval_st = NULL;
 static char *max_conn_num_st = NULL;
 static char *live_conn_interval_st = NULL;
@@ -294,11 +295,11 @@ static struct ext_var_op {
 				   value is OK (if non-null) */
     char *var_descr;		/* variable description */
 } extended_vars[] = {
-    {"output_dir", &output_file_dir, 0, NULL,
+    {"output_dir", NULL, __T_OPTIONS_OFFSET(output_file_dir), NULL,
      "directory where all output files are placed"},
-    {"output_prefix", &output_file_prefix, 0, NULL,
+    {"output_prefix", NULL, __T_OPTIONS_OFFSET(output_file_prefix), NULL,
      "prefix all output files with this string"},
-    {"xplot_title_prefix", &xplot_title_prefix, 0, NULL,
+    {"xplot_title_prefix", NULL, __T_OPTIONS_OFFSET(xplot_title_prefix), NULL,
      "prefix to place in the titles of all xplot files"},
     {"update_interval", &update_interval_st, 0, VerifyUpdateInt,
      "time interval for updates in real-time mode"},
@@ -310,13 +311,15 @@ static struct ext_var_op {
      "time interval of inactivity after which an open connection is considered closed"},
      {"remove_closed_conn_interval", &closed_conn_interval_st, 0, VerifyClosedConnInt,
      "time interval after which a closed connection is removed in real-time mode"},
-    {"xplot_args", &xplot_args, 0, NULL,
+    {"xplot_args", NULL, __T_OPTIONS_OFFSET(xplot_args), NULL,
      "arguments to pass to xplot, if we are calling xplot from here"},
     {"sv", NULL, __T_OPTIONS_OFFSET(sv), NULL,
      "separator to use for long output with <STR>-separated-values"},
    
 };
 #define NUM_EXTENDED_VARS (sizeof(extended_vars) / sizeof(struct ext_var_op))
+
+static char **find_str_option_location(struct ext_var_op *popt);
 
 // Extended option verification routines
 static void Ignore(char *argsource, char *opt);
@@ -770,6 +773,7 @@ main(
     tcptrace_runtime_options_t cmd_options, *options;
     tcptrace_context_t *context;
     char *comment;
+    u_int numfiles;
    
     context = &global_context;
     options = &cmd_options;
@@ -1725,7 +1729,9 @@ VerifyUpdateInt(
     char *varname,
     char *value)
 {
-    update_interval = VerifyPositive(varname, value);
+    tcptrace_runtime_options_t *options = global_context.options;
+
+    options->update_interval = VerifyPositive(varname, value);
 }
 
 
@@ -1736,7 +1742,7 @@ VerifyMaxConnNum(
 {
     tcptrace_runtime_options_t *options = global_context.options;
 
-    max_conn_num = VerifyPositive(varname, value);
+    options->max_conn_num = VerifyPositive(varname, value);
     options->conn_num_threshold = TRUE;
 }
 
@@ -1746,7 +1752,9 @@ VerifyLiveConnInt(
     char *varname, 
     char *value)
 {
-    remove_live_conn_interval = VerifyPositive(varname, value);
+    tcptrace_runtime_options_t *options = global_context.options;
+
+    options->remove_live_conn_interval = VerifyPositive(varname, value);
 }
 
 static void
@@ -1754,7 +1762,9 @@ static void
 		        char *varname,
 		        char *value)
 {
-   nonreal_live_conn_interval = VerifyPositive(varname, value);
+    tcptrace_runtime_options_t *options = global_context.options;
+
+    options->nonreal_live_conn_interval = VerifyPositive(varname, value);
 }
 
 
@@ -1763,7 +1773,9 @@ VerifyClosedConnInt(
     char *varname, 
     char *value)
 {
-    remove_closed_conn_interval = VerifyPositive(varname, value);  
+    tcptrace_runtime_options_t *options = global_context.options;
+
+    options->remove_closed_conn_interval = VerifyPositive(varname, value);  
 }
 
 

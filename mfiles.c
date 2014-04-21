@@ -117,13 +117,15 @@ Minit(void)
 
 MFILE *
 Mfopen(
+    tcptrace_context_t *context,
     char *fname,
     char *mode)
 {
     MFILE *pmf;
     char *directory;
     char *prefix;
-	int len;
+    int len;
+    tcptrace_runtime_options_t *options = context->options;
 
     if ((strcmp(mode,"w") != 0) && (strcmp(mode,"a") != 0)){
 	fprintf(stderr,"Sorry, Mfopen works only for mode \"w\" or \"a\"\n");
@@ -133,18 +135,19 @@ Mfopen(
     pmf = (MFILE *) MallocZ(sizeof(MFILE));
 
     /* use the directory specified by the user, if requested */
-    if (output_file_dir == NULL)
+    if (options->output_file_dir == NULL)
 	directory = "";
     else {
-	directory = ExpandFormat(output_file_dir);
+	directory = ExpandFormat(options->output_file_dir);
 	M_mkdirp(directory);
     }
 
     /* attach a filename prefix, if the user asked for one */
-    if (output_file_prefix == NULL)
+    if (options->output_file_prefix == NULL) {
 	prefix = "";
-    else
-	prefix = ExpandFormat(output_file_prefix);
+    } else {
+	prefix = ExpandFormat(options->output_file_prefix);
+    }
 
 
 	len=strlen(fname)+strlen(directory)+strlen(prefix)+2;

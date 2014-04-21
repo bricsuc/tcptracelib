@@ -195,7 +195,7 @@ static void AddTS(tcptrace_context_t *context,
 		  u_long position);
 static double ts2d(timeval *pt);
 static void HttpPrintone(MFILE *pmf, struct http_info *ph);
-static void HttpDoPlot(void);
+static void HttpDoPlot(tcptrace_context_t *context);
 static struct client_info *FindClient(char *clientname);
 
 
@@ -1122,7 +1122,7 @@ FindGets(
 
 
 static void
-HttpDoPlot()
+HttpDoPlot(tcptrace_context_t *context)
 {
     struct http_info *ph;
     struct get_info *pget;
@@ -1152,7 +1152,8 @@ HttpDoPlot()
 	    char title[256];
 	    snprintf(title, sizeof(title), "Client %s HTTP trace\n", ph->pclient->clientname); 
 	    p = ph->pclient->plotter =
-		new_plotter(&ptp->a2b,
+		new_plotter(context,
+                            &ptp->a2b,
 			    ph->pclient->clientname,	/* file name prefix */
 			    title,			/* plot title */
 			    "time", 			/* X axis */
@@ -1601,7 +1602,7 @@ http_done(tcptrace_context_t *context)
     HttpGather(httphead);
 
 #ifdef HTTP_DUMP_TIMES
-    pmf = Mfopen("http.times","w");
+    pmf = Mfopen(context, "http.times","w");
 #endif /* HTTP_DUMP_TIMES */
 
     printf("Http module output:\n");
@@ -1610,7 +1611,7 @@ http_done(tcptrace_context_t *context)
 	HttpPrintone(pmf,ph);
     }
 
-    HttpDoPlot();
+    HttpDoPlot(context);
 
 #ifdef HTTP_DUMP_TIMES
     Mfclose(pmf);

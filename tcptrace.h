@@ -728,11 +728,11 @@ extern udp_pair **utp;		/* array of pointers to allocated pairs */
 /* extern Bool dup_ack_handling; */
 /* extern Bool csv; */
 /* extern Bool tsv; */
-extern u_long remove_live_conn_interval;
-extern u_long nonreal_live_conn_interval;
-extern u_long remove_closed_conn_interval;
-extern u_long update_interval;
-extern u_long max_conn_num;
+/* extern u_long remove_live_conn_interval; */
+/* extern u_long nonreal_live_conn_interval; */
+/* extern u_long remove_closed_conn_interval; */
+/* extern u_long update_interval; */
+/* extern u_long max_conn_num; */
 
 extern int debug;
 extern int thru_interval;
@@ -818,7 +818,17 @@ typedef struct tcptrace_runtime_options_t {
     Bool tsv;
 
     /* "long-format" string/int options */
+    char *output_file_dir;
+    char *output_file_prefix;
+    char *xplot_title_prefix;
+    char *xplot_args;
     char *sv;
+
+    u_long remove_live_conn_interval;
+    u_long nonreal_live_conn_interval;
+    u_long remove_closed_conn_interval;
+    u_long update_interval;
+    u_long max_conn_num;
 
 } tcptrace_runtime_options_t;
 
@@ -872,11 +882,11 @@ typedef struct tcptrace_working_file {
 } tcptrace_working_file;
 
 /* extended variables with values */
-extern char *output_file_dir;
-extern char *output_file_prefix;
-extern char *xplot_title_prefix;
-extern char *xplot_args;
-extern char *sv;
+/* extern char *output_file_dir; */
+/* extern char *output_file_prefix; */
+/* extern char *xplot_title_prefix; */
+/* extern char *xplot_args; */
+/* extern char *sv; */
 extern char *sp;       /* Separator used for long output with <SP>-separated-values */
 
 /* Used to comment out header lines of the long output
@@ -997,13 +1007,14 @@ char *HostAddr(ipaddr);
 char *HostLetter(llong);
 char *NextHostLetter(void);
 char *EndpointName(tcptrace_context_t *, ipaddr, portnum);
-PLOTTER new_plotter(tcb *plast, char *filename, char *title,
+PLOTTER new_plotter(tcptrace_context_t *context,
+                    tcb *plast, char *filename, char *title,
 		    char *xlabel, char *ylabel, char *suffix);
 int rexmit(tcptrace_context_t *, tcb *, seqnum, seglen, Bool *);
 enum t_ack ack_in(tcptrace_context_t *context, tcb *, seqnum, unsigned tcp_data_length, u_long eff_win);
 Bool IsRTO(tcb *ptcb, seqnum s);
 void DoThru(tcptrace_context_t *context, tcb *ptcb, int nbytes);
-struct mfile *Mfopen(char *fname, char *mode);
+struct mfile *Mfopen(tcptrace_context_t *context, char *fname, char *mode);
 void Minit(void);
 int Mfileno(MFILE *pmf);
 int Mvfprintf(MFILE *pmf, char *format, va_list ap);

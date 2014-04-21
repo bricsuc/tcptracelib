@@ -87,7 +87,8 @@ static int tline_right = 0;
 static tcp_pair *NewTTP(tcptrace_context_t *context, struct ip *, struct tcphdr *);
 static tcp_pair *FindTTP(tcptrace_context_t *context, struct ip *, struct tcphdr *, int *, ptp_ptr **);
 static void MoreTcpPairs(tcptrace_context_t *, int num_needed);
-static void ExtractContents(u_long seq, u_long tcp_data_bytes,
+static void ExtractContents(tcptrace_context_t *context,
+                            u_long seq, u_long tcp_data_bytes,
 			    u_long saved_data_bytes, void *pdata, tcb *ptcb);
 static Bool check_hw_dups(tcptrace_context_t *context, u_short id, seqnum seq, tcb *ptcb);
 static u_long SeqRep(tcptrace_context_t *context, tcb *ptcb, u_long seq);
@@ -574,14 +575,16 @@ NewTTP(
 	    snprintf(title,sizeof(title),"%s_==>_%s (time sequence graph)",
 		    ptp->a_endpoint, ptp->b_endpoint);
 	    ptp->a2b.tsg_plotter =
-		new_plotter(&ptp->a2b,NULL,title,
+		new_plotter(context,
+                            &ptp->a2b,NULL,title,
 			    options->graph_time_zero?"relative time":"time",
 			    options->graph_seq_zero?"sequence offset":"sequence number",
 			    PLOT_FILE_EXTENSION);
 	    snprintf(title,sizeof(title),"%s_==>_%s (time sequence graph)",
 		    ptp->b_endpoint, ptp->a_endpoint);
 	    ptp->b2a.tsg_plotter =
-		new_plotter(&ptp->b2a,NULL,title,
+		new_plotter(context,
+                            &ptp->b2a,NULL,title,
 			    options->graph_time_zero?"relative time":"time",
 			    options->graph_seq_zero?"sequence offset":"sequence number",
 			    PLOT_FILE_EXTENSION);
@@ -600,14 +603,14 @@ NewTTP(
 	    snprintf(title,sizeof(title),"%s_==>_%s (outstanding data)",
 		    ptp->a_endpoint, ptp->b_endpoint);
 	    ptp->a2b.owin_plotter =
-		new_plotter(&ptp->a2b,NULL,title,
+		new_plotter(context, &ptp->a2b,NULL,title,
 			    options->graph_time_zero?"relative time":"time",
 			    "Outstanding Data (bytes)",
 			    OWIN_FILE_EXTENSION);
 	    snprintf(title,sizeof(title),"%s_==>_%s (outstanding data)",
 		    ptp->b_endpoint, ptp->a_endpoint);
 	    ptp->b2a.owin_plotter =
-		new_plotter(&ptp->b2a,NULL,title,
+		new_plotter(context, &ptp->b2a, NULL, title,
 			    options->graph_time_zero?"relative time":"time",
 			    "Outstanding Data (bytes)",
 			    OWIN_FILE_EXTENSION);
@@ -657,7 +660,7 @@ NewTTP(
 	     * graph
 	     */ 
 	    ptp->a2b.tline_plotter = ptp->b2a.tline_plotter =
-		new_plotter(&ptp->a2b,filename,title,
+		new_plotter(context, &ptp->a2b, filename, title,
 			    "segments",
 			    "relative time",
 			    TLINE_FILE_EXTENSION);
@@ -697,14 +700,14 @@ NewTTP(
 	snprintf(title,sizeof(title),"%s_==>_%s (segment size graph)",
 		ptp->a_endpoint, ptp->b_endpoint);
 	ptp->a2b.segsize_plotter =
-	    new_plotter(&ptp->a2b,NULL,title,
+	    new_plotter(context, &ptp->a2b, NULL, title,
 			options->graph_time_zero?"relative time":"time",
 			"segment size (bytes)",
 			SEGSIZE_FILE_EXTENSION);
 	snprintf(title,sizeof(title),"%s_==>_%s (segment size graph)",
 		ptp->b_endpoint, ptp->a_endpoint);
 	ptp->b2a.segsize_plotter =
-	    new_plotter(&ptp->b2a,NULL,title,
+	    new_plotter(context, &ptp->b2a, NULL, title,
 			options->graph_time_zero?"relative time":"time",
 			"segment size (bytes)",
 			SEGSIZE_FILE_EXTENSION);
@@ -897,7 +900,7 @@ FindTTP(
 		} 
 	     
 		if (/* rule 1 */
-		    (elapsed(ptp->last_time, context->current_time)/1000000 > nonreal_live_conn_interval)//(4*60)) - Using nonreal_live_conn_interval instead of the 4 mins heuristic
+		    (elapsed(ptp->last_time, context->current_time)/1000000 > options->nonreal_live_conn_interval)//(4*60)) - Using nonreal_live_conn_interval instead of the 4 mins heuristic
 		    || /* rule 2 */
 		    ((SYN_SET(ptcp)) && 
 		     (((thisdir->fin_count >= 1) ||
@@ -984,7 +987,7 @@ FindTTP(
 	ptph->ptp = (void *)ptr;
 	if (options->conn_num_threshold) {
 	    active_conn_count++;
-	    if (active_conn_count > max_conn_num) {
+	    if (active_conn_count > options->max_conn_num) {
 		ptp_ptr *last_ptr = live_conn_list_tail;
 		live_conn_list_tail = last_ptr->prev;
 		live_conn_list_tail->next = NULL;
@@ -1057,7 +1060,7 @@ UpdateConnLists(
       if (options->conn_num_threshold) {
 	active_conn_count--;
 	closed_conn_count++;
-	if (closed_conn_count > max_conn_num) {
+	if (closed_conn_count > options->max_conn_num) {
 	  ptp_ptr *last_ptr = closed_conn_list_tail;
 	  closed_conn_list_tail = last_ptr->prev;
 	  closed_conn_list_tail->next = NULL;
@@ -1102,7 +1105,7 @@ UpdateConnLists(
   
   /* if we haven't updated the structures for at least update_interval number 
    * of seconds, update list of connections and hash table */
-  if ((elapsed(last_update_time, context->current_time) / 1000000) >= update_interval) {
+  if ((elapsed(last_update_time, context->current_time) / 1000000) >= options->update_interval) {
 
     real_time = time(&real_time);
     if (debug > 10) {
@@ -1114,13 +1117,13 @@ UpdateConnLists(
       RemoveOldConns(context,
                      &live_conn_list_head, 
 		     &live_conn_list_tail, 
-		     remove_live_conn_interval, 
+		     options->remove_live_conn_interval, 
 		     TRUE,
 		     &active_conn_count);
       RemoveOldConns(context,
                      &closed_conn_list_head,
 		     &closed_conn_list_tail, 
-		     remove_closed_conn_interval, 
+		     options->remove_closed_conn_interval, 
 		     TRUE,
 		     &closed_conn_count);
     }
@@ -1128,13 +1131,13 @@ UpdateConnLists(
       RemoveOldConns(context,
                      &live_conn_list_head, 
 		     &live_conn_list_tail, 
-		     remove_live_conn_interval, 
+		     options->remove_live_conn_interval, 
 		     FALSE,
 		     0);
       RemoveOldConns(context,
                      &closed_conn_list_head,
 		     &closed_conn_list_tail, 
-		     remove_closed_conn_interval, 
+		     options->remove_closed_conn_interval, 
 		     FALSE,
 		     0);
     }
@@ -1772,7 +1775,7 @@ dotrace(
 	}
 
 	if (options->save_tcp_data) {
-	    ExtractContents(start,tcp_data_length,saved,pdata,thisdir);
+	    ExtractContents(context, start,tcp_data_length,saved,pdata,thisdir);
         }
     }
 
@@ -3058,6 +3061,7 @@ ParseOptions: packet %lu %s option truncated, skipping other options\n", \
 
 static void
 ExtractContents(
+    tcptrace_context_t *context,
     u_long seq,
     u_long tcp_data_bytes,
     u_long saved_data_bytes,
@@ -3103,7 +3107,7 @@ ExtractContents(
     if (ptcb->extr_contents_file == (MFILE *) NULL) {
 	MFILE *f;
 
-	if ((f = Mfopen(filename,"w")) == NULL) {
+	if ((f = Mfopen(context, filename, "w")) == NULL) {
 	    perror(filename);
 	    ptcb->extr_contents_file = (MFILE *) -1;
 	}

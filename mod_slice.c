@@ -103,7 +103,7 @@ static struct slice_counters {
 
 
 /* local routines */
-static void AgeSlice(timeval *);
+static void AgeSlice(tcptrace_context_t *context, timeval *);
 static void ParseArgs(char *argstring);
 
 
@@ -159,7 +159,7 @@ slice_init(
 	       (unsigned)tv_slice_interval.tv_usec);
 
     /* init the graphs and etc... */
-    AgeSlice(NULL);
+    AgeSlice(context, NULL);
 
     return(1);	/* TRUE means call slice_read and slice_done later */
 }
@@ -189,7 +189,7 @@ slice_read(
     /* if we've gone over our interval, print out data so far */
     while (tv_ge(context->current_time, next_time)) {
 	/* output a line */
-	AgeSlice(&next_time);
+	AgeSlice(context, &next_time);
 
 	/* when does the next interval start? */
 	tv_add(&next_time, tv_slice_interval);
@@ -223,6 +223,7 @@ slice_read(
 
 static void
 AgeSlice(
+    tcptrace_context_t *context,
     timeval *pnow)
 {
     char *pch_now;
@@ -233,7 +234,7 @@ AgeSlice(
     /* first time doesn't count */
     if (pnow == NULL) {
 	/* open the output file */
-	pmf = Mfopen(SLICE_FILENAME,"w");
+	pmf = Mfopen(context, SLICE_FILENAME, "w");
 
 	/* print the headers */
 	Mfprintf(pmf,"\
@@ -293,7 +294,7 @@ void
 slice_done(tcptrace_context_t *context)
 {
     /* print the last few packets */
-    AgeSlice(&context->current_time);
+    AgeSlice(context, &context->current_time);
 }
 
 

@@ -93,7 +93,7 @@ DoThru(
 	/* create the plotter file */
 	snprintf(title,sizeof(title),"%s_==>_%s (throughput)",
 		myname, hisname);
-	ptcb->thru_plotter = new_plotter(ptcb,NULL,title,
+	ptcb->thru_plotter = new_plotter(context, ptcb,NULL,title,
 					 "time","thruput (bytes/sec)",
 					 THROUGHPUT_FILE_EXTENSION);
 	if (options->graph_time_zero) {

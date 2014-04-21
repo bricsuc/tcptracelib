@@ -490,7 +490,17 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->tsv = FALSE;
 
     /* "long-format" string/int options */
+    options->output_file_dir = NULL;
+    options->output_file_prefix = NULL;
+    options->xplot_title_prefix = NULL;
+    options->xplot_args = NULL;
     options->sv = NULL;
+
+    options->remove_live_conn_interval = REMOVE_LIVE_CONN_INTERVAL;
+    options->nonreal_live_conn_interval = NONREAL_LIVE_CONN_INTERVAL;
+    options->remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL;
+    options->update_interval = UPDATE_INTERVAL;
+    options->max_conn_num = MAX_CONN_NUM;
 
 }
 

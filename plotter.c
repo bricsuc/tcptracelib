@@ -298,6 +298,7 @@ DoPlot(
 
 PLOTTER
 new_plotter(
+    tcptrace_context_t *context,
     tcb *plast,
     char *filename,	/* if NULL, use default name from plast */
     char *title,
@@ -328,7 +329,7 @@ new_plotter(
     if (debug)
 	fprintf(stderr,"Plotter %d file is '%s'\n", pl, filename);
 
-    if ((f = Mfopen(filename,"w")) == NULL) {
+    if ((f = Mfopen(context, filename, "w")) == NULL) {
 	perror(filename);
 	return(NO_PLOTTER);
     }
@@ -355,19 +356,16 @@ plotter_done(tcptrace_context_t *context)
     MFILE *f;
     char *fname;
     static struct dstring *xplot_cmd_buff=NULL;
-    tcptrace_runtime_options_t *options;
-
-    options = context->options;
-
+    tcptrace_runtime_options_t *options = context->options;
 
     if (plotter_ix>0) {
         if (options->xplot_all_files) {
             xplot_cmd_buff=DSNew();
             DSAppendString(xplot_cmd_buff,"xplot");
             DSAppendString(xplot_cmd_buff," ");
-            if(xplot_args!=NULL) {
-                DSAppendString(xplot_cmd_buff,xplot_args);
-                DSAppendString(xplot_cmd_buff," ");
+            if (options->xplot_args != NULL) {
+                DSAppendString(xplot_cmd_buff, options->xplot_args);
+                DSAppendString(xplot_cmd_buff, " ");
             }
         }
     }
@@ -399,8 +397,8 @@ plotter_done(tcptrace_context_t *context)
 	}
 
 	if (options->xplot_all_files){
-		if (output_file_dir!=NULL) {
-			DSAppendString(xplot_cmd_buff,output_file_dir);
+		if (options->output_file_dir != NULL) {
+			DSAppendString(xplot_cmd_buff, options->output_file_dir);
 			DSAppendString(xplot_cmd_buff,"/");
 		}
 		DSAppendString(xplot_cmd_buff,ppi->filename);
@@ -941,9 +939,9 @@ WritePlotHeader(
    }
    
    if (options->show_title) {
-      if (xplot_title_prefix) {
+      if (options->xplot_title_prefix) {
 	  Mfprintf(f,"title\n%s %s\n",
-		 ExpandFormat(xplot_title_prefix),
+		 ExpandFormat(options->xplot_title_prefix),
 		 ppi->title);
       } else {
           Mfprintf(f,"title\n%s\n", ppi->title);
