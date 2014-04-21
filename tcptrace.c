@@ -147,7 +147,8 @@ tcptrace_context_t global_context;
 /* u_long remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL; */
 /* u_long update_interval = UPDATE_INTERVAL; */
 /* u_long max_conn_num = MAX_CONN_NUM; */
-int debug = 0;
+
+int debug = 0;   /* TODO: move this out of client, rename to tcptrace_debuglevel */
 
 /* the following have been de-globalized */
 /* u_long pnum = 0; */
@@ -177,15 +178,17 @@ char *ColorNames[NCOLORS] =
 {"green", "red", "blue", "yellow", "purple", "orange", "magenta", "pink"};
 /* char *comment; */
 
-/* locally global variables */
-/* static u_long filesize = 0; */
-char **filenames = NULL;
-int num_files = 0;
-/* char *cur_filename; */
-static char *progname;
-char *output_filename = NULL;
+char *output_filename = NULL;          /* TODO: deglobalize this */
 
-/* these are local to this file (temporary storage for arg parsing) */
+/* char *cur_filename; */
+/* static u_long filesize = 0; */
+
+/* globals confined to this file */
+static char **filenames = NULL;
+static int num_files = 0;
+static char *progname;
+
+/* temporary storage for arg parsing */
 static char *update_interval_st = NULL;
 static char *max_conn_num_st = NULL;
 static char *live_conn_interval_st = NULL;
@@ -193,8 +196,8 @@ static char *nonreal_conn_interval_st = NULL;
 static char *closed_conn_interval_st = NULL;
 
 /* for elapsed processing time */
-struct timeval wallclock_start;
-struct timeval wallclock_finished;
+static struct timeval wallclock_start;
+static struct timeval wallclock_finished;
 
 #define __T_OPTIONS_OFFSET(field) offsetof(tcptrace_runtime_options_t,field)
 

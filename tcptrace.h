@@ -250,7 +250,7 @@ typedef struct mfile MFILE;
 
 
 /* file name information */
-extern char **filenames;	/* all the files on the cmd line */
+/* extern char **filenames; */	/* all the files on the cmd line */
 /* extern char *cur_filename; */	/* the current file */
 
 /* first and last packet timestamp */ /* (now deglobalized) */
