@@ -2100,9 +2100,10 @@ DumpFlags(void)
     for (i=0; i < NUM_EXTENDED_VARS; ++i) {
 	struct ext_var_op *bvop = &extended_vars[i];
 	char buf[100];
+        char **str_location;
 	snprintf(buf,sizeof(buf),"%s:", bvop->var_optname);
-	fprintf(stderr,"%-18s%s\n", buf,
-		(*bvop->var_popt)?*bvop->var_popt:"<NULL>");
+        str_location = find_str_option_location(bvop);
+	fprintf(stderr,"%-18s%s\n", buf, (*str_location)?*str_location:"<NULL>");
     }
 }
 
