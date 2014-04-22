@@ -794,7 +794,7 @@ main(
 
     /* initialize internals */
     trace_init(context);
-    udptrace_init();
+    udptrace_init(context);
     plot_init();
 
     /* let modules start first */
@@ -1113,7 +1113,8 @@ static void
 	       char *opt)
 {
      char *o_arg;
-     tcptrace_runtime_options_t *options = global_context.options;
+     tcptrace_context_t *context = &global_context;
+     tcptrace_runtime_options_t *options = context->options;
      
      /* next part of arg is a filename or number list */
      if (*opt == '\00') {
@@ -1154,16 +1155,18 @@ static void
 		    printf("setting IgnoreUDPConn(%d-%d)\n", num1,num2);
 	       
 	       while (num1<=num2) {
-		    if (debug > 1)
+		    if (debug > 1) {
 			 printf("setting IgnoreUDPConn(%d)\n", num1);
-		    IgnoreUDPConn(num1++);
-		    
+                    }
+		    IgnoreUDPConn(context, num1++); /* XXX argh */
+                                           /*  ^^ why do people do this? */
 	       }
 	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
 	       /* single argument */
-	       if (debug)
+	       if (debug) {
 		    printf("setting IgnoreUDPConn(%d)\n", num1);
-	       IgnoreUDPConn(num1);
+               }
+	       IgnoreUDPConn(context, num1);
 	  } else {
 	       /* error */
 	       BadArg(argsource,
@@ -1183,7 +1186,8 @@ static void
 		 char *opt)
 {
      char *o_arg;
-     tcptrace_runtime_options_t *options = global_context.options;
+     tcptrace_context_t *context = &global_context;
+     tcptrace_runtime_options_t *options = context->options;
      
      /* next part of arg is a filename or number list */
      if (*opt == '\00') {
@@ -1226,15 +1230,17 @@ static void
 		    printf("setting OnlyUDPConn(%d-%d)\n", num1, num2);
 	       
 	       while (num1<=num2) {
-		    if (debug > 1)
+		    if (debug > 1) {
 			 printf("setting OnlyUDPConn(%d)\n", num1);
-		    OnlyUDPConn(num1++);
+                    }
+		    OnlyUDPConn(context, num1++);
+                                         /*  ^^ XXX argh, again. */
 	       }
 	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
 	       /* single argument */
 	       if (debug)
 		    printf("setting OnlyUDPConn(%d)\n", num1);
-	       OnlyUDPConn(num1);
+	       OnlyUDPConn(context, num1);
 	  } else {
 	       /* error */
 	       BadArg(argsource,

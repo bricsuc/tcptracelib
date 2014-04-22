@@ -398,6 +398,10 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
     context->max_tcp_pairs = 64;
     context->ttp = NULL;
 
+    context->num_udp_pairs = -1;
+    context->max_udp_pairs = 64;
+    context->utp = NULL;
+
     context->tcp_trace_count = 0;
     context->udp_trace_count = 0;
 

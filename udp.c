@@ -69,16 +69,16 @@ static Bool more_conns_ignored = FALSE;
 
 
 /* provided globals  */
-int num_udp_pairs = -1;	/* how many pairs we've allocated */
-udp_pair **utp = NULL;	/* array of pointers to allocated pairs */
-int max_udp_pairs = 64; /* initial value, automatically increases */
+/* int num_udp_pairs = -1; */	/* how many pairs we've allocated */
+/* udp_pair **utp = NULL; */	/* array of pointers to allocated pairs */
+/* int max_udp_pairs = 64; */ /* initial value, automatically increases */
 /* u_long udp_trace_count = 0; */
 
 
 /* local routine definitions */
 static udp_pair *NewUTP(tcptrace_context_t *context, struct ip *, struct udphdr *);
 static udp_pair *FindUTP(tcptrace_context_t *context, struct ip *, struct udphdr *, int *);
-static void MoreUdpPairs(int num_needed);
+static void MoreUdpPairs(tcptrace_context_t *context, int num_needed);
 
 
 
@@ -90,20 +90,21 @@ NewUTP(
     struct udphdr *pudp)
 {
     udp_pair *pup;
+    int max_udp_pairs = context->max_udp_pairs;
 
     if (0) {
 	 printf("trace.c:NewUTP() calling MakeUdpPair()\n");
     }
     pup = MakeUdpPair();
-    ++num_udp_pairs;
+    context->num_udp_pairs++;
     /* make a new one, if possible */
-    if ((num_udp_pairs+1) >= max_udp_pairs) {
-	MoreUdpPairs(num_udp_pairs+1);
+    if ((context->num_udp_pairs + 1) >= max_udp_pairs) {
+	MoreUdpPairs(context, context->num_udp_pairs + 1);
     }
 
     /* create a new UDP pair record and remember where you put it */
-    utp[num_udp_pairs] = pup;
-    pup->ignore_pair=ignore_pairs[num_udp_pairs];
+    context->utp[context->num_udp_pairs] = pup;
+    pup->ignore_pair=ignore_pairs[context->num_udp_pairs];
 
 
     /* grab the address from this packet */
@@ -195,7 +196,7 @@ FindUTP(
     return(pup);
 }
      
-void IgnoreUDPConn(
+void IgnoreUDPConn(tcptrace_context_t *context,
 		   int ix)
 {
    if (debug)
@@ -203,14 +204,14 @@ void IgnoreUDPConn(
    
    --ix;
    
-   MoreUdpPairs(ix);
+   MoreUdpPairs(context, ix);
    
    more_conns_ignored=FALSE;
    ignore_pairs[ix]=TRUE;
 }
 
 void 
-OnlyUDPConn(
+OnlyUDPConn(tcptrace_context_t *context,
 	    int ix_only)
 {
      int ix;
@@ -220,10 +221,10 @@ OnlyUDPConn(
 
      --ix_only;
 
-     MoreUdpPairs(ix_only);
+     MoreUdpPairs(context, ix_only);
 
      if (!cleared) {
-	  for (ix = 0; ix < max_udp_pairs; ++ix) {
+	  for (ix = 0; ix < context->max_udp_pairs; ++ix) {
 	       ignore_pairs[ix] = TRUE;
 	  }
 	  cleared = TRUE;
@@ -354,8 +355,8 @@ udptrace_done(tcptrace_context_t *context) {
 	      
 	      if (!options->printbrief)
 		   fprintf(stdout,"%d UDP %s traced:\n",
-			   num_udp_pairs + 1,
-			   num_udp_pairs==0?"connection":"connections");
+			   context->num_udp_pairs + 1,
+			   context->num_udp_pairs == 0 ? "connection":"connections");
 	 }
 	 
 	 /* elapsed time */
@@ -376,12 +377,12 @@ udptrace_done(tcptrace_context_t *context) {
 	 /* print each connection */
 	 if (!options->run_continuously) {
 	      if (!options->printsuppress) {
-		   for (ix = 0; ix <= num_udp_pairs; ++ix) {
-			pup = utp[ix];
+		   for (ix = 0; ix <= context->num_udp_pairs; ++ix) {
+			pup = context->utp[ix];
 			if (!pup->ignore_pair) {
 			     if (options->printbrief) {
 				  fprintf(stdout,"%3d: ", ix+1);
-				  UDPPrintBrief(pup);
+				  UDPPrintBrief(context, pup);
 			     } else {
 				  if (ix > 0)
 				       fprintf(stdout,
@@ -397,8 +398,10 @@ udptrace_done(tcptrace_context_t *context) {
 }
 static void
 MoreUdpPairs(
+    tcptrace_context_t *context,
     int num_needed)
 {
+    int max_udp_pairs = context->max_udp_pairs;
     int new_max_udp_pairs;
     int i;
 
@@ -414,9 +417,9 @@ MoreUdpPairs(
 	       new_max_udp_pairs);
 
     /* enlarge array to hold any pairs that we might create */
-    utp = ReallocZ(utp,
-		   max_udp_pairs * sizeof(udp_pair *),
-		   new_max_udp_pairs * sizeof(udp_pair *));
+    context->utp = ReallocZ(context->utp,
+		            max_udp_pairs * sizeof(udp_pair *),
+		            new_max_udp_pairs * sizeof(udp_pair *));
 
     /* enlarge array to keep track of which ones to ignore */
     ignore_pairs = ReallocZ(ignore_pairs,
@@ -426,13 +429,16 @@ MoreUdpPairs(
 	for (i=max_udp_pairs; i < new_max_udp_pairs;++i)
 	    ignore_pairs[i] = TRUE;
 
-    max_udp_pairs = new_max_udp_pairs;
+    /* copy new max back into context */
+    context->max_udp_pairs = new_max_udp_pairs;
 }
 
 
 void
-udptrace_init(void)
+udptrace_init(tcptrace_context_t *context)
 {
+    int max_udp_pairs = context->max_udp_pairs;
+    /* TODO: move "initted" into context */
     static Bool initted = FALSE;
 
     if (initted)
@@ -441,7 +447,7 @@ udptrace_init(void)
     initted = TRUE;
 
     /* create an array to hold any pairs that we might create */
-    utp = (udp_pair **) MallocZ(max_udp_pairs * sizeof(udp_pair *));
+    context->utp = (udp_pair **) MallocZ(max_udp_pairs * sizeof(udp_pair *));
 
     /* create an array to keep track of which ones to ignore */
     ignore_pairs = (Bool *) MallocZ(max_udp_pairs * sizeof(Bool));

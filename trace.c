@@ -2762,6 +2762,8 @@ void
 trace_init(tcptrace_context_t *context)
 {
     tcptrace_runtime_options_t *options = context->options;
+
+    /* TODO: move "initted" into context */
     static Bool initted = FALSE;
 
     if (0) {

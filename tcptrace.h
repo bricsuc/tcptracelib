@@ -668,8 +668,8 @@ typedef struct sudp_pair udp_pair;
 typedef struct udphdr udphdr;
 
 
-extern int num_udp_pairs;	/* how many pairs are in use */
-extern udp_pair **utp;		/* array of pointers to allocated pairs */
+/* extern int num_udp_pairs; */	/* how many pairs are in use */
+/* extern udp_pair **utp; */	/* array of pointers to allocated pairs */
 
 
 /* option flags */
@@ -857,6 +857,10 @@ typedef struct tcptrace_context_t {
     int max_tcp_pairs;
     tcp_pair **ttp;
 
+    int num_udp_pairs;
+    int max_udp_pairs;
+    udp_pair **utp;
+
     u_long tcp_trace_count;
     u_long udp_trace_count;
 
@@ -982,11 +986,11 @@ void PrintTrace(tcptrace_context_t *context, tcp_pair *);
 void UDPPrintTrace(tcptrace_context_t *, udp_pair *);
 void PrintSVHeader(tcptrace_context_t *context);
 void PrintBrief(tcptrace_context_t *, tcp_pair *);
-void UDPPrintBrief(udp_pair *);
+void UDPPrintBrief(tcptrace_context_t *, udp_pair *);
 void OnlyConn(tcptrace_context_t *, int);
 void IgnoreConn(tcptrace_context_t *, int);
-void OnlyUDPConn(int);
-void IgnoreUDPConn(int);
+void OnlyUDPConn(tcptrace_context_t *, int);
+void IgnoreUDPConn(tcptrace_context_t *, int);
 
 double elapsed(timeval, timeval);
 void tv_sub(struct timeval *plhs, struct timeval rhs);
@@ -1071,7 +1075,7 @@ PLINE new_line(PLOTTER pl, char *label, char *color);
 void extend_line(PLINE pline, timeval xval, int yval);
 
 /* UDP support routines */
-void udptrace_init(void);
+void udptrace_init(tcptrace_context_t *context);
 void udptrace_done(tcptrace_context_t *context);
 udp_pair *udpdotrace(tcptrace_context_t *context, struct ip *pip, struct udphdr *pudp, void *plast);
 

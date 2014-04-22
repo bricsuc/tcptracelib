@@ -934,6 +934,7 @@ elapsed2str(
 
 void
 UDPPrintBrief(
+    tcptrace_context_t *context,
     udp_pair *pup)
 {
     ucb *pab = &pup->a2b;
@@ -946,8 +947,8 @@ UDPPrintBrief(
 	int len;
 	udp_pair *tmp_pup;
 	
-	for (ix = 0; ix <= num_udp_pairs; ++ix) {
-	    tmp_pup = utp[ix];
+	for (ix = 0; ix <= context->num_udp_pairs; ++ix) {
+	    tmp_pup = context->utp[ix];
 	    
 	    len = strlen(UDPFormatBrief(tmp_pup));
 	    if (len > max_width)
