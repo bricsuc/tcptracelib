@@ -857,11 +857,17 @@ typedef struct tcptrace_context_t {
     int max_tcp_pairs;
     tcp_pair **ttp;
 
+    u_long tcp_trace_count;
+
     int num_udp_pairs;
     int max_udp_pairs;
     udp_pair **utp;
 
-    u_long tcp_trace_count;
+    int udp_packet_count;  /* used only for debugging? */
+    int udp_search_count;  /* used only for debugging? */
+    Bool *udp_ignore_pairs;
+    Bool udp_more_conns_ignored;
+
     u_long udp_trace_count;
 
 } tcptrace_context_t;
