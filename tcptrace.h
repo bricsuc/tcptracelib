@@ -859,7 +859,20 @@ typedef struct tcptrace_context_t {
     int max_tcp_pairs;
     tcp_pair **ttp;
 
+    int tcp_packet_count;  /* used only for debugging? */
+    int tcp_search_count;  /* used only for debugging? */
+
+    Bool *tcp_ignore_pairs;
+    Bool tcp_more_conns_ignored;
+    int num_removed_tcp_pairs;   /* doesn't seem to be used for anything */
+
+    int tcp_active_conn_count;
+    int tcp_closed_conn_count;
+
     u_long tcp_trace_count;
+
+    int tline_left;
+    int tline_right;
 
     /* udp trace */
     Bool udptrace_initialized;

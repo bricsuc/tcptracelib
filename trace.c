@@ -63,18 +63,27 @@ static char const GCC_UNUSED rcsid[] =
 
 
 /* locally global variables */
-static int tcp_packet_count = 0;
-static int search_count = 0;
-static int active_conn_count = 0;
-static int closed_conn_count = 0;
-static Bool *ignore_pairs = NULL;/* which ones will we ignore */
+/* static int tcp_packet_count = 0; */
+/* static int search_count = 0; */
+/* static int active_conn_count = 0; */
+/* static int closed_conn_count = 0; */
+/* static Bool *ignore_pairs = NULL; */ /* which ones will we ignore */
 static Bool bottom_letters = 0;	/* I don't use this anymore */
-static Bool more_conns_ignored = FALSE;
+/* static Bool more_conns_ignored = FALSE; */
+
+/* Why are these two global? Only used in one block, and values not reused
+   over successive function calls. Probably OK (and preferable, in the
+   interest of safety) to move them there. */
 static double sample_elapsed_time=0; /* to keep track of owin samples */
 static double total_elapsed_time=0; /* to keep track of owin samples */ 
-static int num_removed_tcp_pairs = 0;
-static int tline_left  = 0; /* left and right time lines for the time line charts */
-static int tline_right = 0;
+
+/* this isn't actually used for anything (it's only incremented but never
+   looked at), but keeping anyway */
+/* static int num_removed_tcp_pairs = 0; */
+
+/* left and right time lines for the time line charts */
+/* static int tline_left  = 0; */
+/* static int tline_right = 0; */
 
 /* provided globals  */
 /* int num_tcp_pairs = -1; */	/* how many pairs we've allocated */
@@ -524,7 +533,7 @@ NewTTP(
       }
       /* create a new TCP pair record and remember where you put it */
       context->ttp[context->num_tcp_pairs] = ptp;
-      ptp->ignore_pair = ignore_pairs[context->num_tcp_pairs];
+      ptp->ignore_pair = context->tcp_ignore_pairs[context->num_tcp_pairs];
     }
 
 
@@ -686,8 +695,8 @@ NewTTP(
 	     *  seg info |----->| 
 	     *           |<-----| seg info
 	     */
-	    tline_left  = 40;
-	    tline_right = 60;
+	    context->tline_left  = 40;
+	    context->tline_right = 60;
 	    plotter_invisible(ptp->a2b.tline_plotter, context->current_time, 0);
 	    plotter_invisible(ptp->a2b.tline_plotter, context->current_time, 100);
 	}
@@ -812,7 +821,7 @@ FindTTP(
     for (ptph = *pptph_head; ptph; ) {
 	if (debug) {
 	    /* search efficiency instrumentation */
-	    ++search_count;
+	    context->tcp_search_count++;
 	    if (pse) {
 		++depth;
 		++pse->num_comparisons;
@@ -986,14 +995,14 @@ FindTTP(
 	ptph->addr_pair = ptr->ptp->addr_pair;
 	ptph->ptp = (void *)ptr;
 	if (options->conn_num_threshold) {
-	    active_conn_count++;
-	    if (active_conn_count > options->max_conn_num) {
+	    context->tcp_active_conn_count++;
+	    if (context->tcp_active_conn_count > options->max_conn_num) {
 		ptp_ptr *last_ptr = live_conn_list_tail;
 		live_conn_list_tail = last_ptr->prev;
 		live_conn_list_tail->next = NULL;
 		RemoveConn(context, last_ptr);
-		num_removed_tcp_pairs++;
-		active_conn_count--;
+		context->num_removed_tcp_pairs++;
+		context->tcp_active_conn_count--;
 		FreePtpPtr(last_ptr);
 	    }
 	}
@@ -1058,15 +1067,15 @@ UpdateConnLists(
       tcp_ptr->ptp->inactive = TRUE;
 
       if (options->conn_num_threshold) {
-	active_conn_count--;
-	closed_conn_count++;
-	if (closed_conn_count > options->max_conn_num) {
+	context->tcp_active_conn_count--;
+	context->tcp_closed_conn_count++;
+	if (context->tcp_closed_conn_count > options->max_conn_num) {
 	  ptp_ptr *last_ptr = closed_conn_list_tail;
 	  closed_conn_list_tail = last_ptr->prev;
 	  closed_conn_list_tail->next = NULL;
 	  RemoveConn(context, last_ptr);
-	  num_removed_tcp_pairs++;
-	  closed_conn_count--;
+	  context->num_removed_tcp_pairs++;
+	  context->tcp_closed_conn_count--;
 	  FreePtpPtr(last_ptr);
 	}
       }
@@ -1119,13 +1128,13 @@ UpdateConnLists(
 		     &live_conn_list_tail, 
 		     options->remove_live_conn_interval, 
 		     TRUE,
-		     &active_conn_count);
+		     &context->tcp_active_conn_count);
       RemoveOldConns(context,
                      &closed_conn_list_head,
 		     &closed_conn_list_tail, 
 		     options->remove_closed_conn_interval, 
 		     TRUE,
-		     &closed_conn_count);
+		     &context->tcp_closed_conn_count);
     }
     else {
       RemoveOldConns(context,
@@ -1227,7 +1236,7 @@ RemoveOldConns(
       ptr->prev->next = NULL;
       *conn_list_tail = ptr->prev;
       RemoveConn(context, ptr);
-      num_removed_tcp_pairs++;
+      context->num_removed_tcp_pairs++;
       if (0) {
 	printf("trace.c:RemoveOldConns() calling FreePtpSnap()\n");
       }
@@ -1246,7 +1255,7 @@ RemoveOldConns(
     *conn_list_head = NULL;
     *conn_list_tail = NULL;
     RemoveConn(context, ptr);
-    num_removed_tcp_pairs++;
+    context->num_removed_tcp_pairs++;
     FreePtpPtr(ptr);
     if (num_conn_check)
       --(*conn_count);
@@ -1420,6 +1429,9 @@ dotrace(
 
     tcptrace_runtime_options_t *options = context->options;
 
+    int tline_left = context->tline_left;   /* copy to local for brevity */
+    int tline_right = context->tline_right; /* copy to local for brevity */
+
     /* make sure we have enough of the packet */
     if ((char *)ptcp + sizeof(struct tcphdr)-1 > (char *)plast) {
 	if (options->warn_printtrunc) {
@@ -1444,7 +1456,7 @@ dotrace(
     /* make sure this is one of the connections we want */
     ptp_save = FindTTP(context, pip,ptcp,&dir, &tcp_ptr);
 
-    ++tcp_packet_count;
+    context->tcp_packet_count++;
 
     if (ptp_save == NULL) {
 	return(NULL);
@@ -2560,10 +2572,10 @@ trace_done(tcptrace_context_t *context)
 	int max_depth = 0;
 	int max_comparisons = 0;
 	float max_searches_compare = 0.0;
-	fprintf(stdout,"%sTotal searches: %u\n", comment, tcp_packet_count);
-	fprintf(stdout,"%s  Total comparisons: %u\n", comment, search_count);
+	fprintf(stdout,"%sTotal searches: %u\n", comment, context->tcp_packet_count);
+	fprintf(stdout,"%s  Total comparisons: %u\n", comment, context->tcp_search_count);
 	fprintf(stdout,"%s  Average compares/search: %.2f\n",
-		comment, (float)search_count / (float)tcp_packet_count);
+		comment, (float)context->tcp_search_count / (float)context->tcp_packet_count);
 	fprintf(stdout,"%sHash table size: %u\n", comment, HASH_TABLE_SIZE);
 	for (h=0; h < HASH_TABLE_SIZE; ++h) {
 	    struct search_efficiency *pse = &hashtable_efficiency[h];
@@ -2745,12 +2757,12 @@ MoreTcpPairs(
 		   new_max_tcp_pairs * sizeof(tcp_pair *));
 
     /* enlarge array to keep track of which ones to ignore */
-    ignore_pairs = ReallocZ(ignore_pairs,
-			    context->max_tcp_pairs * sizeof(Bool),
-			    new_max_tcp_pairs * sizeof(Bool));
-    if (more_conns_ignored) {
+    context->tcp_ignore_pairs = ReallocZ(context->tcp_ignore_pairs,
+			                 context->max_tcp_pairs * sizeof(Bool),
+			                 new_max_tcp_pairs * sizeof(Bool));
+    if (context->tcp_more_conns_ignored) {
 	for (i = context->max_tcp_pairs; i < new_max_tcp_pairs; ++i) {
-	    ignore_pairs[i] = TRUE;
+	    context->tcp_ignore_pairs[i] = TRUE;
         }
     }
 
@@ -2771,15 +2783,15 @@ trace_init(tcptrace_context_t *context)
     }
 
     if (options->run_continuously) {
-      if (ignore_pairs) {
-	free(ignore_pairs);
-	ignore_pairs = NULL;
+      if (context->tcp_ignore_pairs) {
+	free(context->tcp_ignore_pairs);
+	context->tcp_ignore_pairs = NULL;
       }
       if (context->ttp) {
 	free(context->ttp);
 	context->ttp = NULL;
       }
-      more_conns_ignored = FALSE;
+      context->tcp_more_conns_ignored = FALSE;
     }
 
     if (initted)
@@ -2791,13 +2803,13 @@ trace_init(tcptrace_context_t *context)
     context->ttp = (tcp_pair **) MallocZ(context->max_tcp_pairs * sizeof(tcp_pair *));
 
     /* create an array to keep track of which ones to ignore */
-    ignore_pairs = (Bool *) MallocZ(context->max_tcp_pairs * sizeof(Bool));
+    context->tcp_ignore_pairs = (Bool *) MallocZ(context->max_tcp_pairs * sizeof(Bool));
     if (!options->run_continuously) {
         /* create an array to hold any pairs that we might create */
         context->ttp = (tcp_pair **) MallocZ(context->max_tcp_pairs * sizeof(tcp_pair *));
       
         /* create an array to keep track of which ones to ignore */
-        ignore_pairs = (Bool *) MallocZ(context->max_tcp_pairs * sizeof(Bool));
+        context->tcp_ignore_pairs = (Bool *) MallocZ(context->max_tcp_pairs * sizeof(Bool));
     }
 
     cainit();
@@ -2818,8 +2830,8 @@ IgnoreConn(
 
     MoreTcpPairs(context, ix);
 
-    more_conns_ignored = FALSE;
-    ignore_pairs[ix] = TRUE;
+    context->tcp_more_conns_ignored = FALSE;
+    context->tcp_ignore_pairs[ix] = TRUE;
 }
 
 
@@ -2841,13 +2853,13 @@ OnlyConn(
 
     if (!cleared) {
 	for (ix = 0; ix < context->max_tcp_pairs; ++ix) {
-	    ignore_pairs[ix] = TRUE;
+	    context->tcp_ignore_pairs[ix] = TRUE;
 	}
 	cleared = TRUE;
     }
 
-    more_conns_ignored = TRUE;
-    ignore_pairs[ix_only] = FALSE;
+    context->tcp_more_conns_ignored = TRUE;
+    context->tcp_ignore_pairs[ix_only] = FALSE;
 }
 
 

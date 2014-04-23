@@ -395,12 +395,24 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
     context->current_filename = NULL;
 
     /* TCP data */
-
     context->num_tcp_pairs = -1;
     context->max_tcp_pairs = 64;
     context->ttp = NULL;
 
     context->tcp_trace_count = 0;
+
+    context->tcp_packet_count = 0;
+    context->tcp_search_count = 0;
+
+    context->tcp_ignore_pairs = NULL;
+    context->tcp_more_conns_ignored = FALSE;
+    context->num_removed_tcp_pairs = 0;
+
+    context->tcp_active_conn_count = 0;
+    context->tcp_closed_conn_count = 0;
+
+    context->tline_left = 0;
+    context->tline_right = 0;
 
     /* UDP data */
     context->udptrace_initialized = FALSE;
