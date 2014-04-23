@@ -838,8 +838,9 @@ typedef struct tcptrace_runtime_options_t {
 
 /* packet-reading state/context */
 typedef struct tcptrace_context_t {
-    u_long pnum;
     tcptrace_runtime_options_t *options;
+
+    u_long pnum;
     timeval first_packet;
     timeval last_packet;
     timeval current_time;
