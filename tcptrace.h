@@ -859,6 +859,8 @@ typedef struct tcptrace_context_t {
 
     u_long tcp_trace_count;
 
+    /* udp trace */
+    Bool udptrace_initialized;
     int num_udp_pairs;
     int max_udp_pairs;
     udp_pair **utp;

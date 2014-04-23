@@ -403,6 +403,8 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
     context->tcp_trace_count = 0;
 
     /* UDP data */
+    context->udptrace_initialized = FALSE;
+
     context->num_udp_pairs = -1;
     context->max_udp_pairs = 64;
     context->utp = NULL;

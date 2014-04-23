@@ -396,6 +396,7 @@ udptrace_done(tcptrace_context_t *context) {
 	 }
     }
 }
+
 static void
 MoreUdpPairs(
     tcptrace_context_t *context,
@@ -440,13 +441,12 @@ void
 udptrace_init(tcptrace_context_t *context)
 {
     int max_udp_pairs = context->max_udp_pairs;
-    /* TODO: move "initted" into context */
-    static Bool initted = FALSE;
 
-    if (initted)
+    if (context->udptrace_initialized) {
+        /* TODO: should probably print some kind of warning here */
 	return;
-
-    initted = TRUE;
+    }
+    context->udptrace_initialized = TRUE;
 
     /* create an array to hold any pairs that we might create */
     context->utp = (udp_pair **) MallocZ(max_udp_pairs * sizeof(udp_pair *));
