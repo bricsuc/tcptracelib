@@ -834,6 +834,8 @@ typedef struct tcptrace_runtime_options_t {
 
 #define __TCPTRACE_COMMENT_PREFIX_MAX 5
 
+#define UDP_HASH_TABLE_SIZE 1021   /* should be prime */
+
 /* packet-reading state/context */
 typedef struct tcptrace_context_t {
     u_long pnum;
@@ -861,14 +863,19 @@ typedef struct tcptrace_context_t {
 
     /* udp trace */
     Bool udptrace_initialized;
+
     int num_udp_pairs;
     int max_udp_pairs;
     udp_pair **utp;
 
+    udp_pair *pup_hashtable[UDP_HASH_TABLE_SIZE];
+
     int udp_packet_count;  /* used only for debugging? */
     int udp_search_count;  /* used only for debugging? */
+
     Bool *udp_ignore_pairs;
     Bool udp_more_conns_ignored;
+    Bool udp_connections_cleared;
 
     u_long udp_trace_count;
 

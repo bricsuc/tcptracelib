@@ -409,10 +409,18 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
     context->max_udp_pairs = 64;
     context->utp = NULL;
 
+    { /* initialize UDP hash table */
+        int i;
+        for (i = 0; i < UDP_HASH_TABLE_SIZE; i++) {
+            context->pup_hashtable[i] = NULL;
+        }
+    }
+
     context->udp_packet_count = 0;
     context->udp_search_count = 0;
     context->udp_ignore_pairs = NULL;
     context->udp_more_conns_ignored = FALSE;
+    context->udp_connections_cleared = FALSE;
 
     context->udp_trace_count = 0;
 

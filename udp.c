@@ -142,7 +142,7 @@ NewUTP(
 
 /* connection records are stored in a hash table.  Buckets are linked	*/
 /* lists sorted by most recent access.					*/
-#define HASH_TABLE_SIZE 1021  /* oughta be prime */
+/* #define HASH_TABLE_SIZE 1021 */  /* oughta be prime */
 static udp_pair *
 FindUTP(
     tcptrace_context_t *context,
@@ -150,7 +150,7 @@ FindUTP(
     struct udphdr *pudp,
     int *pdir)
 {
-    static udp_pair *pup_hashtable[HASH_TABLE_SIZE] = {NULL};
+    /* static udp_pair *pup_hashtable[HASH_TABLE_SIZE] = {NULL}; */
     udp_pair **ppup_head = NULL;
     udp_pair *pup;
     udp_pair *pup_last;
@@ -163,11 +163,11 @@ FindUTP(
 	     ntohs(pudp->uh_sport), ntohs(pudp->uh_dport));
 
     /* grab the hash value (already computed by CopyAddr) */
-    hval = tp_in.addr_pair.hash % HASH_TABLE_SIZE;
+    hval = tp_in.addr_pair.hash % UDP_HASH_TABLE_SIZE;
     
 
     pup_last = NULL;
-    ppup_head = &pup_hashtable[hval];
+    ppup_head = &context->pup_hashtable[hval];
     for (pup = *ppup_head; pup; pup=pup->next) {
 	context->udp_search_count++;
 	if (SameConn(&tp_in.addr_pair,&pup->addr_pair,&dir)) {
@@ -215,19 +215,21 @@ OnlyUDPConn(tcptrace_context_t *context,
 	    int ix_only)
 {
      int ix;
-     static Bool cleared = FALSE;
-	
-     if (debug) fprintf(stderr,"only printing conn %d\n", ix_only);
+     context->udp_connections_cleared = FALSE; /* is there a better name? */
+
+     if (debug) {
+         fprintf(stderr,"only printing UDP conn %d\n", ix_only);
+     }
 
      --ix_only;
 
      MoreUdpPairs(context, ix_only);
 
-     if (!cleared) {
+     if (!context->udp_connections_cleared) {
 	  for (ix = 0; ix < context->max_udp_pairs; ++ix) {
 	       context->udp_ignore_pairs[ix] = TRUE;
 	  }
-	  cleared = TRUE;
+	  context->udp_connections_cleared = TRUE;
      }
 
      context->udp_more_conns_ignored = TRUE;
