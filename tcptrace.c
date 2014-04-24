@@ -795,13 +795,15 @@ main(
     /* initialize internals */
     trace_init(context);
     udptrace_init(context);
-    plot_init();
 
     /* let modules start first */
     tcptrace_modules_load(context, argc, argv);
 
     /* parse the flags */
     CheckArguments(&argc,argv);
+
+    /* initialize plotter (picks up arguments from CheckArguments()) */
+    plot_init(context);
 
     /* Used with <SP>-separated-values,
      * prints a '#' before each header line if --csv/--tsv is requested.

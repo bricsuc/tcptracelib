@@ -76,9 +76,18 @@ struct plotter_info {
     char *ylabel;               /* Plotter y-axis label */
 };
 
-/* XXX--must get rid of the following, bit by bit */
-extern tcptrace_context_t global_context;
+typedef struct plotter_options_t {
+    Bool graph_time_zero;
+    Bool graph_seq_zero;
+    Bool colorplot;
+    Bool show_title;
+    char *xplot_title_prefix;
+} plotter_options_t;
 
+/* local copy of plotter options; use XXX to initialize with context */
+/* this is not threadsafe, but this is mainly to support the tcptrace.c
+   client, where it does not matter */
+static plotter_options_t g_plotter_options;
 
 /* locally global parameters */
 static int max_plotters;
@@ -88,11 +97,11 @@ static struct plotter_info *pplotters;
 
 
 /* local routine declarations */
-static char *xp_timestamp(tcptrace_context_t *context, PLOTTER pl, struct timeval time);
+static char *xp_timestamp(PLOTTER pl, struct timeval time);
 static char *TSGPlotName(tcb *plast, PLOTTER, char *suffix);
-static void DoPlot(tcptrace_context_t *context, PLOTTER pl, char *fmt, ...);
-static void WritePlotHeader(tcptrace_context_t *context, PLOTTER pl);
-static void CallDoPlot(tcptrace_context_t *context, PLOTTER pl, char *plot_cmd, int plot_argc, ...);
+static void DoPlot(PLOTTER pl, char *fmt, ...);
+static void WritePlotHeader(PLOTTER pl);
+static void CallDoPlot(PLOTTER pl, char *plot_cmd, int plot_argc, ...);
 
 
 /*
@@ -105,7 +114,6 @@ static void CallDoPlot(tcptrace_context_t *context, PLOTTER pl, char *plot_cmd, 
  */
 static char *
 xp_timestamp(
-    tcptrace_context_t *context,
     PLOTTER pl,
     struct timeval time)
 {
@@ -116,7 +124,7 @@ xp_timestamp(
     unsigned decimal;
     char *pbuf;
     struct plotter_info *ppi;
-    tcptrace_runtime_options_t *options = context->options;
+    plotter_options_t *options = &g_plotter_options;
    
     ppi = &pplotters[pl];
    
@@ -160,11 +168,23 @@ increasing time order.  Try without the '-z' flag\n",
 
 
 void
-plot_init(void)
+plot_init(tcptrace_context_t *context)
 {
+    plotter_options_t *plotter_options = &g_plotter_options;
+    tcptrace_runtime_options_t *tt_options = context->options;
+
     max_plotters = 256;  /* just a default, make more on the fly */
 
     pplotters = MallocZ(max_plotters * sizeof(struct plotter_info));
+
+    /* make local copies of plot-specific options */
+    /* (necessary to avoid adding context to every single plotter call) */
+    plotter_options->graph_time_zero = tt_options->graph_time_zero;
+    plotter_options->colorplot = tt_options->colorplot;
+    plotter_options->graph_seq_zero = tt_options->colorplot;
+    plotter_options->show_title = tt_options->show_title;
+    plotter_options->xplot_title_prefix = tt_options->xplot_title_prefix;
+
 }
 
 
@@ -246,7 +266,6 @@ TSGPlotName(
 
 static void
 DoPlot(
-     tcptrace_context_t *context,
      PLOTTER	pl,
      char	*fmt,
      ...)
@@ -254,7 +273,6 @@ DoPlot(
     va_list	ap;
     MFILE *f = NULL;
     struct plotter_info *ppi;
-    tcptrace_runtime_options_t *options = context->options;
 
     va_start(ap,fmt);
 
@@ -280,7 +298,7 @@ DoPlot(
    
     /* Write the plotter header if not already written */
     if (!ppi->header_done) {
-        WritePlotHeader(context, pl);
+        WritePlotHeader(pl);
     }
 
     Mvfprintf(f,fmt,ap);
@@ -379,7 +397,7 @@ plotter_done(tcptrace_context_t *context)
 
         /* Write the plotter header if not already written */
         if (!ppi->header_done) {
- 	    WritePlotHeader(context, pl);
+ 	    WritePlotHeader(pl);
         }
        
 	if (!options->ignore_incomplete ||
@@ -423,9 +441,9 @@ plotter_temp_color(
     PLOTTER pl,
     char *color)
 {
-    tcptrace_context_t *context = &global_context;  /* XXX */
+    plotter_options_t *options = &g_plotter_options;
 
-    if (context->options->colorplot) {
+    if (options->colorplot) {
         temp_color = color;
     }
 }
@@ -436,10 +454,10 @@ plotter_perm_color(
     PLOTTER pl,
     char *color)
 {
-    tcptrace_context_t *context = &global_context;  /* XXX */
+    plotter_options_t *options = &g_plotter_options;
 
-    if (context->options->colorplot) {
-	CallDoPlot(context, pl, color, 0);
+    if (options->colorplot) {
+	CallDoPlot(pl, color, 0);
     }
 }
 
@@ -452,9 +470,7 @@ plotter_line(
     struct timeval	t2,
     u_long		x2)
 {
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
-    CallDoPlot(context, pl,"line", 4, t1, x1, t2, x2);
+    CallDoPlot(pl,"line", 4, t1, x1, t2, x2);
 }
 
 
@@ -466,9 +482,7 @@ plotter_dline(
     struct timeval	t2,
     u_long		x2)
 {
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
-    CallDoPlot(context, pl,"dline", 4, t1, x1, t2, x2);
+    CallDoPlot(pl,"dline", 4, t1, x1, t2, x2);
 }
 
 
@@ -478,9 +492,7 @@ plotter_diamond(
     struct timeval	t,
     u_long		x)
 {
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
-    CallDoPlot(context, pl, "diamond", 2, t, x);
+    CallDoPlot(pl, "diamond", 2, t, x);
 }
 
 
@@ -490,9 +502,7 @@ plotter_dot(
     struct timeval	t,
     u_long		x)
 {
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
-    CallDoPlot(context, pl, "dot", 2, t, x);
+    CallDoPlot(pl, "dot", 2, t, x);
 }
 
 
@@ -502,9 +512,7 @@ plotter_plus(
     struct timeval	t,
     u_long		x)
 {
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
-    CallDoPlot(context, pl, "plus", 2, t, x);
+    CallDoPlot(pl, "plus", 2, t, x);
 }
 
 
@@ -514,9 +522,7 @@ plotter_box(
     struct timeval	t,
     u_long		x)
 {
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
-    CallDoPlot(context, pl, "box", 2, t, x);
+    CallDoPlot(pl, "box", 2, t, x);
 }
 
 
@@ -530,10 +536,8 @@ plotter_arrow(
 {
     char arrow_type[7];
 
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
     snprintf(arrow_type, sizeof(arrow_type), "%carrow", dir);
-    CallDoPlot(context, pl, arrow_type, 2, t, x);      
+    CallDoPlot(pl, arrow_type, 2, t, x);      
 }
 
 
@@ -586,10 +590,8 @@ plotter_tick(
 {
     char tick_type[6];
 
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
     snprintf(tick_type, sizeof(tick_type), "%ctick", dir);
-    CallDoPlot(context, pl, tick_type, 2, t, x);      
+    CallDoPlot(pl, tick_type, 2, t, x);      
 }
 
 
@@ -658,15 +660,14 @@ plotter_vtick(
 void
 plotter_nothing(
     PLOTTER pl,
-    struct timeval	t)
+    struct timeval t)
 {
     char *ret;
 
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
-    ret = xp_timestamp(context, pl, t);
-    if (debug > 10)
+    ret = xp_timestamp(pl, t);
+    if (debug > 10) {
 	printf("plotter_nothing(%s) gets '%s'\n", ts2ascii(&t), ret);
+    }
 }
 
 
@@ -681,18 +682,16 @@ plotter_text(
 {
     char text_type[6];
 
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
     snprintf(text_type, sizeof(text_type), "%stext", where);
 
-    CallDoPlot(context, pl, text_type, 2, t, x);
+    CallDoPlot(pl, text_type, 2, t, x);
     /* fix by Bill Fenner - Wed Feb  5, 1997, thanks */
     /* This is a little ugly.  Text commands take 2 lines. */
     /* A temporary color could have been */
     /* inserted after that line, but would NOT be inserted after */
     /* the next line, so we'll be OK.  I can't think of a better */
     /* way right now, and this works fine (famous last words) */
-    CallDoPlot(context, pl, str, 0);
+    CallDoPlot(pl, str, 0);
 }
 
 void
@@ -701,9 +700,7 @@ plotter_invisible(
     struct timeval	t,
     u_long		x)
 {
-    tcptrace_context_t *context = &global_context;  /* XXX */
-
-    CallDoPlot(context, pl, "invisible", 2, t, x);
+    CallDoPlot(pl, "invisible", 2, t, x);
 }
 
 
@@ -812,7 +809,6 @@ extend_line(
 /* This function may be called with 0, 2 or 4 arguments depending on plot command. */
 static void
 CallDoPlot(
-    tcptrace_context_t *context,
     PLOTTER pl,
     char *plot_cmd,
     int plot_argc,
@@ -856,18 +852,18 @@ CallDoPlot(
       switch(plot_argc) {
        case 0:
 	 snprintf(fmt, sizeof(fmt), "%s", plot_cmd);
-	 DoPlot(context, pl, fmt);
+	 DoPlot(pl, fmt);
 	 break;
        case 2:
 	 snprintf(fmt, sizeof(fmt), "%s %%u -%%s", plot_cmd);
-	 DoPlot(context, pl, fmt,
-		x1, xp_timestamp(context, pl, t1));
+	 DoPlot(pl, fmt,
+		x1, xp_timestamp(pl, t1));
 	 break;
        case 4:
 	 snprintf(fmt, sizeof(fmt), "%s %%u -%%s %%u -%%s", plot_cmd);
-	 DoPlot(context, pl, fmt,
-		x1, xp_timestamp(context, pl,t1),
-		x2, xp_timestamp(context, pl,t2));
+	 DoPlot(pl, fmt,
+		x1, xp_timestamp(pl,t1),
+		x2, xp_timestamp(pl,t2));
 	 break;
        default:
 	 fprintf(stderr, "CallDoPlot: Illegal number of arguments (%d)\n", plot_argc);
@@ -877,18 +873,18 @@ CallDoPlot(
       switch(plot_argc) {
        case 0:
 	 snprintf(fmt, sizeof(fmt), "%s", plot_cmd);
-	 DoPlot(context, pl, fmt);
+	 DoPlot(pl, fmt);
 	 break;
        case 2:
 	 snprintf(fmt, sizeof(fmt), "%s %%s %%u", plot_cmd);
-	 DoPlot(context, pl, fmt,
-		xp_timestamp(context, pl, t1), x1);
+	 DoPlot(pl, fmt,
+		xp_timestamp(pl, t1), x1);
 	 break;
        case 4:
 	 snprintf(fmt, sizeof(fmt), "%s %%s %%u %%s %%u", plot_cmd);
-	 DoPlot(context, pl, fmt,
-		xp_timestamp(context, pl, t1), x1,
-		xp_timestamp(context, pl, t2), x2);
+	 DoPlot(pl, fmt,
+		xp_timestamp(pl, t1), x1,
+		xp_timestamp(pl, t2), x2);
 	 break;
        default:
 	 fprintf(stderr, "CallDoPlot: Illegal number of arguments (%d)\n", plot_argc);
@@ -900,12 +896,11 @@ CallDoPlot(
 
 static void
 WritePlotHeader(
-    tcptrace_context_t *context,
     PLOTTER pl)
 {
    MFILE *f = NULL;
    struct plotter_info *ppi;
-   tcptrace_runtime_options_t *options = context->options;
+   plotter_options_t *options = &g_plotter_options;
 
    if (pl == NO_PLOTTER)
      return;

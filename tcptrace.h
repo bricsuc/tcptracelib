@@ -1005,7 +1005,7 @@ void plotter_arrow(PLOTTER, timeval, u_long, char);
 void plotter_nothing(PLOTTER, timeval);
 void plotter_invisible(PLOTTER, timeval, u_long);
 void plotter_switch_axis(PLOTTER, Bool);
-void plot_init(void);
+void plot_init(tcptrace_context_t *);
 
 tcp_pair *dotrace(tcptrace_context_t *context, struct ip *, struct tcphdr *ptcp, void *plast);
 
