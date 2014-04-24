@@ -2,3 +2,8 @@
 *.lo
 .*.swp
 .libs
+tcptrace
+config.log
+Makefile
+config.status
+*.la
