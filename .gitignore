@@ -4,6 +4,8 @@
 .libs
 tcptrace
 config.log
-Makefile
 config.status
+Makefile
 *.la
+libtool
+.deps
