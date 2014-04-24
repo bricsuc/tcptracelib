@@ -961,6 +961,10 @@ void trace_done(tcptrace_context_t *context);
 
 void seglist_init(tcb *);
 
+/* state initialization routines */
+void tcptrace_initialize_state(tcptrace_context_t *context);
+void tcptrace_initialize_options(tcptrace_runtime_options_t *options);
+
 /* module routines */
 void tcptrace_modules_load(tcptrace_context_t *context, int argc, char *argv[]);
 void tcptrace_modules_finish(tcptrace_context_t *context);
