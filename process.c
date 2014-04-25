@@ -59,10 +59,9 @@ tcptrace_process_file(
 
     location = 0;
 
-    /* inform the modules, if they care... */
+    /* notify the modules of new file */
     tcptrace_modules_all_newfile(context, &working_file, filename);
 
-    /* count the files */
     context->file_count++;
 
     /* read each packet */
@@ -100,35 +99,6 @@ tcptrace_process_file(
 	    break;
         }
 
-	/* check for out-of-order packets (by timestamp, not protocol) */
-        /* not sure why this first check is necessary */
-	if (!ZERO_TIME(&context->last_packet)) {
-	    if (tv_gt(context->last_packet, context->current_time)) {
-		/* out of order */
-		if ((context->file_count > 1) && (working_file.pnum == 1)) {
-		    fprintf(stderr, "\
-Warning, first packet in file %s comes BEFORE the last packet\n\
-in the previous file.  That will likely confuse the program, please\n\
-order the files in time if you have trouble\n", filename);
-		} else {
-		    static int warned = 0;
-
-		    if (options->warn_ooo) {
-			fprintf(stderr, "\
-Warning, packet %ld in file %s comes BEFORE the previous packet\n\
-That will likely confuse the program, so be careful!\n",
-				working_file.pnum, filename);
-		    } else if (!warned) {
-			fprintf(stderr, "\
-Packets in file %s are out of order.\n\
-That will likely confuse the program, so be careful!\n", filename);
-		    }
-		    warned = 1;
-		}
-
-	    }
-	}
-	
 #if 0
 	/* install signal handler */
 	if (working_file.pnum == 1) {
@@ -136,145 +106,8 @@ That will likely confuse the program, so be careful!\n", filename);
 	}
 #endif
 
-
-	/* progress counters */
-	if (!options->printem &&
-            !options->printallofem &&
-            options->printticks) {
-	    if (CompIsCompressed())
-		location += tlen;  /* just guess... */
-	    if (((working_file.pnum <    100) && (working_file.pnum %    10 == 0)) ||
-		((working_file.pnum <   1000) && (working_file.pnum %   100 == 0)) ||
-		((working_file.pnum <  10000) && (working_file.pnum %  1000 == 0)) ||
-		((working_file.pnum >= 10000) && (working_file.pnum % 10000 == 0))) {
-
-		unsigned frac;
-
-		if (debug)
-		    fprintf(stderr, "%s: ", context->current_filename);
-		if (is_stdin) {
-		    fprintf(stderr ,"%lu", working_file.pnum);
-		} else if (CompIsCompressed()) {
-		    frac = location/(working_file.filesize/100);
-		    if (frac <= 100)
-			fprintf(stderr ,"%lu ~%u%% (compressed)", working_file.pnum, frac);
-		    else
-			fprintf(stderr ,"%lu ~100%% + %u%% (compressed)", working_file.pnum, frac-100);
-		} else {
-		    location = ftell(stdin);
-		    frac = location/(working_file.filesize/100);
-
-		    fprintf(stderr ,"%lu %u%%", working_file.pnum, frac);
-		}
-		/* print elapsed time */
-		{
-		    double etime = elapsed(context->first_packet,context->last_packet);
-		    fprintf(stderr," (%s)", elapsed2str(etime));
-		}
-
-		/* carriage return (but not newline) */
-		fprintf(stderr ,"\r");
-	    }
-	    fflush(stderr);
-	}
-
-        if (check_packet_type(context, &raw_packet, &working_file) == FALSE) {
-            /* if we don't support this packet type, skip it */
-            continue;
-        }
-
-	/* print the packet, if requested */
-	if (options->printallofem || options->dump_packet_data) {
-	    printf("Packet %lu\n", context->pnum);
-	    printpacket(context,len,tlen,phys,phystype,pip,plast,NULL);
-	}
-
-	/* keep track of global times */
-	if (ZERO_TIME(&context->first_packet)) {
-	    context->first_packet = context->current_time;
-        }
-	context->last_packet = context->current_time;
-
-	/* verify IP checksums, if requested */
-	if (options->verify_checksums) {
-	    if (!ip_cksum_valid(pip,plast)) {
-		context->bad_ip_checksums++;
-		if (options->warn_printbadcsum)
-		    fprintf(stderr, "packet %lu: bad IP checksum\n", context->pnum);
-		continue;
-	    }
-	}
-		       
-	/* find the start of the TCP header */
-	ret = gettcp(context, pip, &ptcp, &plast);
-
-	/* if that failed, it's not TCP */
-	if (ret < 0) {
-	    udp_pair *pup;
-	    struct udphdr *pudp;
-
-	    /* look for a UDP header */
-	    ret = getudp(context, pip, &pudp, &plast);
-
-	    if (options->do_udp && (ret == 0)) {
-		pup = udpdotrace(context, pip, pudp, plast);
-
-		/* verify UDP checksums, if requested */
-		if (options->verify_checksums) {
-		    if (!udp_cksum_valid(context,pip,pudp,plast)) {
-			context->bad_udp_checksums++;
-			if (options->warn_printbadcsum) {
-			    fprintf(stderr, "packet %lu: bad UDP checksum\n",
-				    context->pnum);
-                        }
-			continue;
-		    }
-		}
-		       
-		/* if it's a new connection, tell the modules */
-		if (pup && pup->packets == 1) {
-		    tcptrace_modules_newconn_udp(context, pup);
-                }
-		/* also, pass the packet to any modules defined */
-		tcptrace_modules_readpacket_udp(context, pip,pup,plast);
-	    } else if (ret < 0) {
-		/* neither UDP nor TCP */
-		tcptrace_modules_readpacket_nottcpudp(context, pip, plast);
-	    }
-	    continue;
-	}
-        else if (ret > 0) { /* not a valid TCP packet */
-	  continue;
-        }
-
-	/* verify TCP checksums, if requested */
-	if (options->verify_checksums) {
-	    if (!tcp_cksum_valid(context,pip,ptcp,plast)) {
-		context->bad_tcp_checksums++;
-		if (options->warn_printbadcsum) {
-		    fprintf(stderr, "packet %lu: bad TCP checksum\n", context->pnum);
-                }
-		continue;
-	    }
-	}
-		       
-        /* perform TCP packet analysis */
-	ptp = dotrace(context, pip, ptcp, plast); 
-	/* if it wasn't "interesting", we return NULL here */
-	if (ptp == NULL)
-	    continue;
-
-	/* unless this connection is being ignored, tell the modules */
-	/* about it */
-	if (!ptp->ignore_pair) {
-	    /* if it's a new connection, tell the modules */
-	    if (ptp->packets == 1) {
-		tcptrace_modules_newconn(context, ptp);
-            }
-
-	    /* pass the packet to any modules */
-	    tcptrace_modules_readpacket(context, pip, ptp, plast);
-	}
+        ret = tcptrace_process_packet(context, &raw_packet, &working_file);
+        /* TODO: check ret, see if anything needs to be done about it */
 
 #if 0
         /* TODO: this signal business doesn't seem necessary, and could */
@@ -296,7 +129,7 @@ That will likely confuse the program, so be careful!\n", filename);
 	    /* signal can happen EXACTLY HERE, when data structures are consistant */
 	    sigprocmask(SIG_BLOCK, &mask, NULL);
 	}
-#endif /* 0 */
+#endif /* 0, signal handler business */
 
     }
 
@@ -409,14 +242,6 @@ That will likely confuse the program, so be careful!\n", context->current_filena
         }
     }
     
-#if 0
-    /* install signal handler */
-    if (working_file->pnum == 1) {
-        signal(SIGINT,QuitSig);
-    }
-#endif
-
-
     /* progress counters */
     if (!options->printem &&
         !options->printallofem &&

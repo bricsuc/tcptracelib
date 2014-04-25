@@ -986,6 +986,7 @@ tcptrace_modules_deleteconn(tcptrace_context_t *context, tcp_pair *ptp);
 
 /* general processing routines */
 void tcptrace_process_file(tcptrace_context_t *context, char *filename);
+int tcptrace_process_packet(tcptrace_context_t *context, raw_packet_t *raw_packet, tcptrace_working_file *working_file);
 
 
 void printpacket(tcptrace_context_t *context, int, int, void *, int, struct ip *, void *plast, tcb *tcb);
