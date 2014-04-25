@@ -850,6 +850,7 @@ typedef struct tcptrace_context_t {
     u_long ctrunc;
 
     char *current_filename;
+    int file_count;
 
     int num_modules;
 
@@ -900,6 +901,10 @@ typedef struct raw_packet_t {
     int phystype;
     struct ip *pip;
     struct timeval *timestamp;
+    int len;
+    int tlen;
+    void *phys;
+    void *plast;
 } raw_packet_t;
 
 /* the type for a packet reading routine */
@@ -912,6 +917,7 @@ typedef struct tcptrace_working_file {
     u_long filesize;
     Bool is_stdin;
     u_long pnum;       /* number of packets read in file */
+    long int location;
 } tcptrace_working_file;
 
 /* extended variables with values */
