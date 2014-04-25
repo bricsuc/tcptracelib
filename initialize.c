@@ -24,6 +24,7 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
     context->comment_prefix[0] = '\0';   /* no comment prefix by default */
 
     context->current_filename = NULL;
+    context->file_count = 0;
 
     /* TCP data */
     context->num_tcp_pairs = -1;
