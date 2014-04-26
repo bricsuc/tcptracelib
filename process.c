@@ -3,6 +3,7 @@
 #include "file_load.h"
 #include "process.h"
 
+static void progress_counter(tcptrace_context_t *context, raw_packet_t *raw_packet, tcptrace_working_file *working_file);
 
 void
 tcptrace_process_file(
@@ -72,7 +73,7 @@ tcptrace_process_file(
 	    break;
 
 	/* update global and per-file packet counters */
-	context->pnum++;          /* global */
+	context->pnum++;        /* global */
 	working_file.pnum++;	/* local to this file */
 
         /* TODO: move this stuff to read packet struct (maybe) */
@@ -105,6 +106,8 @@ tcptrace_process_file(
 	    signal(SIGINT,QuitSig);
 	}
 #endif
+
+        progress_counter(context, &raw_packet, &working_file);
 
         ret = tcptrace_process_packet(context, &raw_packet, &working_file);
         /* TODO: check ret, see if anything needs to be done about it */
@@ -242,47 +245,6 @@ That will likely confuse the program, so be careful!\n", context->current_filena
         }
     }
     
-    /* progress counters */
-    if (!options->printem &&
-        !options->printallofem &&
-        options->printticks) {
-        if (CompIsCompressed())
-            working_file->location += raw_packet->tlen;  /* just guess... */
-        if (((working_file->pnum <    100) && (working_file->pnum %    10 == 0)) ||
-            ((working_file->pnum <   1000) && (working_file->pnum %   100 == 0)) ||
-            ((working_file->pnum <  10000) && (working_file->pnum %  1000 == 0)) ||
-            ((working_file->pnum >= 10000) && (working_file->pnum % 10000 == 0))) {
-
-            unsigned frac;
-
-            if (debug)
-                fprintf(stderr, "%s: ", context->current_filename);
-            if (working_file->is_stdin) {
-                fprintf(stderr ,"%lu", working_file->pnum);
-            } else if (CompIsCompressed()) {
-                frac = working_file->location/(working_file->filesize/100);
-                if (frac <= 100) {
-                    fprintf(stderr ,"%lu ~%u%% (compressed)", working_file->pnum, frac);
-                } else {
-                    fprintf(stderr ,"%lu ~100%% + %u%% (compressed)", working_file->pnum, frac-100);
-                }
-            } else {
-                working_file->location = ftell(stdin);
-                frac = working_file->location/(working_file->filesize/100);
-
-                fprintf(stderr ,"%lu %u%%", working_file->pnum, frac);
-            }
-            /* print elapsed time */
-            {
-                double etime = elapsed(context->first_packet,context->last_packet);
-                fprintf(stderr," (%s)", elapsed2str(etime));
-            }
-
-            /* carriage return (but not newline) */
-            fprintf(stderr ,"\r");
-        }
-        fflush(stderr);
-    }
 
     if (check_packet_type(context, raw_packet, working_file) == FALSE) {
         /* if we don't support this packet type, skip it */
@@ -399,4 +361,52 @@ That will likely confuse the program, so be careful!\n", context->current_filena
     /* TODO: enum return (this is "success," or, "tcp packet processed") */
     return(0);
 
+}
+
+static void progress_counter(tcptrace_context_t *context,
+                             raw_packet_t *raw_packet,
+                             tcptrace_working_file *working_file) {
+
+    tcptrace_runtime_options_t *options = context->options;
+
+    if (!options->printem &&
+        !options->printallofem &&
+        options->printticks) {
+        if (CompIsCompressed())
+            working_file->location += raw_packet->tlen;  /* just guess... */
+        if (((working_file->pnum <    100) && (working_file->pnum %    10 == 0)) ||
+            ((working_file->pnum <   1000) && (working_file->pnum %   100 == 0)) ||
+            ((working_file->pnum <  10000) && (working_file->pnum %  1000 == 0)) ||
+            ((working_file->pnum >= 10000) && (working_file->pnum % 10000 == 0))) {
+
+            unsigned frac;
+
+            if (debug)
+                fprintf(stderr, "%s: ", context->current_filename);
+            if (working_file->is_stdin) {
+                fprintf(stderr ,"%lu", working_file->pnum);
+            } else if (CompIsCompressed()) {
+                frac = working_file->location/(working_file->filesize/100);
+                if (frac <= 100) {
+                    fprintf(stderr ,"%lu ~%u%% (compressed)", working_file->pnum, frac);
+                } else {
+                    fprintf(stderr ,"%lu ~100%% + %u%% (compressed)", working_file->pnum, frac-100);
+                }
+            } else {
+                working_file->location = ftell(stdin);
+                frac = working_file->location/(working_file->filesize/100);
+
+                fprintf(stderr ,"%lu %u%%", working_file->pnum, frac);
+            }
+            /* print elapsed time */
+            {
+                double etime = elapsed(context->first_packet,context->last_packet);
+                fprintf(stderr," (%s)", elapsed2str(etime));
+            }
+
+            /* carriage return (but not newline) */
+            fprintf(stderr ,"\r");
+        }
+        fflush(stderr);
+    }
 }
