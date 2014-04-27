@@ -148,7 +148,7 @@ tcptrace_context_t global_context;
 /* u_long update_interval = UPDATE_INTERVAL; */
 /* u_long max_conn_num = MAX_CONN_NUM; */
 
-int debug = 0;   /* TODO: move this out of client, rename to tcptrace_debuglevel */
+/* int debug = 0; */
 
 /* the following have been de-globalized */
 /* u_long pnum = 0; */
