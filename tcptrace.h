@@ -852,6 +852,8 @@ typedef struct tcptrace_context_t {
     char *current_filename;
     int file_count;
 
+    char *output_filename;
+
     int num_modules;
 
     /* see tcptrace.c/main() for explanation of this comment stuff */
@@ -933,15 +935,15 @@ extern char *sp;       /* Separator used for long output with <SP>-separated-val
  */
 /* extern char *comment; */
 
+/* first and last packet timestamp */
 /* these are no longer global
 extern u_long ctrunc;
 extern timeval current_time;
 extern timeval first_packet;
 extern timeval last_packet;
 */
-/* first and last packet timestamp */
 
-extern char *output_filename;
+/* extern char *output_filename; */
 
 
 #define MAX_NAME 20

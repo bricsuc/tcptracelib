@@ -27,6 +27,7 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
 
     context->current_filename = NULL;
     context->file_count = 0;
+    context->output_filename = NULL;
 
     /* TCP data */
     context->num_tcp_pairs = -1;
