@@ -475,6 +475,7 @@ PcapSavePacket(
 
 void
 PcapSavePacket(
+    tcptrace_context_t *context,
     char *filename,
     struct ip *pip,
     void *plast)

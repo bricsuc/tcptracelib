@@ -148,7 +148,7 @@ tcptrace_context_t global_context;
 /* u_long update_interval = UPDATE_INTERVAL; */
 /* u_long max_conn_num = MAX_CONN_NUM; */
 
-/* int debug = 0; */   /* TODO: move this out of client, rename to tcptrace_debuglevel */
+/* int debug = 0; */
 
 /* the following have been de-globalized */
 /* u_long pnum = 0; */
@@ -178,7 +178,7 @@ char *ColorNames[NCOLORS] =
 {"green", "red", "blue", "yellow", "purple", "orange", "magenta", "pink"};
 /* char *comment; */
 
-char *output_filename = NULL;          /* TODO: deglobalize this */
+/* char *output_filename = NULL; */
 
 /* char *cur_filename; */
 /* static u_long filesize = 0; */
@@ -1799,6 +1799,7 @@ ParseArgs(
 {
     int i;
     int saw_i_or_o = 0;
+    tcptrace_context_t *context = &global_context;
     tcptrace_runtime_options_t *options = global_context.options;
 
     /* parse the args */
@@ -1871,7 +1872,7 @@ ParseArgs(
 		  case 'O':
 		    if (*(argv[i]+1)) {
 			/* -Ofile */
-			output_filename = strdup(argv[i]+1);
+			context->output_filename = strdup(argv[i]+1);
 			*(argv[i]+1) = '\00';
 		    } else {
 			/* maybe -O file */

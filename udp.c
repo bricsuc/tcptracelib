@@ -293,8 +293,8 @@ udpdotrace(
 	  return (pup_save);
      
     /* save to a file if requested */
-    if (output_filename) {
-	PcapSavePacket(context, output_filename,pip,plast);
+    if (context->output_filename) {
+	PcapSavePacket(context, context->output_filename, pip, plast);
     }
 
     /* now, print it if requested */
