@@ -5,7 +5,10 @@ library.
 
 Current status:
 ===============
-Removing lots of global variables
+constructing API
 
-Factoring out packet processing loop
+Done:
+=====
+most global variables removed
+packet processing loop factored out into process.c
 
