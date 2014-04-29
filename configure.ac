@@ -177,6 +177,9 @@ AC_SEARCH_LIBS([floor],[m])
 AC_SEARCH_LIBS([ceilf],[m])
 AC_SEARCH_LIBS([truncf],[m])
 
+#
+AC_SEARCH_LIBS([mkstemp],[],AC_DEFINE([HAVE_MKSTEMP], [1]))
+
 # Others
 # should probably barf when any of these are missing
 AC_CHECK_FUNCS([bzero dup2 gethostbyaddr gettimeofday inet_ntoa memchr memmove memset mkdir munmap strcasecmp strchr strdup strncasecmp strrchr strstr])
