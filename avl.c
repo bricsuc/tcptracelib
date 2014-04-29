@@ -83,7 +83,7 @@ SnapRotLeft(
 {
    ptp_snap *tmp = *n;
 
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("SnapRotLeft(): Rotating the AVL tree counter clockwise\n");
    
    *n = (*n)->right;
@@ -101,7 +101,7 @@ SnapRotRight(
 {
    ptp_snap *tmp = *n;
    
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("SnapRotRight(): Rotating the AVL tree clockwise\n");
    
    *n = (*n)->left;
@@ -118,7 +118,7 @@ static enum AVLRES
 SnapLeftGrown(
 	      ptp_snap **n)
 {
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("SnapLeftGrown(): Balancing the AVL tree because left subtree\
              has grown after insertion\n");
    
@@ -168,7 +168,7 @@ static enum AVLRES
 SnapRightGrown(
 	       ptp_snap **n)
 {
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("SnapRightGrown(): Balancing the AVL tree because right subtree\
              has grown after insertion\n");
    
@@ -223,7 +223,7 @@ SnapInsert(
 {
    enum AVLRES tmp;
    
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("SnapInsert(): Inserting a node in the AVL tree\n");
    
    if (!(*root)) {	
@@ -259,7 +259,7 @@ static enum AVLRES
 SnapLeftShrunk(
 	       ptp_snap **n)
 {
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("SnapLeftshrunk(): Balancing the AVL tree because left subtree\
              has shrunk after removal\n");
    
@@ -321,7 +321,7 @@ static enum AVLRES
 SnapRightShrunk(
 		ptp_snap **n)
 {
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("SnapRightShrunk(): Balancing the AVL tree because right subtree\
              has shrunk after removal\n");
    
@@ -384,7 +384,7 @@ SnapFindHighest(
 {
    ptp_snap *tmp;
    
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("SnapFindHighest(): Replacing a node with a subtree's\
              highest ranking item \n");
    
@@ -424,7 +424,7 @@ static int
 {
    ptp_snap *tmp;
    
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("SnapFindLowest(): Replacing a node with a subtree's\
              lowest ranking item \n");
    
@@ -464,7 +464,7 @@ SnapRemove(
 {   
    enum AVLRES tmp = BALANCE;
    
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("SnapRemove(): Removing a node from the AVL tree\n");
    
    if (!(*root)) {

@@ -199,7 +199,7 @@ FindUTP(
 void IgnoreUDPConn(tcptrace_context_t *context,
 		   int ix)
 {
-   if (debug)
+   if (tcptrace_debuglevel)
      fprintf(stderr,"ignoring conn %d\n", ix);
    
    --ix;
@@ -217,7 +217,7 @@ OnlyUDPConn(tcptrace_context_t *context,
      int ix;
      context->udp_connections_cleared = FALSE; /* is there a better name? */
 
-     if (debug) {
+     if (tcptrace_debuglevel) {
          fprintf(stderr,"only printing UDP conn %d\n", ix_only);
      }
 
@@ -372,7 +372,7 @@ udptrace_done(tcptrace_context_t *context) {
 		   fprintf(stdout,"\t(use -w option to show details)\n");
               }
 	 }
-	 if (debug > 1)
+	 if (tcptrace_debuglevel > 1)
 	      fprintf(stdout,"average search length: %d\n",
 		      context->udp_search_count / context->udp_packet_count);
 	 
@@ -415,7 +415,7 @@ MoreUdpPairs(
     while (new_max_udp_pairs < num_needed)
 	new_max_udp_pairs *= 4;
     
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("trace: making more space for %d total UDP pairs\n",
 	       new_max_udp_pairs);
 

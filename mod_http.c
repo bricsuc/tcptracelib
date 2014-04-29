@@ -264,7 +264,7 @@ DataOffset(
     else
 	off = tcb->syn-seq;
 
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,"DataOffset: seq is %lu, syn is %lu, offset is %ld\n",
 		seq, tcb->syn, off);
 
@@ -451,7 +451,7 @@ http_read(
 	    AddGetTS(context, ph,DataOffset(ph->tcb_client,ntohl(ptcp->th_seq)));
 	}
 	if (ACK_SET(ptcp)) {
-	    if (debug > 4)
+	    if (tcptrace_debuglevel > 4)
 		printf("Client acks %ld\n", DataOffset(ph->tcb_server,ntohl(ptcp->th_ack)));	    
 	    AddAckTS(context, ph,DataOffset(ph->tcb_server,ntohl(ptcp->th_ack)));
 	}
@@ -461,7 +461,7 @@ http_read(
     if (ph && IS_SERVER(ptcp)) {
 	if (tcp_data_length > 0) {
 	    AddDataTS(context, ph,DataOffset(ph->tcb_server,ntohl(ptcp->th_seq)));
-	    if (debug > 5) {
+	    if (tcptrace_debuglevel > 5) {
 		printf("Server sends %ld thru %ld\n",
 		       DataOffset(ph->tcb_server,ntohl(ptcp->th_seq)),
 		       DataOffset(ph->tcb_server,ntohl(ptcp->th_seq))+tcp_data_length-1);
@@ -620,7 +620,7 @@ WhenAcked(
     struct time_stamp *pts;
     timeval epoch = {0,0};
 
-    if (debug > 10) {
+    if (tcptrace_debuglevel > 10) {
 	printf("pos:%ld, Chain:\n", position);
 	PrintTSChain(phead,ptail);
     }
@@ -651,7 +651,7 @@ WhenSent(
     struct time_stamp *pts;
     timeval epoch = {0,0};
 
-    if (debug > 10) {
+    if (tcptrace_debuglevel > 10) {
 	printf("pos:%ld, Chain:\n", position);
 	PrintTSChain(phead,ptail);
     }
@@ -881,7 +881,7 @@ FindContent(
 		  pget->lastbyte_time = WhenSent(&ph->data_head,&ph->data_tail,last_position);
 		  
 		  /* when was the last byte ACKed? */
-		  if (debug > 4)
+		  if (tcptrace_debuglevel > 4)
 		    printf("Content length: %d\n", pget->content_length);
 		  pget->ack_time = WhenAcked(&ph->ack_head,&ph->ack_tail,last_position);
 
@@ -909,7 +909,7 @@ FindContent(
        MFUnMap(mf,pdata);
     }
    else {
-      if (debug > 4) {
+      if (tcptrace_debuglevel > 4) {
 	 printf("FindContent() with null server contents");
       }
    }
@@ -1114,7 +1114,7 @@ FindGets(
    }
    
    else {
-      if (debug > 4) {
+      if (tcptrace_debuglevel > 4) {
 	 printf("FindGets() with null client contents");
       }
    }

@@ -742,8 +742,9 @@ dump_rtt_sample (tcptrace_context_t *context,
 	    ptcb->rtt_dump_file = (MFILE *) - 1;
 	}
 
-	if (debug)
+	if (tcptrace_debuglevel) {
 	    fprintf (stderr, "RTT Sample file is '%s'\n", filename);
+        }
 
 	ptcb->rtt_dump_file = f;
     }

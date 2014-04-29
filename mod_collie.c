@@ -405,10 +405,10 @@ ParseArgs(char *argstring)
 
     /* check the module args */
     for (i=1; i < argc; ++i) {
-	if (debug > 1)
+	if (tcptrace_debuglevel > 1)
 	    printf("Checking argv[%d]:%s\n", i, argv[i]);
 	if (strcmp(argv[i],"-d") == 0) {
-	    debug = 1;
+	    tcptrace_debuglevel = 1;
 	} else if (strcmp(argv[i],"-l") == 0) {
 	    print_labels = TRUE;
 	} else if (strcmp(argv[i],"-n") == 0) {

@@ -193,7 +193,7 @@ static inline int IP_SAMEADDR(ipaddr *paddr1, ipaddr *paddr2)
 	    ret = (memcmp(paddr1->un.ip6.s6_addr,
 			  paddr2->un.ip6.s6_addr,16) == 0);
     }
-    if (debug > 3) {
+    if (tcptrace_debuglevel > 3) {
 	printf("SameAddr(%s(%d),", HostAddr(*paddr1), ADDR_VERSION(paddr1));
         printf("%s(%d)) returns %d\n", HostAddr(*paddr2), ADDR_VERSION(paddr2),
 	       ret);
@@ -216,7 +216,7 @@ static inline int IP_LOWADDR(ipaddr *paddr1, ipaddr *paddr2)
 	if (ADDR_ISV4(paddr2))
 	    ret = (paddr1->un.ip4.s_addr < paddr2->un.ip4.s_addr);
     }
-    if (debug > 3) {
+    if (tcptrace_debuglevel > 3) {
         printf("LowAddr(%s(%d),", HostAddr(*paddr1), ADDR_VERSION(paddr1));
         printf("%s(%d)) returns %d\n", HostAddr(*paddr2), ADDR_VERSION(paddr2),
 	       ret);
@@ -362,7 +362,7 @@ CopyAddr(
 	}
     }
 
-    if (debug > 3) {
+    if (tcptrace_debuglevel > 3) {
 	printf("Hash of (%s:%d,", HostAddr(ptpa->a_address), ptpa->a_port);
         printf("%s:%d) is %d\n", HostAddr(ptpa->b_address), ptpa->b_port,
 	       ptpa->hash);
@@ -795,7 +795,7 @@ FindTTP(
     *tcp_ptr = NULL;
     tcptrace_runtime_options_t *options = context->options;
 
-    if (debug > 10) {
+    if (tcptrace_debuglevel > 10) {
 	printf("trace.c: FindTTP() called\n");
     }
 
@@ -807,7 +807,7 @@ FindTTP(
 
     pptph_head = &ptp_hashtable[hval];
 
-    if (debug) {
+    if (tcptrace_debuglevel) {
 	/* search efficiency checking */
 	pse = &hashtable_efficiency[hval];
     }
@@ -819,7 +819,7 @@ FindTTP(
     }
 
     for (ptph = *pptph_head; ptph; ) {
-	if (debug) {
+	if (tcptrace_debuglevel) {
 	    /* search efficiency instrumentation */
 	    context->tcp_search_count++;
 	    if (pse) {
@@ -923,14 +923,14 @@ FindTTP(
 		     (thisdir->syn_count > 1) &&
 		     (thisdir->syn != ntohl(ptcp->th_seq)))) {
 		
-		    if (debug>1) {
+		    if (tcptrace_debuglevel>1) {
 			printf("%s: Marking %p %s<->%s INACTIVE (idle: %f sec)\n",
 			       ts2ascii(&context->current_time),
 			       ptp,
 			       ptp->a_endpoint, ptp->b_endpoint,
 			       elapsed(ptp->last_time,
 				       context->current_time)/1000000);
-			if (debug > 3) {
+			if (tcptrace_debuglevel > 3) {
 			    PrintTrace(context, ptp);
                         }
 		    }
@@ -939,7 +939,7 @@ FindTTP(
 		    /* hash table so we won't have to skip over it */
 		    ptp->inactive = TRUE;
 		
-		    if (debug > 4)
+		    if (tcptrace_debuglevel > 4)
 			printf("Removing connection from hashtable:\
                           FindTTP() calling SnapRemove()\n");
 		
@@ -1015,7 +1015,7 @@ FindTTP(
 
     /* To insert the new connection snapshot into the AVL tree */
    
-    if (debug > 4)
+    if (tcptrace_debuglevel > 4)
 	printf("Inserting connection into hashtable:\
              FindTTP() calling SnapInsert() \n");
     SnapInsert(pptph_head, ptph);
@@ -1057,7 +1057,7 @@ UpdateConnLists(
     /* we have FIN or RST */
     if (!tcp_ptr->ptp->inactive) {
        /* this is the only FIN or new RST - remove from list of active conns */
-      if (debug > 6) {
+      if (tcptrace_debuglevel > 6) {
 	printf("UpdateConnLists: removing conn from list of active conns\n");
       }
       UpdateConnList(context,
@@ -1117,7 +1117,7 @@ UpdateConnLists(
   if ((elapsed(last_update_time, context->current_time) / 1000000) >= options->update_interval) {
 
     real_time = time(&real_time);
-    if (debug > 10) {
+    if (tcptrace_debuglevel > 10) {
       fprintf(stderr, "%3i program time: %i\tcurrent time: %i\tdifference: %i\n",
               ++minutes, (int)context->current_time.tv_sec, (int)real_time, 
               (int)(real_time - context->current_time.tv_sec));
@@ -1282,7 +1282,7 @@ RemoveConn(
    hval = tcp_ptr->ptp->addr_pair.hash % HASH_TABLE_SIZE;
    
    /* Remove the connection snapshot from AVL tree */
-   if (debug > 4)
+   if (tcptrace_debuglevel > 4)
      printf("Removing connection from hashtable:\
              RemoveConn() calling SnapRemove()\n");
    
@@ -1546,7 +1546,7 @@ dotrace(
     if ((thisdir->quad1 && thisdir->quad2 && thisdir->quad3 && thisdir->quad4)) {
 	if ((IN_Q1(thisdir->syn) && (IN_Q1(end))) ||  (IN_Q2(thisdir->syn) && (IN_Q2(end))) || ((IN_Q3(thisdir->syn) && (IN_Q3(end))) || ((IN_Q4(thisdir->syn) && (IN_Q4(end)))))) {
 	    if (end >= thisdir->syn) {
-		if (debug>1)
+		if (tcptrace_debuglevel>1)
 		    fprintf(stderr, "\nWARNING : sequence space wrapped around here \n");
 		thisdir->seq_wrap_count++;
 		thisdir->quad1=0;
@@ -2564,7 +2564,7 @@ trace_done(tcptrace_context_t *context)
     }
 
     /* generate statistics for data storage efficiency */
-    if (debug>1) {
+    if (tcptrace_debuglevel>1) {
 	int h;
 	int occupied_buckets = 0;
 	int max_bucket_occupancy = 0;
@@ -2726,7 +2726,7 @@ trace_done(tcptrace_context_t *context)
       fprintf(stderr, "          Please see -l output for more detail.\n");
     }
   
-    if ((debug>2) && !nonames)
+    if ((tcptrace_debuglevel>2) && !nonames)
 	cadump();
 }
 
@@ -2746,7 +2746,7 @@ MoreTcpPairs(
 	new_max_tcp_pairs *= 4;
     }
     
-    if (debug) {
+    if (tcptrace_debuglevel) {
 	printf("trace: making more space for %d total TCP pairs\n",
 	       new_max_tcp_pairs);
     }
@@ -2822,7 +2822,7 @@ IgnoreConn(
     tcptrace_context_t *context,
     int ix)
 {
-    if (debug) fprintf(stderr,"ignoring conn %d\n", ix);
+    if (tcptrace_debuglevel) fprintf(stderr,"ignoring conn %d\n", ix);
 
 //    trace_init();
 	
@@ -2843,7 +2843,7 @@ OnlyConn(
     int ix;
     static Bool cleared = FALSE;
 	
-    if (debug) fprintf(stderr,"only printing conn %d\n", ix_only);
+    if (tcptrace_debuglevel) fprintf(stderr,"only printing conn %d\n", ix_only);
 
 //    trace_init();
 	
@@ -3049,7 +3049,7 @@ ParseOptions: packet %lu %s option truncated, skipping other options\n", \
 	    }
 	    break;
 	  default:
-	    if (debug)
+	    if (tcptrace_debuglevel)
 		fprintf(stderr,
 			"Warning, ignoring unknown TCP option 0x%x\n",
 			*popt);
@@ -3094,7 +3094,7 @@ ExtractContents(
 					+sizeof(CONTENTS_FILE_EXTENSION)
 					+1];    /* for terminating NULL. */
 
-    if (debug > 2)
+    if (tcptrace_debuglevel > 2)
 	fprintf(stderr,
 		"ExtractContents(seq:%ld  bytes:%ld  saved_bytes:%ld) called\n",
 		seq, tcp_data_bytes, saved_data_bytes);
@@ -3104,7 +3104,7 @@ ExtractContents(
 
     /* how many bytes do we have? */
     missing = tcp_data_bytes - saved_data_bytes;
-    if ((debug > 2) && (missing > 0)) {
+    if ((tcptrace_debuglevel > 2) && (missing > 0)) {
 	fprintf(stderr,"ExtractContents: missing %ld bytes (%ld-%ld)\n",
 		missing,tcp_data_bytes,saved_data_bytes);
     }
@@ -3126,7 +3126,7 @@ ExtractContents(
 	    ptcb->extr_contents_file = (MFILE *) -1;
 	}
 
-	if (debug)
+	if (tcptrace_debuglevel)
 	    fprintf(stderr,"TCP contents file is '%s'\n", filename);
 
 	ptcb->extr_contents_file = f;
@@ -3151,7 +3151,7 @@ ExtractContents(
     if ((SEQCMP(seq,ptcb->extr_initseq) < 0) &&
 	(ptcb->data_bytes < (0xffffffff/2))) {
 	/* if we haven't (didn't) seen the SYN, then can't do this!! */
-	if (debug>1) {
+	if (tcptrace_debuglevel>1) {
 	    fprintf(stderr,
 		    "ExtractContents: skipping data, preceeds first segment\n");
 	    fprintf(stderr,"\t and I didnt' see the SYN\n");
@@ -3164,7 +3164,7 @@ ExtractContents(
     offset = SEQCMP(seq,ptcb->extr_lastseq);
     
 
-    if (debug>10)
+    if (tcptrace_debuglevel>10)
 	fprintf(stderr,
 		"TRYING to save %ld bytes from stream '%s2%s' at offset %ld\n",
 		saved_data_bytes,
@@ -3180,7 +3180,7 @@ ExtractContents(
     /* see where we are */
     fptr = Mftell(ptcb->extr_contents_file);
 
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,
 		"Saving %ld bytes from '%s2%s' at offset %ld in file '%s'\n",
 		saved_data_bytes,

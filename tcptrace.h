@@ -734,7 +734,7 @@ typedef struct udphdr udphdr;
 /* extern u_long update_interval; */
 /* extern u_long max_conn_num; */
 
-extern int debug;
+extern int tcptrace_debuglevel;
 extern int thru_interval;
 
 /* extern u_long pnum; */ /* now localized in tcptrace_context_t */

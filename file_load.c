@@ -107,11 +107,11 @@ tcptrace_load_file(
 
     /* determine file format */
     ppread = NULL;
-    if (debug > 1) {
+    if (tcptrace_debuglevel > 1) {
 	printf("NUM_FILE_FORMATS: %u\n", (unsigned)NUM_FILE_FORMATS);
     }
     for (fix=0; fix < NUM_FILE_FORMATS; ++fix) {
-	if (debug) {
+	if (tcptrace_debuglevel) {
 	    fprintf(stderr,"Checking for file format '%s' (%s)\n",
 		    file_formats[fix].format_name,
 		    file_formats[fix].format_descr);
@@ -119,13 +119,13 @@ tcptrace_load_file(
 	rewind(stdin);
        	ppread = (*file_formats[fix].test_func)(filename);
 	if (ppread) {
-	    if (debug) {
+	    if (tcptrace_debuglevel) {
                 fprintf(stderr,"File format is '%s' (%s)\n",
 	                file_formats[fix].format_name,
 	                file_formats[fix].format_descr);
             }
 	    break;
-	} else if (debug) {
+	} else if (tcptrace_debuglevel) {
 	    fprintf(stderr,"File format is NOT '%s'\n",
 		    file_formats[fix].format_name);
 	}

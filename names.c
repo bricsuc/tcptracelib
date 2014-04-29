@@ -101,13 +101,13 @@ ServiceName(
 	cache = cacreate("service",250,0);
     }
     len = sizeof(port_buf);
-    if (debug > 2)
+    if (tcptrace_debuglevel > 2)
 	fprintf(stderr,"Searching cache for service %d='%s'\n",
 		port, port_buf);
     if (calookup(cache,
 		 (char *) &port,    (tcelen) sizeof(port),
 		 (char *) port_buf, &len) == OK) {
-	if (debug > 2)
+	if (tcptrace_debuglevel > 2)
 	    fprintf(stderr,"Found service %d='%s' in cache\n",
 		    port, port_buf);
 	return(port_buf);
@@ -122,7 +122,7 @@ ServiceName(
 	snprintf(port_buf,sizeof(port_buf),"%d",port);
 	sb_port = port_buf;
     }
-    if (debug > 2)
+    if (tcptrace_debuglevel > 2)
 	fprintf(stderr,"Putting service %d='%s' in cache\n",
 		port, sb_port);
     cainsert(cache,
@@ -179,13 +179,13 @@ tcptrace_hostname(
 	cache = cacreate("host",250,0);
     }
     len = sizeof(name_buf);
-    if (debug > 2)
+    if (tcptrace_debuglevel > 2)
 	fprintf(stderr,"Searching cache for host '%s'\n",
 		adr);
     if (calookup(cache,
 		 (char *) &ipaddress,    (tcelen)  sizeof(ipaddress),
 		 (char *) name_buf, &len) == OK) {
-	if (debug > 2)
+	if (tcptrace_debuglevel > 2)
 	    fprintf(stderr,"Found host %s='%s' in cache\n",
 		    adr, name_buf);
 	return(name_buf);
@@ -212,7 +212,7 @@ tcptrace_hostname(
 	}
     }
 
-    if (debug > 2)
+    if (tcptrace_debuglevel > 2)
 	fprintf(stderr,"Putting host %s='%s' in cache\n",
 		adr, sb_host);
 

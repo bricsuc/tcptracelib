@@ -193,7 +193,7 @@ plotter_makemore(void)
 {
     int new_max_plotters = max_plotters * 4;
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	fprintf(stderr,"plotter: making more space for %d total plotters\n",
 		new_max_plotters);
 
@@ -344,7 +344,7 @@ new_plotter(
 	filename = buf;
     }
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	fprintf(stderr,"Plotter %d file is '%s'\n", pl, filename);
 
     if ((f = Mfopen(context, filename, "w")) == NULL) {
@@ -406,7 +406,7 @@ plotter_done(tcptrace_context_t *context)
 	    Mfclose(f);
 	} else {
 	    fname = ppi->p2plast->tsg_plotfile;
-	    if (debug)
+	    if (tcptrace_debuglevel)
 		fprintf(stderr,"Removing incomplete plot file '%s'\n",
 			fname);
 	    Mfclose(f);
@@ -665,7 +665,7 @@ plotter_nothing(
     char *ret;
 
     ret = xp_timestamp(pl, t);
-    if (debug > 10) {
+    if (tcptrace_debuglevel > 10) {
 	printf("plotter_nothing(%s) gets '%s'\n", ts2ascii(&t), ret);
     }
 }

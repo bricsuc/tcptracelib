@@ -290,7 +290,7 @@ pread_tcpdump(
 	/* if it's not IP, then skip it */
 	if ((ntohs(eth_header.ether_type) != ETHERTYPE_IP) &&
 	    (ntohs(eth_header.ether_type) != ETHERTYPE_IPV6)) {
-	    if (debug > 2)
+	    if (tcptrace_debuglevel > 2)
 		fprintf(stderr,"pread_tcpdump: not an IP packet\n");
 	    continue;
 	}
@@ -311,16 +311,16 @@ pread_f *is_tcpdump(char *filename)
 #else       
       if ((pcap = pcap_open_offline("-", errbuf)) == NULL) {
 #endif /* __WIN32 */	  
-	if (debug > 2)
+	if (tcptrace_debuglevel > 2)
 	    fprintf(stderr,"PCAP said: '%s'\n", errbuf);
 	rewind(stdin);
 	return(NULL);
     }
 
 
-    if (debug) {
+    if (tcptrace_debuglevel) {
 	printf("Using 'pcap' version of tcpdump\n");
-	if (debug > 1) {
+	if (tcptrace_debuglevel > 1) {
 	    printf("\tversion_major: %d\n", pcap_major_version(pcap));
 	    printf("\tversion_minor: %d\n", pcap_minor_version(pcap));
 	    printf("\tsnaplen: %d\n", pcap_snapshot(pcap));
@@ -396,7 +396,7 @@ pread_f *is_tcpdump(char *filename)
 	return(NULL);
     }
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	fprintf(stderr,"Tcpdump format, physical type is %d (%s)\n",
 		type, physname);
 
@@ -444,7 +444,7 @@ PcapSavePacket(
 	/* write the header */
 	Mfwrite((char *)&fhdr, sizeof(fhdr), 1, f_savefile);
 
-	if (debug)
+	if (tcptrace_debuglevel)
 	    fprintf(stderr,"Created pcap save file '%s'\n", filename);
     }
 

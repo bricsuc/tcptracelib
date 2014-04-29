@@ -180,13 +180,13 @@ pread_erf(
     /* read the next frames */
     while (1) {
         if ((rlen=fread(record,1,ERF_HEADER_LEN,SYS_STDIN)) != ERF_HEADER_LEN) {
-            if (debug && (rlen != 0))
+            if (tcptrace_debuglevel && (rlen != 0))
                 fprintf(stderr,"Bad ERF packet header (len:%d)\n", rlen);
             return(0);
         }
         psize = ntohs(record->rlen) - ERF_HEADER_LEN;
         if ((rlen=fread((char *)record+ERF_HEADER_LEN,1,psize,SYS_STDIN)) != psize) {
-            if (debug && (rlen != 0))
+            if (tcptrace_debuglevel && (rlen != 0))
                 fprintf(stderr,"Bad ERF packet payload (len:%d)\n", rlen);
             return(0);
         }
@@ -251,7 +251,7 @@ pread_erf(
 
         /* if it's not IP, then skip it */
         if (ether_type != ETHERTYPE_IP && ether_type != ETHERTYPE_IPV6) {
-            if (debug > 2)
+            if (tcptrace_debuglevel > 2)
                 fprintf(stderr,"pread_erf: not an IP packet\n");
             continue;
         }
@@ -354,7 +354,7 @@ is_erf(
     memset(&eth_header, 0, sizeof(eth_header));
     eth_header.ether_type = htons(ETHERTYPE_IP);
 
-    if (debug)
+    if (tcptrace_debuglevel)
         fprintf(stderr,"ERF format\n");
 
     return(pread_erf);

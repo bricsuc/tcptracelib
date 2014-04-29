@@ -1,6 +1,8 @@
 
 #include "tcptrace.h"
 
+int tcptrace_debuglevel = 0;
+
 /* initialize the tcptrace runtime context */
 void
 tcptrace_initialize_context(tcptrace_context_t *context) {

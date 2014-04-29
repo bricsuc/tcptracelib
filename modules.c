@@ -23,7 +23,7 @@ tcptrace_modules_all_newfile(
 	    continue;  /* module doesn't want to be notified of new files */
         }
 
-	if (debug>3) {
+	if (tcptrace_debuglevel>3) {
 	    fprintf(stderr,"Calling newfile routine for module \"%s\"\n",
 		    modules[i].module_name);
         }
@@ -44,17 +44,17 @@ tcptrace_modules_load(
 
     for (i=0; i < NUM_MODULES; ++i) {
 	context->num_modules++;
-	if (debug)
+	if (tcptrace_debuglevel)
 	    fprintf(stderr,"Initializing module \"%s\"\n",
 		    modules[i].module_name);
 	enable = (*modules[i].module_init)(context, argc, argv);
 	if (enable) {
-	    if (debug)
+	    if (tcptrace_debuglevel)
 		fprintf(stderr,"Module \"%s\" enabled\n",
 			modules[i].module_name);
 	    modules[i].module_inuse = TRUE;
 	} else {
-	    if (debug)
+	    if (tcptrace_debuglevel)
 		fprintf(stderr,"Module \"%s\" not active\n",
 			modules[i].module_name);
 	    modules[i].module_inuse = FALSE;
@@ -77,7 +77,7 @@ tcptrace_modules_finish(tcptrace_context_t *context)
 	if (modules[i].module_done == NULL)
 	    continue;  /* might not have a cleanup */
 
-	if (debug)
+	if (tcptrace_debuglevel)
 	    fprintf(stderr,"Calling cleanup for module \"%s\"\n",
 		    modules[i].module_name);
 
@@ -102,7 +102,7 @@ tcptrace_modules_newconn(
 	if (modules[i].module_newconn == NULL)
 	    continue;  /* they might not care */
 
-	if (debug>3)
+	if (tcptrace_debuglevel>3)
 	    fprintf(stderr,"Calling newconn routine for module \"%s\"\n",
 		    modules[i].module_name);
 
@@ -135,7 +135,7 @@ tcptrace_modules_deleteconn(
 	if (modules[i].module_deleteconn == NULL)
 	    continue;  /* they might not care */
 
-	if (debug>3)
+	if (tcptrace_debuglevel>3)
 	    fprintf(stderr,"Calling delete conn routine for module \"%s\"\n",
 		    modules[i].module_name);
 
@@ -161,7 +161,7 @@ tcptrace_modules_newconn_udp(
 	if (modules[i].module_udp_newconn == NULL)
 	    continue;  /* they might not care */
 
-	if (debug>3)
+	if (tcptrace_debuglevel>3)
 	    fprintf(stderr,"Calling UDP newconn routine for module \"%s\"\n",
 		    modules[i].module_name);
 
@@ -194,7 +194,7 @@ tcptrace_modules_readpacket_nottcpudp(
 	if (modules[i].module_nontcpudp_read == NULL)
 	    continue;  /* they might not care */
 
-	if (debug>3)
+	if (tcptrace_debuglevel>3)
 	    fprintf(stderr,"Calling nontcp routine for module \"%s\"\n",
 		    modules[i].module_name);
 
@@ -220,7 +220,7 @@ tcptrace_modules_readpacket(
 	if (modules[i].module_read == NULL)
 	    continue;  /* they might not care */
 
-	if (debug>3)
+	if (tcptrace_debuglevel>3)
 	    fprintf(stderr,"Calling read routine for module \"%s\"\n",
 		    modules[i].module_name);
 
@@ -247,7 +247,7 @@ tcptrace_modules_readpacket_udp(
 	if (modules[i].module_udp_read == NULL)
 	    continue;  /* they might not care */
 
-	if (debug>3)
+	if (tcptrace_debuglevel>3)
 	    fprintf(stderr,"Calling read routine for module \"%s\"\n",
 		    modules[i].module_name);
 

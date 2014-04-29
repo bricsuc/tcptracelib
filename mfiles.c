@@ -292,7 +292,7 @@ Mfclose(
 {
     int ret;
 
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,"Mfclose: called for file '%s'\n", pmf->fname);
 	
     Mcheck(pmf);
@@ -366,7 +366,7 @@ M_closeold(void)
     Mf_unlink(closehim);
     Mf_totail(closehim,&mfc_tail);
 
-    if (debug > 1)
+    if (tcptrace_debuglevel > 1)
 	fprintf(stderr,"Mfiles: too many files open, closed file '%s'\n",
 		closehim->fname);
 }
@@ -379,7 +379,7 @@ Mcheck(
 {
     /* make sure that it's open */
     if (pmf->stream == NULL) {
-	if (debug > 1)
+	if (tcptrace_debuglevel > 1)
 	    fprintf(stderr,"Mcheck: re-opening file '%s'\n", pmf->fname);
 	Mfopen_internal(pmf,"r+");
     }
@@ -448,7 +448,7 @@ M_mkdirp(char *directory)
     if (pds == NULL)
 	pds = DSNew();
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	fprintf(stderr,"Trying to create directory '%s'\n", directory);
     
 
@@ -479,7 +479,7 @@ M_mkdirp(char *directory)
 		exit(-1);
 	    }
 	} else {
-	    if (debug)
+	    if (tcptrace_debuglevel)
 		fprintf(stderr,"Created directory '%s'\n", temp);
 	}
 

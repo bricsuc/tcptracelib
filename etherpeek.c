@@ -191,7 +191,7 @@ pread_EP(
 	    hdr.packetlength = ntohs(hdr.packetlength);
 	    hdr.slicelength = ntohs(hdr.slicelength);
 
-	    if (debug>1) {
+	    if (tcptrace_debuglevel>1) {
 		printf("EP_read: next packet: original length: %d, saved length: %d\n",
 		       hdr.packetlength, hdr.slicelength);
 	    }
@@ -283,7 +283,7 @@ pread_EP(
 	    else
 		*ptlen = hdrv7.packetlength;
 
-	    if (debug>1) {
+	    if (tcptrace_debuglevel>1) {
 		printf("File position: %ld\n", ftell(SYS_STDIN));
 		printf("pread_EP (v7) next packet:\n");
 		printf("  packetlength: %d\n", hdrv7.packetlength);
@@ -304,7 +304,7 @@ pread_EP(
 	}
 
 
-	if (debug > 3) {
+	if (tcptrace_debuglevel > 3) {
 	    PrintRawDataHex("EP_READ: Ethernet Dump", pep, (char *)(pep+1)-1);
 	}
 
@@ -318,14 +318,14 @@ pread_EP(
 	}
 	if ((rlen=fread(pip_buf,1,len,SYS_STDIN)) != len) {
 	    if (rlen != 0)
-		if (debug)
+		if (tcptrace_debuglevel)
 		    fprintf(stderr,
 			    "Couldn't read %d more bytes, skipping last packet\n",
 			    len);
 	    return(0);
 	}
 
-	if (debug > 3)
+	if (tcptrace_debuglevel > 3)
 	    PrintRawDataHex("EP_READ: IP Dump", pip_buf, (char *)pip_buf+len-1);
 
 	/* round to 2 bytes for V7 */
@@ -344,7 +344,7 @@ pread_EP(
 	/* if it's not IP, then skip it */
 	if ((ntohs(pep->ether_type) != ETHERTYPE_IP) &&
 	    (ntohs(pep->ether_type) != ETHERTYPE_IPV6)) {
-	    if (debug > 2)
+	    if (tcptrace_debuglevel > 2)
 		fprintf(stderr,"pread_EP: not an IP packet\n");
 	    continue;
 	}
@@ -387,7 +387,7 @@ pread_f *is_EP(char *filename)
     
     mactime=file_header2.timeDate - Mac2unix;  /*get time plus offset to unix time */
     /********** File header info ********************************/
-    if (debug>1) {
+    if (tcptrace_debuglevel>1) {
 	int i;
       
 	fprintf(stderr, "IS_EP says version number %d \n",file_header.version);
@@ -412,13 +412,13 @@ pread_f *is_EP(char *filename)
 	 file_header.version == VERSION_5) &&
 	(file_header.status == 0) &&
 	(memcmp(file_header2.futureUse,"\000\000\000\000\000\000\000",7) == 0)) {
-	if (debug)
+	if (tcptrace_debuglevel)
 	    fprintf(stderr, "Valid Etherpeek format file (file version: %d)\n",
 		   file_header.version);
 	thisfile_ep_version = file_header.version;
 
     } else {
-	if (debug)
+	if (tcptrace_debuglevel)
 	    fprintf(stderr,"I don't think this is version 5, 6, or 7 Ether Peek File\n");
 
 	return(NULL);

@@ -170,7 +170,7 @@ pread_netm(
 	}
 	if ((rlen=fread(pip_buf,1,len,SYS_STDIN)) != len) {
 	    if (rlen != 0)
-		if (debug)
+		if (tcptrace_debuglevel)
 		    fprintf(stderr,
 			    "Couldn't read %d more bytes, skipping last packet\n",
 			    len);
@@ -205,7 +205,7 @@ pread_netm(
 	/* if it's not IP, then skip it */
 	if ((ntohs(pep->ether_type) != ETHERTYPE_IP) &&
 	    (ntohs(pep->ether_type) != ETHERTYPE_IPV6)) {
-	    if (debug > 2)
+	    if (tcptrace_debuglevel > 2)
 		fprintf(stderr,"pread_netm: not an IP packet\n");
 	    continue;
 	}
@@ -257,7 +257,7 @@ pread_f *is_netm(char *filename)
 	return(NULL);
     }
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("NETM file version: %d\n", nhdr.version);
 
     /* ignore the header at the top */

@@ -424,7 +424,7 @@ MakeBinaryNode(
 	    if ((pf1->conjunction) || (pf2->conjunction))
 		pf_new->conjunction = TRUE;
 
-	    if (debug>1)
+	    if (tcptrace_debuglevel>1)
 		printf("MakeBinaryNode: made %s (%c)\n",
 		       Filter2Str(pf_new),
 		       pf_new->conjunction?'c':'d');
@@ -604,32 +604,32 @@ PrintConst(
     /* for constants */
     switch (pf->vartype) {
       case V_ULLONG:
-	if (debug)
+	if (tcptrace_debuglevel)
 	    snprintf(buf,sizeof(buf),"ULLONG(%" FS_ULL ")",
 		    pf->un.constant.u_longint);
 	else
 	    snprintf(buf,sizeof(buf),"%" FS_ULL,pf->un.constant.u_longint);
 	break;
       case V_LLONG:
-	if (debug)
+	if (tcptrace_debuglevel)
 	    snprintf(buf,sizeof(buf),"LLONG(%" FS_LL ")", pf->un.constant.longint);
 	else
 	    snprintf(buf,sizeof(buf),"%" FS_LL, pf->un.constant.longint);
 	break;
       case V_STRING:
-	if (debug)
+	if (tcptrace_debuglevel)
 	    snprintf(buf,sizeof(buf),"STRING(%s)",pf->un.constant.string);
 	else
 	    snprintf(buf,sizeof(buf),"%s",pf->un.constant.string);
 	break;
       case V_BOOL:
-	if (debug)
+	if (tcptrace_debuglevel)
 	    snprintf(buf,sizeof(buf),"BOOL(%s)",  BOOL2STR(pf->un.constant.bool));
 	else
 	    snprintf(buf,sizeof(buf),"%s", BOOL2STR(pf->un.constant.bool));
 	break;
       case V_IPADDR:
-	if (debug)
+	if (tcptrace_debuglevel)
 	    snprintf(buf,sizeof(buf),"IPADDR(%s)", HostAddr(*pf->un.constant.pipaddr));
 	else
 	    snprintf(buf,sizeof(buf),"%s", HostAddr(*pf->un.constant.pipaddr));
@@ -653,7 +653,7 @@ PrintVar(
     char buf[100];
 
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	snprintf(buf,sizeof(buf),"VAR(%s,'%s%s',%lu,%c)",
 		Vartype2Str(pf->vartype),
 		pf->un.variable.fclient?"c_":"s_",
@@ -687,10 +687,10 @@ ParseFilter(
 {
     exprstr = strdup(expr);
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("Parsefilter('%s') called\n", expr);
 
-    if (debug > 1)
+    if (tcptrace_debuglevel > 1)
 	filtyydebug = 1;
 
     if (filtyyparse() == 0) {
@@ -938,7 +938,7 @@ Var2String(
     if (str == NULL)
 	str = "<NULL>";
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("Var2String returns 0x%p (%s)\n",
 	       str, str);
 
@@ -1120,7 +1120,7 @@ EvalMathopUnsigned(
     pres->vartype = V_ULLONG;
     pres->val.u_longint = ret;
 
-	if (debug)
+	if (tcptrace_debuglevel)
 		printf("EvalMathopUnsigned %" FS_ULL " %s %" FS_ULL " returns %s\n",
 
 	       varl, Op2Str(pf->op), varr,
@@ -1171,7 +1171,7 @@ EvalMathopSigned(
     pres->vartype = V_LLONG;
     pres->val.longint = ret;
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("EvalMathopSigned %" FS_LL " %s %" FS_LL " returns %s\n",
 	       varl, Op2Str(pf->op), varr,
 	       Res2Str(pres));
@@ -1221,7 +1221,7 @@ EvalRelopUnsigned(
     pres->vartype = V_BOOL;
     pres->val.bool = ret;
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("EvalUnsigned %" FS_ULL " %s %" FS_ULL " returns %s\n",
 	       varl, Op2Str(pf->op), varr,
 	       BOOL2STR(ret));
@@ -1269,7 +1269,7 @@ EvalRelopSigned(
     pres->vartype = V_BOOL;
     pres->val.bool = ret;
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("EvalSigned %" FS_LL " %s %" FS_LL " returns %s\n",
 	       varl, Op2Str(pf->op), varr, 
 	       BOOL2STR(ret));
@@ -1306,7 +1306,7 @@ EvalRelopIpaddr(
 
      /* always evaluates FALSE unless both same type */
      if (result == -2) {
-	 if (debug) {
+	 if (tcptrace_debuglevel) {
 	     printf("EvalIpaddr %s", HostAddr(*varl));
 	     printf("%s fails, different addr types\n",
 		    HostAddr(*varr));
@@ -1331,7 +1331,7 @@ EvalRelopIpaddr(
      pres->vartype = V_BOOL;
      pres->val.bool = ret;
 
-     if (debug) {
+     if (tcptrace_debuglevel) {
 	 printf("EvalIpaddr %s %s", HostAddr(*varl), Op2Str(pf->op));
 	 printf("%s returns %s\n", HostAddr(*varr), BOOL2STR(ret));
      }
@@ -1384,7 +1384,7 @@ EvalRelopString(
     pres->vartype = V_BOOL;
     pres->val.bool = ret;
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("EvalString '%s' %s '%s' returns %s\n",
 	       varl, Op2Str(pf->op), varr, 
 	       BOOL2STR(ret));
@@ -1622,7 +1622,7 @@ EvalFilter(
 	exit(-1);
     }
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("EvalFilter('%s') returns %s\n",
 	       Filter2Str(pf),Res2Str(pres));
 
@@ -1643,7 +1643,7 @@ PassesFilter(
     EvalFilter(ptp,&res,filter_root);
     ret = res.val.bool;
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("PassesFilter('%s<->%s') returns %s\n",
 	       ptp->a_endpoint, ptp->b_endpoint,
 	       BOOL2STR(ret));
@@ -1749,11 +1749,11 @@ filter_getc()
     if (*pinput == '\00') {
 	static int doneyet = 0;
 	if (++doneyet>1) {
-	    if (debug > 4)
+	    if (tcptrace_debuglevel > 4)
 		printf("filter_getc() returns EOF\n");
 	    return(EOF);
 	} else {
-	    if (debug > 4)
+	    if (tcptrace_debuglevel > 4)
 		printf("filter_getc() returns newline\n");
 	    return('\n');
 	}
@@ -1761,7 +1761,7 @@ filter_getc()
 
     ch = *pinput++;
 
-    if (debug > 4)
+    if (tcptrace_debuglevel > 4)
 	printf("filter_getc() returns char '%c'\n", ch);
 
     return(ch);
@@ -1795,7 +1795,7 @@ VFuncTput(
     tput_f = (double)(ptcb->unique_bytes) / etime;
     tput = (u_llong)(tput_f+0.5);
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	printf("VFuncTput(%s<->%s) = %" FS_ULL "\n",
 	       ptcb->ptp->a_endpoint,
 	       ptcb->ptp->b_endpoint,

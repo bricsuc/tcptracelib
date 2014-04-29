@@ -212,11 +212,11 @@ pread_snoop(
 		    /* make it appear to have been IP all along */
 		    /* (note that both fields are still in N.B.O. */
 		    pep->ether_type = vlanh.vlan_proto;
-		    if (debug > 2)
+		    if (tcptrace_debuglevel > 2)
 			printf("Removing VLAN header (vlan:%x)\n",
 			       vlanh.vlan_num);
 		} else {
-		    if (debug > 2)
+		    if (tcptrace_debuglevel > 2)
 			printf("Skipping a VLAN packet (num:%x proto:%x)\n",
 			       vlanh.vlan_num, vlanh.vlan_proto);
 		}
@@ -229,7 +229,7 @@ pread_snoop(
 		(ntohs(pep->ether_type) != ETHERTYPE_IPV6)) {
 
 
-		if (debug > 2)
+		if (tcptrace_debuglevel > 2)
 		    fprintf(stderr,
 			    "pread_snoop: not an IP packet (ethertype 0x%x)\n",
 			    ntohs(pep->ether_type));
@@ -243,7 +243,7 @@ pread_snoop(
 	    }
 
 	    if ((rlen=fread(pip_buf,1,len,SYS_STDIN)) != len) {
-		if (rlen != 0 && debug)
+		if (rlen != 0 && tcptrace_debuglevel)
 		    fprintf(stderr,
 			    "Couldn't read %d more bytes, skipping last packet\n",
 			    len);
@@ -261,7 +261,7 @@ pread_snoop(
 	    /* read in the whole frame and search for IP header */
 	    /* (assumes sizeof(fddi frame) < IP_MAXPACKET, should be true) */
 	    if ((rlen=fread(pip_buf,1,len,SYS_STDIN)) != len) {
-		if (debug && rlen != 0)
+		if (tcptrace_debuglevel && rlen != 0)
 		    fprintf(stderr,
 			    "Couldn't read %d more bytes, skipping last packet\n",
 			    len);
@@ -271,7 +271,7 @@ pread_snoop(
 	    /* find the offset of the IP header inside the FDDI frame */
 	    if ((offset = find_ip_fddi((void *)pip_buf,len)) == -1) {
 		/* not found */
-		if (debug)
+		if (tcptrace_debuglevel)
 		    printf("snoop.c: couldn't find next IP within FDDI\n");
 		return(-1);
 	    }
@@ -320,7 +320,7 @@ pread_snoop(
 		/* if it's not IP, then skip it */
 		if ((ntohs(pep->ether_type) != ETHERTYPE_IP) &&
 		    (ntohs(pep->ether_type) != ETHERTYPE_IPV6)) {
-			if (debug > 2)
+			if (tcptrace_debuglevel > 2)
 				fprintf(stderr,
 					"pread_snoop: not an IP packet (ethertype 0x%x)\n",
 					ntohs(pep->ether_type));
@@ -334,7 +334,7 @@ pread_snoop(
 		}
 
 		if ((rlen=fread(pip_buf,1,len,SYS_STDIN)) != len) {
-			if (rlen != 0 && debug)
+			if (rlen != 0 && tcptrace_debuglevel)
 				fprintf(stderr,
 					"Couldn't read %d more bytes, skipping last packet\n",
 					len);
@@ -402,7 +402,7 @@ pread_f *is_snoop(char *filename)
     buf.mac_type = ntohl(buf.mac_type);
     
     /* sanity check on snoop version */
-    if (debug) {
+    if (tcptrace_debuglevel) {
 	printf("Snoop version: %ld\n", buf.snoop_version);
     }
     if (buf.snoop_version != 2) {
@@ -416,19 +416,19 @@ Tcptrace is only known to work with version 2\n",
     snoop_mac_type = buf.mac_type;
     switch (buf.mac_type) {
       case SNOOP_DL_ETHER:
-	if (debug)
+	if (tcptrace_debuglevel)
 	    printf("Snoop hw type: %ld (Ethernet)\n", buf.mac_type);
 	break;
       case SNOOP_DL_FDDI:
-	if (debug)
+	if (tcptrace_debuglevel)
 	    printf("Snoop hw type: %ld (FDDI)\n", buf.mac_type);
 	break;
       case SNOOP_DL_ATM:
-	if (debug)
+	if (tcptrace_debuglevel)
 	    printf("Snoop hw type: %ld (ATM)\n", buf.mac_type);
 	break;
       default:
-	if (debug)
+	if (tcptrace_debuglevel)
 	    printf("Snoop hw type: %ld (unknown)\n", buf.mac_type);
 	printf("snoop hardware type %ld not understood\n", buf.mac_type);
        

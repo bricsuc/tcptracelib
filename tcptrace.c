@@ -148,7 +148,7 @@ tcptrace_context_t global_context;
 /* u_long update_interval = UPDATE_INTERVAL; */
 /* u_long max_conn_num = MAX_CONN_NUM; */
 
-int debug = 0;   /* TODO: move this out of client, rename to tcptrace_debuglevel */
+/* int debug = 0; */   /* TODO: move this out of client, rename to tcptrace_debuglevel */
 
 /* the following have been de-globalized */
 /* u_long pnum = 0; */
@@ -826,7 +826,7 @@ main(
 	   num_files>1?"s":"",
 	   filenames[0]);
 
-    if (debug > 1)
+    if (tcptrace_debuglevel > 1)
 	DumpFlags();
 
     /* knock, knock... */
@@ -836,7 +836,7 @@ main(
     /* read each file in turn */
     numfiles = argc;
     for (i=0; i < argc; ++i) {
-	if (debug || (numfiles > 1)) {
+	if (tcptrace_debuglevel || (numfiles > 1)) {
 	    if (argc > 1)
 		printf("%sRunning file '%s' (%d of %d)\n", comment, filenames[i], i+1, numfiles);
 	    else
@@ -876,7 +876,7 @@ main(
 	    comment,
 	    (num_files==1)?"file":"files",
 	    elapsed2str(etime));
-    if (debug) {
+    if (tcptrace_debuglevel) {
 	fprintf(stdout,"%s\tfirst packet:  %s\n", comment, ts2ascii(&context->first_packet));
 	fprintf(stdout,"%s\tlast packet:   %s\n", comment, ts2ascii(&context->last_packet));
     }
@@ -1009,18 +1009,18 @@ Ignore(
 		    BadArg(argsource,
 			   "-iX-Y / --iTCPX-Y, must have X<Y, '%s'\n", o_arg);
 	       }
-	       if (debug)
+	       if (tcptrace_debuglevel)
 		    printf("setting IgnoreConn(%d-%d)\n", num1, num2);
 	       
 	       while (num1<=num2) {
-		    if (debug > 1)
+		    if (tcptrace_debuglevel > 1)
 			 printf("setting IgnoreConn(%d)\n", num1);
 		    IgnoreConn(context, num1++);
 		    
 	       }
 	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
 	       /* single argument */
-	       if (debug)
+	       if (tcptrace_debuglevel)
 		    printf("setting IgnoreConn(%d)\n", num1);
 	       IgnoreConn(context, num1);
 	  } else {
@@ -1083,17 +1083,17 @@ GrabOnly(
 			   "-oX-Y / --oTCPX-Y, must have X<Y, '%s'\n", 
 			   o_arg);
 	       }
-	       if (debug)
+	       if (tcptrace_debuglevel)
 		    printf("setting OnlyConn(%d-%d)\n", num1, num2);
 	       
 	       while (num1<=num2) {
-		    if (debug > 1)
+		    if (tcptrace_debuglevel > 1)
 			 printf("setting OnlyConn(%d)\n", num1);
 		    OnlyConn(context, num1++);
 	       }
 	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
 	       /* single argument */
-	       if (debug)
+	       if (tcptrace_debuglevel)
 		    printf("setting OnlyConn(%d)\n", num1);
 	       OnlyConn(context, num1);
 	  } else {
@@ -1153,11 +1153,11 @@ static void
 		    BadArg(argsource,
 			   "--iUDPX-Y, must have X<Y, '%s'\n", o_arg);
 	       }
-	       if (debug)
+	       if (tcptrace_debuglevel)
 		    printf("setting IgnoreUDPConn(%d-%d)\n", num1,num2);
 	       
 	       while (num1<=num2) {
-		    if (debug > 1) {
+		    if (tcptrace_debuglevel > 1) {
 			 printf("setting IgnoreUDPConn(%d)\n", num1);
                     }
 		    IgnoreUDPConn(context, num1++); /* XXX argh */
@@ -1165,7 +1165,7 @@ static void
 	       }
 	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
 	       /* single argument */
-	       if (debug) {
+	       if (tcptrace_debuglevel) {
 		    printf("setting IgnoreUDPConn(%d)\n", num1);
                }
 	       IgnoreUDPConn(context, num1);
@@ -1228,11 +1228,11 @@ static void
 		    BadArg(argsource,
 			   "--oUDPX-Y, must have X<Y, '%s'\n", o_arg);
 	       }
-	       if (debug)
+	       if (tcptrace_debuglevel)
 		    printf("setting OnlyUDPConn(%d-%d)\n", num1, num2);
 	       
 	       while (num1<=num2) {
-		    if (debug > 1) {
+		    if (tcptrace_debuglevel > 1) {
 			 printf("setting OnlyUDPConn(%d)\n", num1);
                     }
 		    OnlyUDPConn(context, num1++);
@@ -1240,7 +1240,7 @@ static void
 	       }
 	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
 	       /* single argument */
-	       if (debug)
+	       if (tcptrace_debuglevel)
 		    printf("setting OnlyUDPConn(%d)\n", num1);
 	       OnlyUDPConn(context, num1);
 	  } else {
@@ -1275,7 +1275,7 @@ StringToArgv(
 
     /* skip leading blanks */
     while ((*buf != '\00') && (isspace((int)*buf))) {
-	if (debug > 10)
+	if (tcptrace_debuglevel > 10)
 	    printf("skipping isspace('%c')\n", *buf);	    
 	++buf;
     }
@@ -1287,7 +1287,7 @@ StringToArgv(
 
 	/* search for separator */
 	while ((*buf != '\00') && (!isspace((int)*buf))) {
-	    if (debug > 10)
+	    if (tcptrace_debuglevel > 10)
 		printf("'%c' (%d) is NOT a space\n", *buf, (int)*buf);	    
 	    ++buf;
 	}
@@ -1295,14 +1295,14 @@ StringToArgv(
 
 	/* skip spaces */
 	while ((*buf != '\00') && (isspace((int)*buf))) {
-	    if (debug > 10)
+	    if (tcptrace_debuglevel > 10)
 		printf("'%c' (%d) IS a space\n", *buf, (int)*buf);	    
 	    ++buf;
 	}
 
 	*stringend = '\00';  /* terminate the previous string */
 
-	if (debug)
+	if (tcptrace_debuglevel)
 	    printf("  argv[%d] = '%s'\n", nargs, argv[nargs]);
     }
 
@@ -1335,7 +1335,7 @@ CheckArguments(
 	rc_path = malloc(rc_len);
 
 	snprintf(rc_path,rc_len, "%s/%s", home, TCPTRACE_RC_FILE);
-	if (debug>1)
+	if (tcptrace_debuglevel>1)
 	    printf("Looking for resource file '%s'\n", rc_path);
 
 	if (stat(rc_path,&statbuf) != 0) {
@@ -1347,7 +1347,7 @@ CheckArguments(
 	    char *pch_new;
 	    char *file_buf;
 
-	    if (debug>1)
+	    if (tcptrace_debuglevel>1)
 		printf("resource file %s exists\n", rc_path);
 
 	    /* read the file into a buffer */
@@ -1393,7 +1393,7 @@ CheckArguments(
 	    /* append a NULL to pch_new */
 	    *pch_new = '\00';
 
-	    if (debug>2)
+	    if (tcptrace_debuglevel>2)
 		printf("Resource file string: '%s'\n", rc_buf);
 
 	    /* we're finished with the original buffer, but need to keep pch_new */
@@ -1410,7 +1410,7 @@ CheckArguments(
 	int argc;
 	char **argv;
 
-	if (debug)
+	if (tcptrace_debuglevel)
 	    printf("envariable %s contains:\n\t'%s'\n",
 		   TCPTRACE_ENVARIABLE, envariable);
 
@@ -1427,7 +1427,7 @@ CheckArguments(
     }
 
     /* if debugging is on, tell what was in the ENV and rc file */
-    if (debug) {
+    if (tcptrace_debuglevel) {
 	if (rc_path)
 	    printf("Flags from %s: '%s'\n", rc_path, rc_buf);
 	if (envariable)
@@ -1573,7 +1573,7 @@ ParseExtendedBool(
 	} else {
 	    *option_location = pbop_found->bool_default;
         }
-	if (debug>2)
+	if (tcptrace_debuglevel>2)
 	    fprintf(stderr,"Set boolean variable '%s' to '%s'\n",
 		    argtext, BOOL2STR(*option_location));
 	return;
@@ -1681,12 +1681,12 @@ ParseExtendedVar(
         var_location = find_str_option_location(pvop_found);
 
 	*var_location = strdup(argval);
-	if (debug > 2)
+	if (tcptrace_debuglevel > 2)
 	    fprintf(stderr,"Set extended variable '%s' to '%s'\n",
 		    argname, *var_location);
 	if (pvop_found->var_verify) {
 	    /* call the verification routine */
-	    if (debug>2)
+	    if (tcptrace_debuglevel>2)
 		fprintf(stderr,"verifying extended variable '%s'\n", argname);
 	    (*pvop_found->var_verify)(argname, *var_location);
 	}
@@ -1887,7 +1887,7 @@ ParseArgs(
 		  case 'Z': options->dump_rtt = TRUE; break;
 		  case 'b': options->printbrief = TRUE; break;
 		  case 'c': options->ignore_incomplete = TRUE; break;
-		  case 'd': options->debug++; debug++; break;
+		  case 'd': options->debug++; tcptrace_debuglevel++; break;
 		  case 'e': options->save_tcp_data = TRUE; break;
 		  case 'f':
 		    options->filter_output = TRUE;
@@ -2088,7 +2088,7 @@ DumpFlags(void)
     fprintf(stderr,"throughput intvl: %d\n", thru_interval);
     fprintf(stderr,"NS simulator hdrs:%s\n", BOOL2STR(options->ns_hdrs));
     fprintf(stderr,"number modules:   %u\n", (unsigned)NUM_MODULES);
-    fprintf(stderr,"debug:            %s\n", BOOL2STR(debug));
+    fprintf(stderr,"debug:            %s\n", BOOL2STR(tcptrace_debuglevel));
 	
     /* print out the stuff controlled by the extended boolean args */
     for (i=0; i < NUM_EXTENDED_BOOLS; ++i) {
@@ -2166,7 +2166,7 @@ FileToBuf(
     /* put a NULL at the end */
     buffer[filesize] = '\00';
 
-    if (debug > 1)
+    if (tcptrace_debuglevel > 1)
 	printf("Read %d characters from resource '%s': '%s'\n",
 	       filesize, filename, buffer);
 
@@ -2209,7 +2209,7 @@ ExpandFormat(const char *format)
     /* erase the previous contents */
     DSErase(pds);
 
-    if (debug>2)
+    if (tcptrace_debuglevel>2)
 	fprintf(stderr,"Trying to expand string '%s'\n", format);
 
     while (*format) {

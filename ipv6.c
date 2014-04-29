@@ -153,9 +153,9 @@ findheader(
 	/* check the fragment field, if it's not the first fragment,
 	   it's useless (offset part of field must be 0 */
 	if ((ntohs(pip->ip_off)&0x1fff) != 0) {
-	    if (debug>1) {
+	    if (tcptrace_debuglevel>1) {
 		printf("findheader: Skipping IPv4 non-initial fragment\n");
-		if (debug > 2) {
+		if (tcptrace_debuglevel > 2) {
 		    printpacket(context,100,100,NULL,0,pip,*pplast,NULL);
 		}
 	    }
@@ -197,7 +197,7 @@ findheader(
 	/* sanity check, if we're reading bogus header, the length might */
 	/* be wonky, so make sure before you dereference anything!! */
 	if ((char *)pheader < (char *)pip) {
-	    if (debug>1)
+	    if (tcptrace_debuglevel>1)
 		printf("findheader: bad extension header math, skipping packet\n");
 	    return (1);
 	}
@@ -205,7 +205,7 @@ findheader(
 	/* make sure we're still within the packet */
 	/* might be truncated, or might be bad header math */
 	if ((char *)pheader > (char *)*pplast) {
-	    if (debug>3)
+	    if (tcptrace_debuglevel>3)
 		printf("findheader: packet truncated before finding header\n");
 	    return (1);
 	}
@@ -231,7 +231,7 @@ findheader(
 		 anyway */
 	      if ((pfrag->ip6ext_fr_offset&0xfc) != 0) {
 		  /* the offset is non-zero */
-		  if (debug>1)
+		  if (tcptrace_debuglevel>1)
 		      printf("findheader: Skipping IPv6 non-initial fragment\n");
 		  return (1);
 	      }
@@ -442,7 +442,7 @@ int ip_sameaddr (ipaddr *paddr1, ipaddr *paddr2)
 	if (ADDR_ISV4(paddr2))
 	    ret = (paddr1->un.ip4.s_addr == paddr2->un.ip4.s_addr);
     }
-    if (debug > 3)
+    if (tcptrace_debuglevel > 3)
 	printf("SameAddr(%d,%d) returns %d\n",
 	       ADDR_VERSION(paddr1),
 	       ADDR_VERSION(paddr2),
@@ -467,7 +467,7 @@ int ip_lowaddr (ipaddr *paddr1, ipaddr *paddr2)
 	if (ADDR_ISV4(paddr2))
 	    ret = (paddr1->un.ip4.s_addr < paddr2->un.ip4.s_addr);
     }
-    if (debug > 3)
+    if (tcptrace_debuglevel > 3)
 	printf("LowAddr(%d,%d) returns %d\n",
 	       HostAddr(*paddr1), ADDR_VERSION(paddr1),
 	       HostAddr(*paddr2), ADDR_VERSION(paddr2),
@@ -611,7 +611,7 @@ str2ipaddr(
 	pipaddr->addr_vers = 4;
 	if (inet_pton(AF_INET, str,
 		      &pipaddr->un.ip4.s_addr) != 1) {
-	    if (debug)
+	    if (tcptrace_debuglevel)
 		fprintf(stderr,"Address string '%s' unparsable as IPv4\n",
 			str);
 	    return(NULL);
@@ -621,13 +621,13 @@ str2ipaddr(
 	pipaddr->addr_vers = 6;
 	if (inet_pton(AF_INET6, str, 
 		      &pipaddr->un.ip6.s6_addr) != 1) {
-	    if (debug)
+	    if (tcptrace_debuglevel)
 		fprintf(stderr,"Address string '%s' unparsable as IPv6\n",
 			str);
 	    return(NULL);
 	}
     } else {
-	if (debug)
+	if (tcptrace_debuglevel)
 	    fprintf(stderr,"Address string '%s' unparsable\n", str);
 	return(NULL);
     }
@@ -653,7 +653,7 @@ int IPcmp(
 
     /* always returns -2 unless both same type */
     if (pipA->addr_vers != pipB->addr_vers) {
-	if (debug>1) {
+	if (tcptrace_debuglevel>1) {
 	    printf("IPcmp %s", HostAddr(*pipA));
 	    printf("%s fails, different addr types\n",
 		   HostAddr(*pipB));

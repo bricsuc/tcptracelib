@@ -572,7 +572,7 @@ PrintTrace(
 		  pab->rtt_dupack, pba->rtt_dupack);
 	StatLineI(context, "triple dupacks","",
 		  pab->rtt_triple_dupack, pba->rtt_triple_dupack);
-	if (debug)
+	if (tcptrace_debuglevel)
 	    StatLineI(context, "unknown acks:","",
 		      pab->rtt_unkack, pba->rtt_unkack);
 	StatLineI(context, "max # retrans","",
@@ -631,7 +631,7 @@ PrintBrief(
 	    if (len > max_width)
 		max_width = len;
 	}
-	if (debug > 2)
+	if (tcptrace_debuglevel > 2)
 	    fprintf(stderr,"Max name width: %d\n", max_width);
     }
 
@@ -954,7 +954,7 @@ UDPPrintBrief(
 	    if (len > max_width)
 		max_width = len;
 	}
-	if (debug > 2)
+	if (tcptrace_debuglevel > 2)
 	    fprintf(stderr,"Max name width: %d\n", max_width);
     }
 
@@ -1170,7 +1170,7 @@ PrintSVHeader(tcptrace_context_t *context)
    if (options->print_owin)
      sv_expected_count += SV_OWIN_HEADER_COLUMN_COUNT;
 
-   if (debug>3) {
+   if (tcptrace_debuglevel>3) {
      fprintf(stderr,"SV_HEADER_COUNT : -l alone = %d\n", \
             (int)(SV_HEADER1_COLUMN_COUNT + SV_HEADER2_COLUMN_COUNT));
      fprintf(stderr,"                : -W alone = %d\n", \

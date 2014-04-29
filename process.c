@@ -26,14 +26,12 @@ tcptrace_process_file(
     Bool is_stdin;
 
     tcptrace_runtime_options_t *options;
-    int debug;
 
     /* storage for current working files and packets */
     tcptrace_working_file working_file;
     raw_packet_t raw_packet;
 
     options = context->options;
-    debug = context->options->debug;
 
     /* set the current file name */
     context->current_filename = filename;
@@ -54,7 +52,7 @@ tcptrace_process_file(
     working_file.pnum = 0;
     working_file.location = 0;
 
-    if (debug) {
+    if (tcptrace_debuglevel) {
         printf("Trace file size: %lu bytes\n", working_file.filesize);
     }
 
@@ -177,7 +175,7 @@ check_packet_type(tcptrace_context_t *context,
             warned = TRUE;
         }
 
-        if (debug) {
+        if (tcptrace_debuglevel) {
             fprintf(stderr,
                     "Skipping packet %lu, not an IPv4/v6 packet (version:%d)\n",
                     context->pnum, IP_V(raw_packet->pip));
@@ -381,7 +379,7 @@ static void progress_counter(tcptrace_context_t *context,
 
             unsigned frac;
 
-            if (debug)
+            if (tcptrace_debuglevel)
                 fprintf(stderr, "%s: ", context->current_filename);
             if (working_file->is_stdin) {
                 fprintf(stderr ,"%lu", working_file->pnum);

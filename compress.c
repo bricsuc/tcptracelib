@@ -110,11 +110,11 @@ static char *FindBinary(
     /* quick check for absolute path */
     if (*binname == '/') {
 	if (access(binname,X_OK) == 0) {
-	    if (debug>1)
+	    if (tcptrace_debuglevel>1)
 		fprintf(stderr,"FindBinary: abs path '%s' is OK\n", binname);
 	    return(binname);
 	} else {
-	    if (debug>1)
+	    if (tcptrace_debuglevel>1)
 		fprintf(stderr,"FindBinary: abs path '%s' not found\n", binname);
 	    return(NULL);
 	}
@@ -122,7 +122,7 @@ static char *FindBinary(
 
     path = getenv("PATH");
     if (path == NULL) {
-	if (debug)
+	if (tcptrace_debuglevel)
 	    fprintf(stderr,"FindBinary: couldn't get PATH envariable\n");
 	return(NULL);
     }
@@ -137,10 +137,10 @@ static char *FindBinary(
 
 	snprintf(abspath,sizeof(abspath),"%s/%s",pch,binname);
 
-	if (debug>1)
+	if (tcptrace_debuglevel>1)
 	    fprintf(stderr,"Checking for binary '%s'\n", abspath);
 	if (access(abspath,X_OK) == 0) {
-	    if (debug>1)
+	    if (tcptrace_debuglevel>1)
 		fprintf(stderr,"FindBinary: found binary '%s'\n", abspath);
 	    return(abspath);
 	}
@@ -151,7 +151,7 @@ static char *FindBinary(
 	    pch = NULL;
     }
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	fprintf(stderr,"FindBinary: couldn't find binary '%s' in PATH\n",
 		binname);
 
@@ -180,13 +180,13 @@ WhichFormat(
     for (i=0; i < NUM_COMP_FORMATS; ++i) {
 	struct comp_formats *pf = &supported_comp_formats[i];
 
-	if (debug>1)
+	if (tcptrace_debuglevel>1)
 	    fprintf(stderr,"Checking for suffix match '%s' against '%s' (%s)\n",
 		    filename,pf->comp_suffix,pf->comp_bin);
 	/* check for suffix match */
 	lens = strlen(pf->comp_suffix);
 	if (strcmp(filename+len-lens, pf->comp_suffix) == 0) {
-	    if (debug>1)
+	    if (tcptrace_debuglevel>1)
 		fprintf(stderr,"Suffix match!   '%s' against '%s'\n",
 			filename,pf->comp_suffix);
 	    /* stick it in the cache */
@@ -203,7 +203,7 @@ WhichFormat(
     pf_cache = NULL;
     is_compressed = FALSE;
 
-    if (debug)
+    if (tcptrace_debuglevel)
 	fprintf(stderr,"WhichFormat: failed to find compression format for file '%s'\n",
 		filename);
 
@@ -222,14 +222,14 @@ CompReopenFile(
     int fd;
     long pos;
 
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,"CompReopenFile('%s') called\n", filename);
 
     /* we need to switch from the header file to a pipe connected */
     /* to a process.  Find out how far we've read from the file */
     /* so far... */
     pos = ftell(stdin);
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,"CompReopenFile: current file position is %ld\n", pos);
 
     /* open a pipe to the original (compressed) file */
@@ -329,7 +329,7 @@ CompSaveHeader(
     }
 
     header_length = len;
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,"Saved %d bytes from stream into temp header file '%s'\n",
 		len, tempfile);
 
@@ -340,7 +340,7 @@ CompSaveHeader(
 	exit(-1);
     }
 
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,"Saved the file header into temp file '%s'\n",
 		tempfile);
 
@@ -376,7 +376,7 @@ CompOpenPipe(
     int i;
     char *args[COMP_MAX_ARGS];
 
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,"CompOpenPipe('%s') called\n", filename);
 
     /* short hand if it's just reading from standard input */
@@ -430,7 +430,7 @@ CompOpenPipe(
 	/* close all other FDs - lazy, but close enough for our purposes  :-) */
 	for (i=3; i < 100; ++i) close(i);
 
-	if (debug>1) {
+	if (tcptrace_debuglevel>1) {
 	    fprintf(stderr,"Execing %s", abspath);
 	    for (i=1; args[i]; ++i)
 		fprintf(stderr," %s", args[i]);
@@ -486,10 +486,10 @@ CompOpenHeader(
     }
 
     /* open the file through compression */
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	printf("Decompressing file of type '%s' using program '%s'\n",
 	       pf->comp_descr, pf->comp_bin);
-    else if (debug)
+    else if (tcptrace_debuglevel)
 	printf("Decompressing file using '%s'\n", pf->comp_bin);
 
     f = CompSaveHeader(filename,pf);
@@ -507,7 +507,7 @@ FILE *
 CompOpenFile(
     char *filename)
 {
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,"CompOpenFile('%s') called\n", filename);
 
     /* if it isn't compressed, just leave it at stdin */
@@ -517,7 +517,7 @@ CompOpenFile(
     /* if the header we already saved is the whole file, it must be */
     /* short, so just read from the file */
     if (header_length < COMP_HDR_SIZE) {
-	if (debug>1)
+	if (tcptrace_debuglevel>1)
 	    fprintf(stderr,"CompOpenFile: still using header file, short file...\n");
 	return(stdin);
     }
@@ -580,7 +580,7 @@ PipeHelper(void)
 	PipeFitting(f_pipe, stdin, f_orig_stdin);
 
 	/* OK, both empty, we're done */
-	if (debug>1)
+	if (tcptrace_debuglevel>1)
 	    fprintf(stderr,
 		    "PipeHelper(%d): all done, exiting\n", (int)getpid());
 	    
@@ -588,7 +588,7 @@ PipeHelper(void)
     }
 
     /* I'm still the parent */
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,
 		"PipeHelper: forked off child %d to deal with stdin\n",
 		child_pid);
@@ -661,7 +661,7 @@ PipeFitting(
 	    exit(0);
 	}
 
-	if (debug>1)
+	if (tcptrace_debuglevel>1)
 	    fprintf(stderr,
 		    "PipeFitting: read %d bytes from header file\n", len);
 
@@ -679,7 +679,7 @@ PipeFitting(
     if (unlink(tempfile)<0)
 	  perror("PipeFitting : unlink of tempfile failed");
      
-    if (debug>1)
+    if (tcptrace_debuglevel>1)
 	fprintf(stderr,
 		"PipeFitting: header file empty, switching to old stdin\n");
 
@@ -694,7 +694,7 @@ PipeFitting(
 	    exit(0);
 	}
 
-	if (debug>1)
+	if (tcptrace_debuglevel>1)
 	    fprintf(stderr,
 		    "PipeFitting: read %d bytes from f_orig_stdin\n", len);
 
