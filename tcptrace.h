@@ -735,7 +735,7 @@ typedef struct udphdr udphdr;
 /* extern u_long max_conn_num; */
 
 extern int tcptrace_debuglevel;
-extern int thru_interval;
+/* extern int thru_interval; */
 
 /* extern u_long pnum; */ /* now localized in tcptrace_context_t */
 
@@ -829,6 +829,8 @@ typedef struct tcptrace_runtime_options_t {
     u_long remove_closed_conn_interval;
     u_long update_interval;
     u_long max_conn_num;
+
+    int thru_interval;
 
 } tcptrace_runtime_options_t;
 

@@ -172,5 +172,7 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->update_interval = UPDATE_INTERVAL;
     options->max_conn_num = MAX_CONN_NUM;
 
+    options->thru_interval = 10; /* segments */
+
 }
 

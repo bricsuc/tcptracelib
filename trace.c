@@ -127,7 +127,7 @@ static Bool MissingData(tcp_pair *ptp);
 /* Bool show_zwnd_probes = TRUE; */
 /* Bool use_short_names = FALSE; */
 /* Bool show_urg = TRUE; */
-int thru_interval = 10;	/* in segments */
+/* int thru_interval = 10; */	/* in segments */
 
 /* This seems to control one thing only--displaying the cache if the
    debug level > 2. There's no command line option for it. Made it static;

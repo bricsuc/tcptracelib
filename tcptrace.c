@@ -1831,10 +1831,10 @@ ParseArgs(
 		switch (*argv[i]) {
 		  case 'A':
 		    if (isdigit((int)(*(argv[i]+1))))
-			thru_interval = atoi(argv[i]+1);
+			options->thru_interval = atoi(argv[i]+1);
 		    else
 			BadArg(argsource, "-A  number missing\n");
-		    if (thru_interval <= 0)
+		    if (options->thru_interval <= 0)
 			BadArg(argsource, "-A  must be > 1\n");
 		    *(argv[i]+1) = '\00'; break;
 		  case 'B':
@@ -2086,7 +2086,7 @@ DumpFlags(void)
     fprintf(stderr,"graph_seq_zero:   %s\n", BOOL2STR(options->graph_seq_zero));
     fprintf(stderr,"beginning pnum:   %lu\n", options->beginpnum);
     fprintf(stderr,"ending pnum:      %lu\n", options->endpnum);
-    fprintf(stderr,"throughput intvl: %d\n", thru_interval);
+    fprintf(stderr,"throughput intvl: %d\n", options->thru_interval);
     fprintf(stderr,"NS simulator hdrs:%s\n", BOOL2STR(options->ns_hdrs));
     fprintf(stderr,"number modules:   %u\n", (unsigned)NUM_MODULES);
     fprintf(stderr,"debug:            %s\n", BOOL2STR(tcptrace_debuglevel));

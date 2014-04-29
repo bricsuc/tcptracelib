@@ -115,7 +115,7 @@ DoThru(
 	return;
 
     /* see if we should output the stats yet */
-    if (ptcb->thru_pkts+1 >= thru_interval) {
+    if (ptcb->thru_pkts+1 >= options->thru_interval) {
 
 	/* compute stats for this interval */
 	etime = elapsed(ptcb->thru_firsttime, context->current_time);
