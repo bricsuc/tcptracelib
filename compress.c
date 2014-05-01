@@ -97,7 +97,7 @@ static Bool is_compressed = FALSE;
 static FILE * f_orig_stdin = NULL;
 static int child_pid = -1;
 static char *tempfile = NULL;
-int posn;
+static int posn;
 
 
 static char *FindBinary(
