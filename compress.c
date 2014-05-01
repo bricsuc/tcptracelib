@@ -88,6 +88,7 @@ static FILE *CompSaveHeader(char *filename, struct comp_formats *pf);
 static int CompOpenPipe(char *filename, struct comp_formats *pf);
 static FILE *PipeHelper(void);
 static void PipeFitting(FILE *f_pipe, FILE *f_header, FILE *f_stdin);
+static void RemoveTmpfile();
 
 
 /* local globals */
@@ -95,7 +96,7 @@ static int header_length = -1;
 static Bool is_compressed = FALSE;
 static FILE * f_orig_stdin = NULL;
 static int child_pid = -1;
-static char *tempfile;
+static char *tempfile = NULL;
 int posn;
 
 
@@ -364,6 +365,23 @@ CompSaveHeader(
     return(stdin);
 }
 
+static void RemoveTmpfile() {
+    if (tempfile != NULL) {
+        if (unlink(tempfile)<0) {
+            perror("PipeFitting : unlink of tempfile failed");
+        }
+        
+        /* both mkstemp() and tempnam() return malloc()ed buffers */
+        /* so must free that memory */
+        free(tempfile);
+        tempfile = NULL;
+
+    } else {
+        if (tcptrace_debuglevel) {
+            fprintf(stderr, "attempting to remove non-existent temp file header\n");
+        }
+    }
+}
 
 
 static int
@@ -478,7 +496,7 @@ CompOpenHeader(
    
     /* if no compression found, just open the file */
     if (pf == NULL) {
-	if (freopen(filename,"r",stdin) == NULL) {
+	if (freopen(filename, "r", stdin) == NULL) {
 	    perror(filename);
 	    return(NULL);
 	}
@@ -486,13 +504,19 @@ CompOpenHeader(
     }
 
     /* open the file through compression */
-    if (tcptrace_debuglevel>1)
-	printf("Decompressing file of type '%s' using program '%s'\n",
-	       pf->comp_descr, pf->comp_bin);
-    else if (tcptrace_debuglevel)
-	printf("Decompressing file using '%s'\n", pf->comp_bin);
+    switch (tcptrace_debuglevel) {
+        case 0:
+            break;
+        case 1:
+            printf("Decompressing file using '%s'\n", pf->comp_bin);
+            break;
+        default:  /* tcptrace_debuglevel > 1 */
+            printf("Decompressing file of type '%s' using program '%s'\n",
+                   pf->comp_descr, pf->comp_bin);
+            break;
+    }
 
-    f = CompSaveHeader(filename,pf);
+    f = CompSaveHeader(filename, pf);
 
     if (!f) {
 	fprintf(stderr,"Decompression failed for file '%s'\n", filename);
@@ -500,6 +524,24 @@ CompOpenHeader(
     }
 
     return(f);
+}
+
+int
+CompCloseHeader(
+    FILE *header)
+{
+    int r;
+
+    /* header is stdin, so no need to close, but must remove the temp file
+     * if it's still there */
+
+    if (tempfile != NULL) {
+        if (tcptrace_debuglevel) {
+            fprintf(stderr, "removing temporary file '%s'.\n", tempfile);
+        }
+        RemoveTmpfile();
+    }
+    return(r);
 }
 
 
@@ -676,8 +718,9 @@ PipeFitting(
     if (fclose(f_header)<0) 
 	  perror("PipeFitting : fclose failed");
      
-    if (unlink(tempfile)<0)
-	  perror("PipeFitting : unlink of tempfile failed");
+    RemoveTmpfile();
+    // if (unlink(tempfile)<0)
+    //	  perror("PipeFitting : unlink of tempfile failed");
      
     if (tcptrace_debuglevel>1)
 	fprintf(stderr,

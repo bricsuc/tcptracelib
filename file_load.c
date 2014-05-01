@@ -71,6 +71,7 @@ tcptrace_load_status_t
 tcptrace_load_file(
     char *filename, tcptrace_working_file *working_file)
 {
+    FILE *header;
     pread_f *ppread;
     int ret;
     int fix;
@@ -79,17 +80,20 @@ tcptrace_load_file(
     /* TODO: compressed file support seems somewhat unecessary;
        consider removing feature or moving it elsewhere */
 
+    header = CompOpenHeader(filename);
 #ifdef __WIN32
     /* If the file is compressed, exit (Windows version does not support compressed dump files) */
-    if (CompOpenHeader(filename) == (FILE *)-1) {
+    if (header == (FILE *)-1) {
         return(TCPTRACE_WONT_UNCOMPRESS);  /* was exit(-1); */
     }
 #else
     /* open the file header */
-    if (CompOpenHeader(filename) == NULL) {
+    if (header == NULL) {
         return(TCPTRACE_WONT_UNCOMPRESS);  /* was exit(-1); */
     }
 #endif /* __WIN32 */
+    
+    CompCloseHeader(header);
 
     working_file->is_stdin = 0;
 

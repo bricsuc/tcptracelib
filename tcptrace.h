@@ -1075,6 +1075,7 @@ int Mfclose(MFILE *pmf);
 int Mfpipe(int pipes[2]);
 struct tcp_options *ParseOptions(tcptrace_context_t *context, struct tcphdr *ptcp, void *plast);
 FILE *CompOpenHeader(char *filename);
+int CompCloseHeader(FILE *header);
 FILE *CompOpenFile(char *filename);
 void CompCloseFile(char *filename);
 void CompFormats(void);
