@@ -70,6 +70,6 @@ static char const GCC_UNUSED rcsid_version[] =
 
 /* build information */
 /* constants filled in when version.c is compiled */
-extern char *built_bywhom;
-extern char *built_when;
-extern char *built_where;
+extern char *tcptrace_built_bywhom;
+extern char *tcptrace_built_when;
+extern char *tcptrace_built_where;

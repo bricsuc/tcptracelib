@@ -68,7 +68,7 @@ static char const GCC_UNUSED rcsid[] =
 
 
 /* version information */
-char *tcptrace_version = VERSION;
+static char *tcptrace_version = VERSION;
 
 
 /* local routines */
@@ -729,7 +729,7 @@ Version(void)
 {
     fprintf(stderr,"Version: %s\n", tcptrace_version);
     fprintf(stderr,"  Compiled by '%s' at '%s' on machine '%s'\n",
-	    built_bywhom, built_when, built_where);
+	    tcptrace_built_bywhom, tcptrace_built_when, tcptrace_built_where);
 }
 
 
