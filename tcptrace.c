@@ -567,6 +567,9 @@ Stuff arguments that you always use into either the tcptrace resource file\n\
 /* try to find a boolean option's runtime location */
 static Bool *find_option_location(struct ext_bool_op *bopt) {
     Bool *option_location;
+    tcptrace_context_t *context = &global_context;
+    tcptrace_runtime_options_t *options = context->options;
+
     option_location = bopt->bool_popt;
 
     /* If the location for the option setting isn't directly in
@@ -575,9 +578,7 @@ static Bool *find_option_location(struct ext_bool_op *bopt) {
     if (option_location == NULL) {
         if (bopt->runtime_struct_offset != 0) {
             /* if this is an offset, find the actual location */
-            unsigned char *p = (unsigned char *) global_context.options;
-
-            p = (Bool *) global_context.options;
+            unsigned char *p = (unsigned char *) options;
             p += bopt->runtime_struct_offset;
             option_location = (Bool *) p;
         } else {
@@ -589,6 +590,8 @@ static Bool *find_option_location(struct ext_bool_op *bopt) {
 
 /* try to find a string option's runtime location */
 static char **find_str_option_location(struct ext_var_op *popt) {
+    tcptrace_context_t *context = &global_context;
+    tcptrace_runtime_options_t *options = context->options;
     char **option_location;
 
     option_location = popt->var_popt;
@@ -599,7 +602,7 @@ static char **find_str_option_location(struct ext_var_op *popt) {
     if (option_location == NULL) {
         if (popt->runtime_struct_offset != 0) {
             /* if this is an offset, find the actual location */
-            unsigned char *p = (unsigned char *) global_context.options;
+            unsigned char *p = (unsigned char *) options;
             p += popt->runtime_struct_offset;
             option_location = (char **) p;
         } else {
@@ -848,7 +851,7 @@ main(
     }
 
     /* clean up output */
-    if (cmd_options.printticks) {
+    if (options->printticks) {
 	printf("\n");
     }
 
