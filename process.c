@@ -292,7 +292,7 @@ That will likely confuse the program, so be careful!\n", context->current_filena
         ret = getudp(context, raw_packet->pip, &pudp, &raw_packet->plast);
 
         if (options->do_udp && (ret == 0)) {
-            pup = udpdotrace(context, raw_packet->pip, pudp, raw_packet->plast);
+            pup = tcptrace_run_trace_tcp(context, raw_packet->pip, pudp, raw_packet->plast);
 
             /* verify UDP checksums, if requested */
             if (options->verify_checksums) {
@@ -338,7 +338,7 @@ That will likely confuse the program, so be careful!\n", context->current_filena
     }
                    
     /* perform TCP packet analysis */
-    ptp = dotrace(context, raw_packet->pip, ptcp, raw_packet->plast); 
+    ptp = tcptrace_run_trace_tcp(context, raw_packet->pip, ptcp, raw_packet->plast); 
     /* if it wasn't "interesting", we return NULL here */
     if (ptp == NULL) {
         /* TODO: enum return. What does "not interesting" mean? */

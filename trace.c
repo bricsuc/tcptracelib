@@ -1387,7 +1387,7 @@ RemoveTcpPair(
 
 
 tcp_pair *
-dotrace(
+tcptrace_run_trace_tcp(
     tcptrace_context_t *context,
     struct ip *pip,
     struct tcphdr *ptcp,

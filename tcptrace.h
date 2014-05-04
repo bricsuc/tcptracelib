@@ -560,8 +560,9 @@ typedef struct tcphdr tcphdr;
  worst case complexity of O(ln(number of connections in tree)). 
     The modified data structure was tested with dumpfiles containing lots of 
  connections. A comparison of the profiles suggests an improvement in the time 
- spent in the dotrace function. Even though the AVL tree implementation 
- involves balancing the tree, since most of the accesses involve searching the 
+ spent in the tcptrace_run_trace_tcp() function. Even though the AVL tree
+ implementation involves balancing the tree, since most of the accesses
+ involve searching the 
  data structure, AVL tree performs MUCH better than linked list.
      The algorithms for AVL tree implementation are based on those explained in
  "Data Structures and Program Design in C by Robert L.Kruse, Bruce P.Leung, 
@@ -1022,7 +1023,7 @@ void plotter_invisible(PLOTTER, timeval, u_long);
 void plotter_switch_axis(PLOTTER, Bool);
 void plot_init(tcptrace_context_t *);
 
-tcp_pair *dotrace(tcptrace_context_t *context, struct ip *, struct tcphdr *ptcp, void *plast);
+tcp_pair *tcptrace_run_trace_tcp(tcptrace_context_t *context, struct ip *, struct tcphdr *ptcp, void *plast);
 
 void PrintRawData(char *label, void *pfirst, void *plast, Bool octal);
 void PrintRawDataHex(char *label, void *pfirst, void *plast);
@@ -1122,7 +1123,7 @@ void extend_line(PLINE pline, timeval xval, int yval);
 /* UDP support routines */
 void udptrace_init(tcptrace_context_t *context);
 void udptrace_done(tcptrace_context_t *context);
-udp_pair *udpdotrace(tcptrace_context_t *context, struct ip *pip, struct udphdr *pudp, void *plast);
+udp_pair *tcptrace_run_trace_udp(tcptrace_context_t *context, struct ip *pip, struct udphdr *pudp, void *plast);
 
 /* filter routines */
 void HelpFilter(void);

@@ -238,7 +238,7 @@ OnlyUDPConn(tcptrace_context_t *context,
  
 
 udp_pair *
-udpdotrace(
+tcptrace_run_trace_udp(
     tcptrace_context_t *context,
     struct ip *pip,
     struct udphdr *pudp,
