@@ -78,12 +78,14 @@ static void StatLineOne(tcptrace_context_t *, char *, char *, char *);
 static char *FormatBrief(tcp_pair *ptp);
 static char *UDPFormatBrief(udp_pair *pup);
 
+static void set_separator(tcptrace_context_t *context);
+
 /* locally global variables*/
 static u_int sv_print_count    = 0;
 static u_int sv_expected_count = 0;
 
 /* global variables */
-char *sp;  /* Separator used for long output with <SP>-separated-values */
+/* char *sp; */  /* Separator used for long output with <SP>-separated-values */
 
 /* to support some of the counters being long long on some platforms, use this */
 /* macro... */
@@ -212,6 +214,7 @@ PrintTrace(
     char *host2 = pba->host_letter;
     char bufl[40],bufr[40];
     tcptrace_runtime_options_t *options = context->options;
+    char *sp = options->sep;
 
     Bool csv_or_tsv;
 
@@ -895,6 +898,7 @@ StatLineOne(
 {
     char labbuf[20];
     tcptrace_runtime_options_t *options = context->options;
+    char *sp = options->sep;
     
     /* format the label */
     snprintf(labbuf,sizeof(labbuf), "%s:", label);
@@ -983,6 +987,42 @@ UDPFormatBrief(
     return(infobuf);
 }
 
+static void set_separator(tcptrace_context_t *context) {
+    tcptrace_runtime_options_t *options = context->options;
+    char *sp = NULL;
+
+    /* Set the separator */
+    if (options->csv || options->tsv) {
+        /* Initialize the separator buffer */      
+        sp = (char *)malloc(sizeof(char *) * 2);
+        memset(sp, 0, sizeof(sp));
+        /* Set it */
+        if (options->csv) {
+            snprintf(sp, sizeof(sp), ",");	
+        } else if (options->tsv) {
+            snprintf(sp, sizeof(sp), "\t");
+        }
+    } else {
+        if (options->sv != NULL) {
+            /* Look for escape sequence and remove the extra '\',
+             * the shell puts it in there.
+             * We will do this only for the escape sequence '\t' since that is
+             * the only useful one, else the user probably meant something
+             * else and things get messy.
+             */
+            if (strncmp(options->sv, "\\t", 2) == 0) {
+               /* Initialize the separator buffer and set it */      
+               sp = (char *)malloc(sizeof(char *) * 2);
+               memset(sp, 0, sizeof(sp));
+               snprintf(sp, sizeof(sp), "\t");
+            } else {
+                /* Just use the string the user has provided */
+                sp = strdup(options->sv);
+            }
+        }
+    }
+    options->sep = sp;
+}
 
 /* Print the header if comma-separated-values or tab-separated-values
  * has been requested.
@@ -1104,37 +1144,15 @@ PrintSVHeader(tcptrace_context_t *context)
    #define SV_RTT_HEADER_COLUMN_COUNT (sizeof(svRTTHeader)/sizeof(char*))
    
    /* Local Variables */
+   char *sp;
    u_int i = 0; /* Counter */ 
-   
-   /* Set the separator */
-   if (options->csv || options->tsv) {
-      /* Initialize the separator buffer */      
-      sp = (char *)malloc(sizeof(char *) * 2);
-      memset(sp, 0, sizeof(sp));
-      /* Set it */
-      if        (options->csv) {
-	  snprintf(sp, sizeof(sp), ",");	
-      } else if (options->tsv) {
-	  snprintf(sp, sizeof(sp), "\t");
-      }
-   }
-   else if (options->sv != NULL)
-     {
-	/* Look for escape sequence and remove the extra '\',
-	 * the shell puts it in there.
-	 * We will do this only for the escape sequence '\t' since that is
-	 * the only useful one, else the user probably meant something
-	 * else and things get messy.
-	 */
-	if(strncmp(options->sv, "\\t", 2) == 0) {
-	   /* Initialize the separator buffer and set it */      
-	   sp = (char *)malloc(sizeof(char *) * 2);
-	   memset(sp, 0, sizeof(sp));
-	   snprintf(sp, sizeof(sp), "\t");
-	}
-	else /* Just use the string the user has provided */
-	  sp = strdup(options->sv);
-     }
+
+   /* this sets context->options->sep; kind of a hack to remove a global */
+   /* ideally, the separator would be just set to "sv" and we could remove */
+   /* a lot of complicated test conditions, but it's unclear that it's */
+   /* worth the effort */
+   set_separator(context);
+   sp = options->sep;
    
    /* Print the column headings (the field names) */
     for (i=0; i<SV_HEADER1_COLUMN_COUNT; i++)

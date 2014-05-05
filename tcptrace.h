@@ -825,6 +825,10 @@ typedef struct tcptrace_runtime_options_t {
     char *xplot_args;
     char *sv;
 
+    /* separator value--was "sp" global, unsure why this has to be
+       different than *sv */
+    char *sep;
+
     u_long remove_live_conn_interval;
     u_long nonreal_live_conn_interval;
     u_long remove_closed_conn_interval;
@@ -931,7 +935,7 @@ typedef struct tcptrace_working_file {
 /* extern char *xplot_title_prefix; */
 /* extern char *xplot_args; */
 /* extern char *sv; */
-extern char *sp;       /* Separator used for long output with <SP>-separated-values */
+/* extern char *sp; */      /* Separator used for long output with <SP>-separated-values */
 
 /* Used to comment out header lines of the long output
  * when <SP>-separated-values is requested

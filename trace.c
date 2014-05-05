@@ -2679,7 +2679,7 @@ trace_done(tcptrace_context_t *context)
 			  PrintSVHeader(context);
 			  first = FALSE;
 		       }
-		       fprintf(stdout, "%d%s", ix+1, sp);
+		       fprintf(stdout, "%d%s", ix+1, options->sep);
 		    }
 		    else {
 		       if (ix > 0)

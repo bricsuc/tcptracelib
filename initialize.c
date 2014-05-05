@@ -166,6 +166,8 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->xplot_args = NULL;
     options->sv = NULL;
 
+    options->sep = NULL;
+
     options->remove_live_conn_interval = REMOVE_LIVE_CONN_INTERVAL;
     options->nonreal_live_conn_interval = NONREAL_LIVE_CONN_INTERVAL;
     options->remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL;
