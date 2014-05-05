@@ -133,7 +133,13 @@ typedef long int llong;
 typedef int PLOTTER;
 #define NO_PLOTTER -1
 #define NCOLORS 8
-extern char *ColorNames[NCOLORS];
+
+/* extern char *ColorNames[NCOLORS]; */
+
+/* these are used only in two modules; make them static to those modules */
+#define COLOR_NAMES {"green", "red", "blue", "yellow", "purple", "orange", "magenta", "pink"}
+
+
 /* {"green", "red", "blue", "yellow", "purple", "orange", "magenta", "pink"}; */
 typedef struct pl_line *PLINE;
 

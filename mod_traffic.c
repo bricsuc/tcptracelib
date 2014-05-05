@@ -140,6 +140,9 @@ struct conn_info {
 static struct conn_info *connhead = NULL;
 
 
+/* color names */
+static char *ColorNames[NCOLORS] = COLOR_NAMES;
+
 
 /* plotter files that we keep open */
 static PLOTTER plotter_bytes;

@@ -203,6 +203,7 @@ static struct client_info *FindClient(char *clientname);
 #define IS_CLIENT(ptcp) (ntohs((ptcp)->th_dport) == httpd_port)
 #define IS_SERVER(ptcp) (ntohs((ptcp)->th_dport) != httpd_port)
 
+static char *ColorNames[NCOLORS] = COLOR_NAMES;
 
 /* Mostly as a module example, here's a plug in that records HTTP info */
 int
