@@ -174,8 +174,7 @@ tcptrace_context_t global_context;
 
 /* globals */
 /* int num_modules = 0; */  /* deglobalized */
-char *ColorNames[NCOLORS] =
-{"green", "red", "blue", "yellow", "purple", "orange", "magenta", "pink"};
+/* char *ColorNames[NCOLORS] = {"green", "red", "blue", "yellow", "purple", * "orange", "magenta", "pink"}; */
 /* char *comment; */
 
 /* char *output_filename = NULL; */
