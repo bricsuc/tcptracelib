@@ -283,6 +283,7 @@ That will likely confuse the program, so be careful!\n", context->current_filena
     /* find the start of the TCP header */
     ret = gettcp(context, raw_packet->pip, &ptcp, &raw_packet->plast);
 
+
     /* if that failed, it's not TCP */
     if (ret < 0) {
         udp_pair *pup;
@@ -292,7 +293,7 @@ That will likely confuse the program, so be careful!\n", context->current_filena
         ret = getudp(context, raw_packet->pip, &pudp, &raw_packet->plast);
 
         if (options->do_udp && (ret == 0)) {
-            pup = tcptrace_run_trace_tcp(context, raw_packet->pip, pudp, raw_packet->plast);
+            pup = tcptrace_run_trace_udp(context, raw_packet->pip, pudp, raw_packet->plast);
 
             /* verify UDP checksums, if requested */
             if (options->verify_checksums) {
