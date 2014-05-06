@@ -133,7 +133,8 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libtcptrace_la_LIBADD =
 am__libtcptrace_la_SOURCES_DIST = ipv6.c file_load.c initialize.c \
-	process.c modules.c modules_list.c trace.c udp.c mod_http.c \
+	process.c modules.c modules_list.c trace.c udp.c tcpdump.c \
+	snoop.c etherpeek.c netm.c ns.c netscout.c erf.c mod_http.c \
 	mod_traffic.c mod_slice.c mod_rttgraph.c mod_collie.c \
 	mod_realtime.c mod_inbounds.c mod_tcplib.c
 @MOD_HTTP_TRUE@am__objects_1 = libtcptrace_la-mod_http.lo
@@ -148,25 +149,25 @@ am_libtcptrace_la_OBJECTS = libtcptrace_la-ipv6.lo \
 	libtcptrace_la-file_load.lo libtcptrace_la-initialize.lo \
 	libtcptrace_la-process.lo libtcptrace_la-modules.lo \
 	libtcptrace_la-modules_list.lo libtcptrace_la-trace.lo \
-	libtcptrace_la-udp.lo $(am__objects_1) $(am__objects_2) \
-	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
-	$(am__objects_6) $(am__objects_7) $(am__objects_8)
+	libtcptrace_la-udp.lo libtcptrace_la-tcpdump.lo \
+	libtcptrace_la-snoop.lo libtcptrace_la-etherpeek.lo \
+	libtcptrace_la-netm.lo libtcptrace_la-ns.lo \
+	libtcptrace_la-netscout.lo libtcptrace_la-erf.lo \
+	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
+	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
+	$(am__objects_7) $(am__objects_8)
 libtcptrace_la_OBJECTS = $(am_libtcptrace_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
-am_tcptrace_OBJECTS = tcptrace-avl.$(OBJEXT) \
-	tcptrace-compress.$(OBJEXT) tcptrace-erf.$(OBJEXT) \
-	tcptrace-etherpeek.$(OBJEXT) tcptrace-gcache.$(OBJEXT) \
-	tcptrace-mfiles.$(OBJEXT) tcptrace-names.$(OBJEXT) \
-	tcptrace-netm.$(OBJEXT) tcptrace-output.$(OBJEXT) \
+am_tcptrace_OBJECTS = tcptrace-tcptrace.$(OBJEXT) \
+	tcptrace-avl.$(OBJEXT) tcptrace-compress.$(OBJEXT) \
+	tcptrace-gcache.$(OBJEXT) tcptrace-mfiles.$(OBJEXT) \
+	tcptrace-names.$(OBJEXT) tcptrace-output.$(OBJEXT) \
 	tcptrace-plotter.$(OBJEXT) tcptrace-print.$(OBJEXT) \
-	tcptrace-rexmit.$(OBJEXT) tcptrace-snoop.$(OBJEXT) \
-	tcptrace-nlanr.$(OBJEXT) tcptrace-tcpdump.$(OBJEXT) \
-	tcptrace-tcptrace.$(OBJEXT) tcptrace-thruput.$(OBJEXT) \
-	tcptrace-filter.$(OBJEXT) tcptrace-ns.$(OBJEXT) \
-	tcptrace-netscout.$(OBJEXT) tcptrace-version.$(OBJEXT) \
-	tcptrace-pool.$(OBJEXT) tcptrace-poolaccess.$(OBJEXT) \
-	tcptrace-dstring.$(OBJEXT) tcptrace-filt_parser.$(OBJEXT) \
-	tcptrace-filt_scanner.$(OBJEXT)
+	tcptrace-rexmit.$(OBJEXT) tcptrace-nlanr.$(OBJEXT) \
+	tcptrace-thruput.$(OBJEXT) tcptrace-filter.$(OBJEXT) \
+	tcptrace-version.$(OBJEXT) tcptrace-pool.$(OBJEXT) \
+	tcptrace-poolaccess.$(OBJEXT) tcptrace-dstring.$(OBJEXT) \
+	tcptrace-filt_parser.$(OBJEXT) tcptrace-filt_scanner.$(OBJEXT)
 tcptrace_OBJECTS = $(am_tcptrace_OBJECTS)
 tcptrace_DEPENDENCIES = libtcptrace.la
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -340,11 +341,12 @@ AM_YFLAGS = -d -p filtyy
 # output file the same, due to automake's ylwrap program
 AM_LFLAGS = -P filtyy -o lex.yy.c
 tcptrace_SOURCES = \
-    avl.c compress.c erf.c etherpeek.c gcache.c mfiles.c names.c \
-    netm.c output.c plotter.c print.c rexmit.c snoop.c nlanr.c \
-    tcpdump.c tcptrace.c thruput.c \
+    tcptrace.c \
+    avl.c compress.c gcache.c mfiles.c names.c \
+    output.c plotter.c print.c rexmit.c nlanr.c \
+    thruput.c \
     filter.c \
-    ns.c netscout.c version.c pool.c poolaccess.c \
+    version.c pool.c poolaccess.c \
     dstring.c \
     filt_parser.y \
     filt_scanner.l
@@ -358,7 +360,8 @@ tcptrace_CPPFLAGS = $(am__append_1) $(am__append_3) $(am__append_5) \
 	$(am__append_38) $(am__append_41) $(am__append_42)
 lib_LTLIBRARIES = libtcptrace.la
 libtcptrace_la_SOURCES = ipv6.c file_load.c initialize.c process.c \
-	modules.c modules_list.c trace.c udp.c $(am__append_19) \
+	modules.c modules_list.c trace.c udp.c tcpdump.c snoop.c \
+	etherpeek.c netm.c ns.c netscout.c erf.c $(am__append_19) \
 	$(am__append_22) $(am__append_25) $(am__append_28) \
 	$(am__append_31) $(am__append_34) $(am__append_37) \
 	$(am__append_40)
@@ -496,6 +499,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-erf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-etherpeek.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-file_load.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-initialize.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-ipv6.Plo@am__quote@
@@ -509,32 +514,30 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-mod_traffic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-modules.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-modules_list.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-netm.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-netscout.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-ns.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-process.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-snoop.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-tcpdump.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-trace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtcptrace_la-udp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-avl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-compress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-dstring.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-erf.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-etherpeek.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-filt_parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-filt_scanner.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-filter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-gcache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-mfiles.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-names.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-netm.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-netscout.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-nlanr.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-ns.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-output.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-plotter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-pool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-poolaccess.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-print.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-rexmit.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-snoop.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-tcpdump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-tcptrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-thruput.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcptrace-version.Po@am__quote@
@@ -616,6 +619,55 @@ libtcptrace_la-udp.lo: udp.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-udp.lo `test -f 'udp.c' || echo '$(srcdir)/'`udp.c
 
+libtcptrace_la-tcpdump.lo: tcpdump.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-tcpdump.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-tcpdump.Tpo -c -o libtcptrace_la-tcpdump.lo `test -f 'tcpdump.c' || echo '$(srcdir)/'`tcpdump.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-tcpdump.Tpo $(DEPDIR)/libtcptrace_la-tcpdump.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcpdump.c' object='libtcptrace_la-tcpdump.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-tcpdump.lo `test -f 'tcpdump.c' || echo '$(srcdir)/'`tcpdump.c
+
+libtcptrace_la-snoop.lo: snoop.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-snoop.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-snoop.Tpo -c -o libtcptrace_la-snoop.lo `test -f 'snoop.c' || echo '$(srcdir)/'`snoop.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-snoop.Tpo $(DEPDIR)/libtcptrace_la-snoop.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='snoop.c' object='libtcptrace_la-snoop.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-snoop.lo `test -f 'snoop.c' || echo '$(srcdir)/'`snoop.c
+
+libtcptrace_la-etherpeek.lo: etherpeek.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-etherpeek.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-etherpeek.Tpo -c -o libtcptrace_la-etherpeek.lo `test -f 'etherpeek.c' || echo '$(srcdir)/'`etherpeek.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-etherpeek.Tpo $(DEPDIR)/libtcptrace_la-etherpeek.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='etherpeek.c' object='libtcptrace_la-etherpeek.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-etherpeek.lo `test -f 'etherpeek.c' || echo '$(srcdir)/'`etherpeek.c
+
+libtcptrace_la-netm.lo: netm.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-netm.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-netm.Tpo -c -o libtcptrace_la-netm.lo `test -f 'netm.c' || echo '$(srcdir)/'`netm.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-netm.Tpo $(DEPDIR)/libtcptrace_la-netm.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='netm.c' object='libtcptrace_la-netm.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-netm.lo `test -f 'netm.c' || echo '$(srcdir)/'`netm.c
+
+libtcptrace_la-ns.lo: ns.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-ns.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-ns.Tpo -c -o libtcptrace_la-ns.lo `test -f 'ns.c' || echo '$(srcdir)/'`ns.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-ns.Tpo $(DEPDIR)/libtcptrace_la-ns.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ns.c' object='libtcptrace_la-ns.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-ns.lo `test -f 'ns.c' || echo '$(srcdir)/'`ns.c
+
+libtcptrace_la-netscout.lo: netscout.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-netscout.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-netscout.Tpo -c -o libtcptrace_la-netscout.lo `test -f 'netscout.c' || echo '$(srcdir)/'`netscout.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-netscout.Tpo $(DEPDIR)/libtcptrace_la-netscout.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='netscout.c' object='libtcptrace_la-netscout.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-netscout.lo `test -f 'netscout.c' || echo '$(srcdir)/'`netscout.c
+
+libtcptrace_la-erf.lo: erf.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-erf.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-erf.Tpo -c -o libtcptrace_la-erf.lo `test -f 'erf.c' || echo '$(srcdir)/'`erf.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-erf.Tpo $(DEPDIR)/libtcptrace_la-erf.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='erf.c' object='libtcptrace_la-erf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-erf.lo `test -f 'erf.c' || echo '$(srcdir)/'`erf.c
+
 libtcptrace_la-mod_http.lo: mod_http.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libtcptrace_la-mod_http.lo -MD -MP -MF $(DEPDIR)/libtcptrace_la-mod_http.Tpo -c -o libtcptrace_la-mod_http.lo `test -f 'mod_http.c' || echo '$(srcdir)/'`mod_http.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libtcptrace_la-mod_http.Tpo $(DEPDIR)/libtcptrace_la-mod_http.Plo
@@ -672,6 +724,20 @@ libtcptrace_la-mod_tcplib.lo: mod_tcplib.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtcptrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtcptrace_la-mod_tcplib.lo `test -f 'mod_tcplib.c' || echo '$(srcdir)/'`mod_tcplib.c
 
+tcptrace-tcptrace.o: tcptrace.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-tcptrace.o -MD -MP -MF $(DEPDIR)/tcptrace-tcptrace.Tpo -c -o tcptrace-tcptrace.o `test -f 'tcptrace.c' || echo '$(srcdir)/'`tcptrace.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-tcptrace.Tpo $(DEPDIR)/tcptrace-tcptrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcptrace.c' object='tcptrace-tcptrace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-tcptrace.o `test -f 'tcptrace.c' || echo '$(srcdir)/'`tcptrace.c
+
+tcptrace-tcptrace.obj: tcptrace.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-tcptrace.obj -MD -MP -MF $(DEPDIR)/tcptrace-tcptrace.Tpo -c -o tcptrace-tcptrace.obj `if test -f 'tcptrace.c'; then $(CYGPATH_W) 'tcptrace.c'; else $(CYGPATH_W) '$(srcdir)/tcptrace.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-tcptrace.Tpo $(DEPDIR)/tcptrace-tcptrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcptrace.c' object='tcptrace-tcptrace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-tcptrace.obj `if test -f 'tcptrace.c'; then $(CYGPATH_W) 'tcptrace.c'; else $(CYGPATH_W) '$(srcdir)/tcptrace.c'; fi`
+
 tcptrace-avl.o: avl.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-avl.o -MD -MP -MF $(DEPDIR)/tcptrace-avl.Tpo -c -o tcptrace-avl.o `test -f 'avl.c' || echo '$(srcdir)/'`avl.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-avl.Tpo $(DEPDIR)/tcptrace-avl.Po
@@ -699,34 +765,6 @@ tcptrace-compress.obj: compress.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='compress.c' object='tcptrace-compress.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-compress.obj `if test -f 'compress.c'; then $(CYGPATH_W) 'compress.c'; else $(CYGPATH_W) '$(srcdir)/compress.c'; fi`
-
-tcptrace-erf.o: erf.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-erf.o -MD -MP -MF $(DEPDIR)/tcptrace-erf.Tpo -c -o tcptrace-erf.o `test -f 'erf.c' || echo '$(srcdir)/'`erf.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-erf.Tpo $(DEPDIR)/tcptrace-erf.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='erf.c' object='tcptrace-erf.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-erf.o `test -f 'erf.c' || echo '$(srcdir)/'`erf.c
-
-tcptrace-erf.obj: erf.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-erf.obj -MD -MP -MF $(DEPDIR)/tcptrace-erf.Tpo -c -o tcptrace-erf.obj `if test -f 'erf.c'; then $(CYGPATH_W) 'erf.c'; else $(CYGPATH_W) '$(srcdir)/erf.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-erf.Tpo $(DEPDIR)/tcptrace-erf.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='erf.c' object='tcptrace-erf.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-erf.obj `if test -f 'erf.c'; then $(CYGPATH_W) 'erf.c'; else $(CYGPATH_W) '$(srcdir)/erf.c'; fi`
-
-tcptrace-etherpeek.o: etherpeek.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-etherpeek.o -MD -MP -MF $(DEPDIR)/tcptrace-etherpeek.Tpo -c -o tcptrace-etherpeek.o `test -f 'etherpeek.c' || echo '$(srcdir)/'`etherpeek.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-etherpeek.Tpo $(DEPDIR)/tcptrace-etherpeek.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='etherpeek.c' object='tcptrace-etherpeek.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-etherpeek.o `test -f 'etherpeek.c' || echo '$(srcdir)/'`etherpeek.c
-
-tcptrace-etherpeek.obj: etherpeek.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-etherpeek.obj -MD -MP -MF $(DEPDIR)/tcptrace-etherpeek.Tpo -c -o tcptrace-etherpeek.obj `if test -f 'etherpeek.c'; then $(CYGPATH_W) 'etherpeek.c'; else $(CYGPATH_W) '$(srcdir)/etherpeek.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-etherpeek.Tpo $(DEPDIR)/tcptrace-etherpeek.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='etherpeek.c' object='tcptrace-etherpeek.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-etherpeek.obj `if test -f 'etherpeek.c'; then $(CYGPATH_W) 'etherpeek.c'; else $(CYGPATH_W) '$(srcdir)/etherpeek.c'; fi`
 
 tcptrace-gcache.o: gcache.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-gcache.o -MD -MP -MF $(DEPDIR)/tcptrace-gcache.Tpo -c -o tcptrace-gcache.o `test -f 'gcache.c' || echo '$(srcdir)/'`gcache.c
@@ -769,20 +807,6 @@ tcptrace-names.obj: names.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='names.c' object='tcptrace-names.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-names.obj `if test -f 'names.c'; then $(CYGPATH_W) 'names.c'; else $(CYGPATH_W) '$(srcdir)/names.c'; fi`
-
-tcptrace-netm.o: netm.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-netm.o -MD -MP -MF $(DEPDIR)/tcptrace-netm.Tpo -c -o tcptrace-netm.o `test -f 'netm.c' || echo '$(srcdir)/'`netm.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-netm.Tpo $(DEPDIR)/tcptrace-netm.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='netm.c' object='tcptrace-netm.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-netm.o `test -f 'netm.c' || echo '$(srcdir)/'`netm.c
-
-tcptrace-netm.obj: netm.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-netm.obj -MD -MP -MF $(DEPDIR)/tcptrace-netm.Tpo -c -o tcptrace-netm.obj `if test -f 'netm.c'; then $(CYGPATH_W) 'netm.c'; else $(CYGPATH_W) '$(srcdir)/netm.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-netm.Tpo $(DEPDIR)/tcptrace-netm.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='netm.c' object='tcptrace-netm.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-netm.obj `if test -f 'netm.c'; then $(CYGPATH_W) 'netm.c'; else $(CYGPATH_W) '$(srcdir)/netm.c'; fi`
 
 tcptrace-output.o: output.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-output.o -MD -MP -MF $(DEPDIR)/tcptrace-output.Tpo -c -o tcptrace-output.o `test -f 'output.c' || echo '$(srcdir)/'`output.c
@@ -840,20 +864,6 @@ tcptrace-rexmit.obj: rexmit.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-rexmit.obj `if test -f 'rexmit.c'; then $(CYGPATH_W) 'rexmit.c'; else $(CYGPATH_W) '$(srcdir)/rexmit.c'; fi`
 
-tcptrace-snoop.o: snoop.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-snoop.o -MD -MP -MF $(DEPDIR)/tcptrace-snoop.Tpo -c -o tcptrace-snoop.o `test -f 'snoop.c' || echo '$(srcdir)/'`snoop.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-snoop.Tpo $(DEPDIR)/tcptrace-snoop.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='snoop.c' object='tcptrace-snoop.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-snoop.o `test -f 'snoop.c' || echo '$(srcdir)/'`snoop.c
-
-tcptrace-snoop.obj: snoop.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-snoop.obj -MD -MP -MF $(DEPDIR)/tcptrace-snoop.Tpo -c -o tcptrace-snoop.obj `if test -f 'snoop.c'; then $(CYGPATH_W) 'snoop.c'; else $(CYGPATH_W) '$(srcdir)/snoop.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-snoop.Tpo $(DEPDIR)/tcptrace-snoop.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='snoop.c' object='tcptrace-snoop.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-snoop.obj `if test -f 'snoop.c'; then $(CYGPATH_W) 'snoop.c'; else $(CYGPATH_W) '$(srcdir)/snoop.c'; fi`
-
 tcptrace-nlanr.o: nlanr.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-nlanr.o -MD -MP -MF $(DEPDIR)/tcptrace-nlanr.Tpo -c -o tcptrace-nlanr.o `test -f 'nlanr.c' || echo '$(srcdir)/'`nlanr.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-nlanr.Tpo $(DEPDIR)/tcptrace-nlanr.Po
@@ -867,34 +877,6 @@ tcptrace-nlanr.obj: nlanr.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nlanr.c' object='tcptrace-nlanr.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-nlanr.obj `if test -f 'nlanr.c'; then $(CYGPATH_W) 'nlanr.c'; else $(CYGPATH_W) '$(srcdir)/nlanr.c'; fi`
-
-tcptrace-tcpdump.o: tcpdump.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-tcpdump.o -MD -MP -MF $(DEPDIR)/tcptrace-tcpdump.Tpo -c -o tcptrace-tcpdump.o `test -f 'tcpdump.c' || echo '$(srcdir)/'`tcpdump.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-tcpdump.Tpo $(DEPDIR)/tcptrace-tcpdump.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcpdump.c' object='tcptrace-tcpdump.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-tcpdump.o `test -f 'tcpdump.c' || echo '$(srcdir)/'`tcpdump.c
-
-tcptrace-tcpdump.obj: tcpdump.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-tcpdump.obj -MD -MP -MF $(DEPDIR)/tcptrace-tcpdump.Tpo -c -o tcptrace-tcpdump.obj `if test -f 'tcpdump.c'; then $(CYGPATH_W) 'tcpdump.c'; else $(CYGPATH_W) '$(srcdir)/tcpdump.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-tcpdump.Tpo $(DEPDIR)/tcptrace-tcpdump.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcpdump.c' object='tcptrace-tcpdump.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-tcpdump.obj `if test -f 'tcpdump.c'; then $(CYGPATH_W) 'tcpdump.c'; else $(CYGPATH_W) '$(srcdir)/tcpdump.c'; fi`
-
-tcptrace-tcptrace.o: tcptrace.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-tcptrace.o -MD -MP -MF $(DEPDIR)/tcptrace-tcptrace.Tpo -c -o tcptrace-tcptrace.o `test -f 'tcptrace.c' || echo '$(srcdir)/'`tcptrace.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-tcptrace.Tpo $(DEPDIR)/tcptrace-tcptrace.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcptrace.c' object='tcptrace-tcptrace.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-tcptrace.o `test -f 'tcptrace.c' || echo '$(srcdir)/'`tcptrace.c
-
-tcptrace-tcptrace.obj: tcptrace.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-tcptrace.obj -MD -MP -MF $(DEPDIR)/tcptrace-tcptrace.Tpo -c -o tcptrace-tcptrace.obj `if test -f 'tcptrace.c'; then $(CYGPATH_W) 'tcptrace.c'; else $(CYGPATH_W) '$(srcdir)/tcptrace.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-tcptrace.Tpo $(DEPDIR)/tcptrace-tcptrace.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tcptrace.c' object='tcptrace-tcptrace.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-tcptrace.obj `if test -f 'tcptrace.c'; then $(CYGPATH_W) 'tcptrace.c'; else $(CYGPATH_W) '$(srcdir)/tcptrace.c'; fi`
 
 tcptrace-thruput.o: thruput.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-thruput.o -MD -MP -MF $(DEPDIR)/tcptrace-thruput.Tpo -c -o tcptrace-thruput.o `test -f 'thruput.c' || echo '$(srcdir)/'`thruput.c
@@ -923,34 +905,6 @@ tcptrace-filter.obj: filter.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='filter.c' object='tcptrace-filter.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-filter.obj `if test -f 'filter.c'; then $(CYGPATH_W) 'filter.c'; else $(CYGPATH_W) '$(srcdir)/filter.c'; fi`
-
-tcptrace-ns.o: ns.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-ns.o -MD -MP -MF $(DEPDIR)/tcptrace-ns.Tpo -c -o tcptrace-ns.o `test -f 'ns.c' || echo '$(srcdir)/'`ns.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-ns.Tpo $(DEPDIR)/tcptrace-ns.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ns.c' object='tcptrace-ns.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-ns.o `test -f 'ns.c' || echo '$(srcdir)/'`ns.c
-
-tcptrace-ns.obj: ns.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-ns.obj -MD -MP -MF $(DEPDIR)/tcptrace-ns.Tpo -c -o tcptrace-ns.obj `if test -f 'ns.c'; then $(CYGPATH_W) 'ns.c'; else $(CYGPATH_W) '$(srcdir)/ns.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-ns.Tpo $(DEPDIR)/tcptrace-ns.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ns.c' object='tcptrace-ns.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-ns.obj `if test -f 'ns.c'; then $(CYGPATH_W) 'ns.c'; else $(CYGPATH_W) '$(srcdir)/ns.c'; fi`
-
-tcptrace-netscout.o: netscout.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-netscout.o -MD -MP -MF $(DEPDIR)/tcptrace-netscout.Tpo -c -o tcptrace-netscout.o `test -f 'netscout.c' || echo '$(srcdir)/'`netscout.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-netscout.Tpo $(DEPDIR)/tcptrace-netscout.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='netscout.c' object='tcptrace-netscout.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-netscout.o `test -f 'netscout.c' || echo '$(srcdir)/'`netscout.c
-
-tcptrace-netscout.obj: netscout.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-netscout.obj -MD -MP -MF $(DEPDIR)/tcptrace-netscout.Tpo -c -o tcptrace-netscout.obj `if test -f 'netscout.c'; then $(CYGPATH_W) 'netscout.c'; else $(CYGPATH_W) '$(srcdir)/netscout.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tcptrace-netscout.Tpo $(DEPDIR)/tcptrace-netscout.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='netscout.c' object='tcptrace-netscout.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tcptrace-netscout.obj `if test -f 'netscout.c'; then $(CYGPATH_W) 'netscout.c'; else $(CYGPATH_W) '$(srcdir)/netscout.c'; fi`
 
 tcptrace-version.o: version.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tcptrace_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tcptrace-version.o -MD -MP -MF $(DEPDIR)/tcptrace-version.Tpo -c -o tcptrace-version.o `test -f 'version.c' || echo '$(srcdir)/'`version.c

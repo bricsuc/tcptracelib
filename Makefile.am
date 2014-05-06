@@ -13,11 +13,12 @@ AM_YFLAGS = -d -p filtyy
 AM_LFLAGS = -P filtyy -o lex.yy.c
 
 tcptrace_SOURCES = \
-    avl.c compress.c erf.c etherpeek.c gcache.c mfiles.c names.c \
-    netm.c output.c plotter.c print.c rexmit.c snoop.c nlanr.c \
-    tcpdump.c tcptrace.c thruput.c \
+    tcptrace.c \
+    avl.c compress.c gcache.c mfiles.c names.c \
+    output.c plotter.c print.c rexmit.c nlanr.c \
+    thruput.c \
     filter.c \
-    ns.c netscout.c version.c pool.c poolaccess.c \
+    version.c pool.c poolaccess.c \
     dstring.c \
     filt_parser.y \
     filt_scanner.l
@@ -29,7 +30,8 @@ tcptrace_CPPFLAGS =
 lib_LTLIBRARIES = libtcptrace.la
 libtcptrace_la_SOURCES = \
     ipv6.c file_load.c initialize.c process.c modules.c modules_list.c \
-    trace.c udp.c
+    trace.c udp.c \
+    tcpdump.c snoop.c etherpeek.c netm.c ns.c netscout.c erf.c
 libtcptrace_la_CPPFLAGS = 
 
 # Input format options
