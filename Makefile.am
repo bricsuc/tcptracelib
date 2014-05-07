@@ -14,7 +14,7 @@ AM_LFLAGS = -P filtyy -o lex.yy.c
 
 tcptrace_SOURCES = \
     tcptrace.c \
-    compress.c gcache.c mfiles.c names.c \
+    gcache.c mfiles.c names.c \
     output.c print.c rexmit.c nlanr.c \
     thruput.c \
     filter.c \
@@ -29,7 +29,8 @@ tcptrace_CPPFLAGS =
 
 lib_LTLIBRARIES = libtcptrace.la
 libtcptrace_la_SOURCES = \
-    ipv6.c file_load.c initialize.c process.c modules.c modules_list.c \
+    ipv6.c file_load.c compress.c initialize.c process.c \
+    modules.c modules_list.c \
     avl.c \
     trace.c udp.c \
     plotter.c \
