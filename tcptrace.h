@@ -1064,7 +1064,7 @@ Bool tv_same(struct timeval lhs, struct timeval rhs);
 char *elapsed2str(double etime);
 int ConnReset(tcp_pair *);
 int ConnComplete(tcp_pair *);
-u_int SynCount(tcp_pair *ptp);
+/* u_int SynCount(tcp_pair *ptp); */
 u_int FinCount(tcp_pair *ptp);
 /* most, if not all, of the following char * functions are not threadsafe */
 char *ts2ascii(timeval *);

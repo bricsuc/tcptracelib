@@ -78,6 +78,8 @@ static void StatLineOne(tcptrace_context_t *, char *, char *, char *);
 static char *FormatBrief(tcp_pair *ptp);
 static char *UDPFormatBrief(udp_pair *pup);
 
+static u_int SynCount(tcp_pair *ptp);
+
 static void set_separator(tcptrace_context_t *context);
 
 /* locally global variables*/
@@ -98,7 +100,7 @@ static u_int sv_expected_count = 0;
 #define StatLineI StatLineI_L
 #endif /* HAVE_LONG_LONG */
 
-u_int
+static u_int
 SynCount(
     tcp_pair *ptp)
 {
