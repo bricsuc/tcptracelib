@@ -931,8 +931,17 @@ typedef struct tcptrace_working_file {
     pread_f *reader_function;
     u_long filesize;
     Bool is_stdin;
+    Bool is_compressed;
     u_long pnum;       /* number of packets read in file */
     long int location;
+
+    FILE *f_orig_stdin;
+    int child_pid;
+    char *tempfile;  /* temporary file used to store header */
+
+    int posn; /* position (used only when reading the header) */
+
+    int header_length; /* set only for compressed files */
 } tcptrace_working_file;
 
 /* extended variables with values */
@@ -1085,12 +1094,12 @@ int Mfflush(MFILE *pmf);
 int Mfclose(MFILE *pmf);
 int Mfpipe(int pipes[2]);
 struct tcp_options *ParseOptions(tcptrace_context_t *context, struct tcphdr *ptcp, void *plast);
-FILE *CompOpenHeader(char *filename);
-int CompCloseHeader(FILE *header);
-FILE *CompOpenFile(char *filename);
-void CompCloseFile(char *filename);
+FILE *CompOpenHeader(char *filename, tcptrace_working_file *working_file);
+int CompCloseHeader(FILE *header, tcptrace_working_file *working_file);
+FILE *CompOpenFile(char *filename, tcptrace_working_file *working_file);
+void CompCloseFile(tcptrace_working_file *working_file);
 void CompFormats(void);
-int CompIsCompressed(void);
+int CompIsCompressed(tcptrace_working_file *working_file);
 Bool FileIsStdin(char *filename);
 struct tcb *ptp2ptcb(tcptrace_context_t *context, tcp_pair *ptp, struct ip *pip, struct tcphdr *ptcp);
 void PcapSavePacket(tcptrace_context_t *context, char *filename, struct ip *pip, void *plast);

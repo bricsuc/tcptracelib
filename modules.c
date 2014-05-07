@@ -6,8 +6,6 @@
 /* inform all modules of a new file */
 void
 tcptrace_modules_all_newfile(
-    /* TODO: these arguments are sort of redundant, possibly streamline
-     * into "context" */
     tcptrace_context_t *context,
     tcptrace_working_file *working_file,
     char *filename)
@@ -28,7 +26,7 @@ tcptrace_modules_all_newfile(
 		    modules[i].module_name);
         }
 
-	(*modules[i].module_newfile)(filename, working_file->filesize, CompIsCompressed());
+	(*modules[i].module_newfile)(filename, working_file->filesize, CompIsCompressed(working_file));
     }
 }
 

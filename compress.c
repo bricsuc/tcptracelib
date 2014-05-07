@@ -83,21 +83,21 @@ static char const GCC_UNUSED rcsid[] =
 
 /* local routines */
 static char *FindBinary(char *binname);
-static struct comp_formats *WhichFormat(char *filename);
-static FILE *CompSaveHeader(char *filename, struct comp_formats *pf);
-static int CompOpenPipe(char *filename, struct comp_formats *pf);
-static FILE *PipeHelper(void);
-static void PipeFitting(FILE *f_pipe, FILE *f_header, FILE *f_stdin);
-static void RemoveTmpfile();
+static struct comp_formats *WhichFormat(char *filename, tcptrace_working_file *working_file);
+static FILE *CompSaveHeader(char *filename, tcptrace_working_file *working_file, struct comp_formats *pf);
+static int CompOpenPipe(char *filename, tcptrace_working_file *working_file, struct comp_formats *pf);
+static FILE *PipeHelper(tcptrace_working_file *working_file);
+static void PipeFitting(FILE *f_pipe, FILE *f_header, FILE *f_stdin, tcptrace_working_file *working_file);
+static void RemoveTmpfile(tcptrace_working_file *working_file);
 
 
 /* local globals */
-static int header_length = -1;
-static Bool is_compressed = FALSE;
-static FILE * f_orig_stdin = NULL;
-static int child_pid = -1;
-static char *tempfile = NULL;
-static int posn;
+/* static int header_length = -1; */
+/* static Bool is_compressed = FALSE; */
+/* static FILE * f_orig_stdin = NULL; */
+/* static int child_pid = -1; */
+/* static char *tempfile = NULL; */
+/* static int posn; */
 
 
 static char *FindBinary(
@@ -163,7 +163,8 @@ static char *FindBinary(
 
 static struct comp_formats *
 WhichFormat(
-    char *filename)
+    char *filename,
+    tcptrace_working_file *working_file)
 {
     static struct comp_formats *pf_cache = NULL;
     static char *pf_file_cache = NULL;
@@ -193,7 +194,7 @@ WhichFormat(
 	    /* stick it in the cache */
 	    pf_file_cache = strdup(filename);
 	    pf_cache = pf;
-	    is_compressed = TRUE;
+	    working_file->is_compressed = TRUE;
 
 	    /* and tell the world */
 	    return(pf);
@@ -202,7 +203,7 @@ WhichFormat(
 
     pf_file_cache = strdup(filename);
     pf_cache = NULL;
-    is_compressed = FALSE;
+    working_file->is_compressed = FALSE;
 
     if (tcptrace_debuglevel)
 	fprintf(stderr,"WhichFormat: failed to find compression format for file '%s'\n",
@@ -215,10 +216,11 @@ WhichFormat(
 
 static FILE *
 CompReopenFile(
-    char *filename)
+    char *filename,
+    tcptrace_working_file *working_file)
 {
     char buf[COMP_HDR_SIZE];
-    struct comp_formats *pf = WhichFormat(filename);
+    struct comp_formats *pf = WhichFormat(filename, working_file);
     int len;
     int fd;
     long pos;
@@ -234,7 +236,7 @@ CompReopenFile(
 	fprintf(stderr,"CompReopenFile: current file position is %ld\n", pos);
 
     /* open a pipe to the original (compressed) file */
-    fd = CompOpenPipe(filename,pf);
+    fd = CompOpenPipe(filename, working_file, pf);
     if (fd == -1)
 	return(NULL);
 
@@ -268,6 +270,7 @@ CompReopenFile(
 static FILE *
 CompSaveHeader(
     char *filename,
+    tcptrace_working_file *working_file,
     struct comp_formats *pf)
 {
     FILE *f_stream;
@@ -276,7 +279,7 @@ CompSaveHeader(
     int len;
     int fd;
 
-    fd = CompOpenPipe(filename,pf);
+    fd = CompOpenPipe(filename, working_file, pf);
     if (fd == -1)
 	return(NULL);
 
@@ -287,10 +290,10 @@ CompSaveHeader(
 	extern int mkstemp(char *template);
 
 	/* grab a writable string to keep picky compilers happy */
-	tempfile = strdup("/tmp/trace_hdrXXXXXXXX");
+	working_file->tempfile = strdup("/tmp/trace_hdrXXXXXXXX");
 
 	/* create a temporary file name and open it */
-	if ((fd = mkstemp(tempfile)) == -1) {
+	if ((fd = mkstemp(working_file->tempfile)) == -1) {
 	    perror("template");
 	    exit(-1);
 	}
@@ -298,9 +301,9 @@ CompSaveHeader(
 	/* convert to a stream */
 	f_file = fdopen(fd,"w");
     }
-#else /* HAVE_MKSTEMP */
+#else /* !HAVE_MKSTEMP */
     /* get a name for a temporary file to store the header in */
-    tempfile = tempnam("/tmp/","trace_hdr");
+    working_file->tempfile = tempnam("/tmp/","trace_hdr");
 
     /* open the file */
     if ((f_file = fopen(tempfile,"w+")) == NULL) {
@@ -329,10 +332,10 @@ CompSaveHeader(
 	return(NULL);
     }
 
-    header_length = len;
+    working_file->header_length = len;
     if (tcptrace_debuglevel>1)
 	fprintf(stderr,"Saved %d bytes from stream into temp header file '%s'\n",
-		len, tempfile);
+		len, working_file->tempfile);
 
     /* save the header into a temp file */
     len = fwrite(buf,1,len,f_file);
@@ -343,7 +346,7 @@ CompSaveHeader(
 
     if (tcptrace_debuglevel>1)
 	fprintf(stderr,"Saved the file header into temp file '%s'\n",
-		tempfile);
+		working_file->tempfile);
 
 
     /* OK, we have the header, close the file */
@@ -351,13 +354,13 @@ CompSaveHeader(
 
     /* if it's stdin, make a copy for later */
     if (FileIsStdin(filename)) {
-	f_orig_stdin = f_stream;  /* remember where it is */
+	working_file->f_orig_stdin = f_stream;  /* remember where it is */
     } else {
 	fclose(f_stream);
     }
 
     /* re-open the file as stdin */
-    if ((freopen(tempfile,"r",stdin)) == NULL) {
+    if ((freopen(working_file->tempfile, "r", stdin)) == NULL) {
 	perror("tempfile");
 	exit(-1);
     }
@@ -365,16 +368,16 @@ CompSaveHeader(
     return(stdin);
 }
 
-static void RemoveTmpfile() {
-    if (tempfile != NULL) {
-        if (unlink(tempfile)<0) {
+static void RemoveTmpfile(tcptrace_working_file *working_file) {
+    if (working_file->tempfile != NULL) {
+        if (unlink(working_file->tempfile) < 0) {
             perror("PipeFitting : unlink of tempfile failed");
         }
         
         /* both mkstemp() and tempnam() return malloc()ed buffers */
         /* so must free that memory */
-        free(tempfile);
-        tempfile = NULL;
+        free(working_file->tempfile);
+        working_file->tempfile = NULL;
 
     } else {
         if (tcptrace_debuglevel) {
@@ -387,6 +390,7 @@ static void RemoveTmpfile() {
 static int
 CompOpenPipe(
     char *filename,
+    tcptrace_working_file *working_file,
     struct comp_formats *pf)
 {
     int fdpipe[2];
@@ -433,15 +437,15 @@ CompOpenPipe(
     }
 
 #ifdef __VMS
-    child_pid = vfork();
+    working_file->child_pid = vfork();
 #else
-    child_pid = fork();
+    working_file->child_pid = fork();
 #endif
-    if (child_pid == -1) {
+    if (working_file->child_pid == -1) {
 	perror("fork");
 	exit(-1);
     }
-    if (child_pid == 0) {
+    if (working_file->child_pid == 0) {
 	/* child */
 	dup2(fdpipe[1],1);  /* redirect child's stdout to pipe */
 
@@ -472,19 +476,25 @@ CompOpenPipe(
 
 FILE *
 CompOpenHeader(
-    char *filename)
+    char *filename,
+    tcptrace_working_file *working_file)
 {
     FILE *f;
     struct comp_formats *pf;
 
+    working_file->header_length = -1;
+    working_file->child_pid = -1;
+    working_file->tempfile = NULL;
+    working_file->f_orig_stdin = NULL;
+
     /* short hand if it's just reading from standard input */
     if (FileIsStdin(filename)) {
-	is_compressed = TRUE;	/* pretend that it's compressed */
-	return(CompSaveHeader(filename,NULL));
+	working_file->is_compressed = TRUE; /* pretend that it's compressed */
+	return(CompSaveHeader(filename, working_file, NULL));
     }
 
     /* see if it's a supported compression file */
-    pf = WhichFormat(filename);
+    pf = WhichFormat(filename, working_file);
 
 #ifdef __WIN32
     if(pf != NULL) {
@@ -516,7 +526,7 @@ CompOpenHeader(
             break;
     }
 
-    f = CompSaveHeader(filename, pf);
+    f = CompSaveHeader(filename, working_file, pf);
 
     if (!f) {
 	fprintf(stderr,"Decompression failed for file '%s'\n", filename);
@@ -528,18 +538,19 @@ CompOpenHeader(
 
 int
 CompCloseHeader(
-    FILE *header)
+    FILE *header,
+    tcptrace_working_file *working_file)
 {
     int r;
 
     /* header is stdin, so no need to close, but must remove the temp file
      * if it's still there */
 
-    if (tempfile != NULL) {
+    if (working_file->tempfile != NULL) {
         if (tcptrace_debuglevel) {
-            fprintf(stderr, "removing temporary file '%s'.\n", tempfile);
+            fprintf(stderr, "removing temporary file '%s'.\n", working_file->tempfile);
         }
-        RemoveTmpfile();
+        RemoveTmpfile(working_file);
     }
     return(r);
 }
@@ -547,19 +558,21 @@ CompCloseHeader(
 
 FILE *
 CompOpenFile(
-    char *filename)
+    char *filename,
+    tcptrace_working_file *working_file)
 {
-    if (tcptrace_debuglevel>1)
+    if (tcptrace_debuglevel > 1) {
 	fprintf(stderr,"CompOpenFile('%s') called\n", filename);
+    }
 
     /* if it isn't compressed, just leave it at stdin */
-    if (!is_compressed)
+    if (!working_file->is_compressed)
 	return(stdin);
 
     /* if the header we already saved is the whole file, it must be */
     /* short, so just read from the file */
-    if (header_length < COMP_HDR_SIZE) {
-	if (tcptrace_debuglevel>1)
+    if (working_file->header_length < COMP_HDR_SIZE) {
+	if (tcptrace_debuglevel > 1)
 	    fprintf(stderr,"CompOpenFile: still using header file, short file...\n");
 	return(stdin);
     }
@@ -567,23 +580,23 @@ CompOpenFile(
     /* if we're just reading from standard input, we'll need some help because */
     /* part of the input is in a file and the rest is still stuck in a pipe */
     if (FileIsStdin(filename)) {
-	 posn=ftell(stdin);
-	 if (posn < 0) {
+	 working_file->posn = ftell(stdin);
+	 if (working_file->posn < 0) {
 	      perror("CompOpenFile : ftell failed");
 	      exit(-1);
 	 }
-	return(PipeHelper());
+	return(PipeHelper(working_file));
     }
 
     /* otherwise, there's more than we saved, we need to re-open the pipe */
     /* and re-attach it to stdin */
-    return(CompReopenFile(filename));
+    return(CompReopenFile(filename, working_file));
 }
 
 
 /* return a FILE * that fill come from a helper process */
 FILE *
-PipeHelper(void)
+PipeHelper(tcptrace_working_file *working_file)
 {
     int fdpipe[2];
     FILE *f_return;
@@ -599,15 +612,15 @@ PipeHelper(void)
     /* remember: fdpipe[0] is for reading, fdpipe[1] is for writing */
 
 #ifdef __VMS
-    child_pid = vfork();
+    working_file->child_pid = vfork();
 #else
-    child_pid = fork();
+    working_file->child_pid = fork();
 #endif
-    if (child_pid == -1) {
+    if (working_file->child_pid == -1) {
 	perror("fork");
 	exit(-1);
     }
-    if (child_pid == 0) {
+    if (working_file->child_pid == 0) {
 	/* be the helper process */
 	FILE *f_pipe;
 
@@ -619,7 +632,7 @@ PipeHelper(void)
 	}
 
 	/* connect the header file and stream to the pipe */
-	PipeFitting(f_pipe, stdin, f_orig_stdin);
+	PipeFitting(f_pipe, stdin, working_file->f_orig_stdin, working_file);
 
 	/* OK, both empty, we're done */
 	if (tcptrace_debuglevel>1)
@@ -630,10 +643,11 @@ PipeHelper(void)
     }
 
     /* I'm still the parent */
-    if (tcptrace_debuglevel>1)
+    if (tcptrace_debuglevel > 1) {
 	fprintf(stderr,
 		"PipeHelper: forked off child %d to deal with stdin\n",
-		child_pid);
+		working_file->child_pid);
+    }
 
     /* clean up the fd's */
     close(fdpipe[1]);
@@ -666,7 +680,8 @@ static void
 PipeFitting(
     FILE *f_pipe,
     FILE *f_header,
-    FILE *f_orig_stdin)
+    FILE *f_orig_stdin,
+    tcptrace_working_file *working_file)
 {
     char buf[COMP_HDR_SIZE];		/* just a big buffer */
     int len;
@@ -677,17 +692,17 @@ PipeFitting(
     // In the child process (where we are currently executing), close and 
     // re-open the temporary file currently opened as stdin, in which the 
     // first COMP_HDR_SIZE bytes of data were stored. The current file pointer
-    // position in the file was stored in the global variable posn.
+    // position in the file was stored in working_file->posn.
 
     if (fclose(f_header)<0)
 	  perror("PipeFitting : fclose failed");
      
-    if ((f_header=fopen(tempfile,"r"))==NULL) {
+    if ((f_header = fopen(working_file->tempfile,"r"))==NULL) {
 	 perror("PipeFitting : fopen of tempfile failed");
 	 exit(-1);
     }
 
-    if (fread(buf,1,posn,f_header)!=posn) {
+    if (fread(buf, 1, working_file->posn, f_header) != working_file->posn) {
 	 perror("PipeFitting : fread failed");
 	 exit(-1);
     }
@@ -718,7 +733,7 @@ PipeFitting(
     if (fclose(f_header)<0) 
 	  perror("PipeFitting : fclose failed");
      
-    RemoveTmpfile();
+    RemoveTmpfile(working_file);
     // if (unlink(tempfile)<0)
     //	  perror("PipeFitting : unlink of tempfile failed");
      
@@ -754,15 +769,15 @@ PipeFitting(
 
 void
 CompCloseFile(
-    char *filename)
+    tcptrace_working_file *working_file)
 {
     /* Hmmm... this was commented out, I wonder why? */
 /*     fclose(stdin); */
 
     /* if we have a child, make sure it's dead */
-    if (child_pid != -1) {
-	kill(child_pid,SIGTERM);
-	child_pid = -1;
+    if (working_file->child_pid != -1) {
+	kill(working_file->child_pid, SIGTERM);
+	working_file->child_pid = -1;
     }
 
     /* in case we have children child still in the background */
@@ -770,14 +785,15 @@ CompCloseFile(
 	; /* nothing */
 
     /* zero out some globals */
-    header_length = -1;
+    /* no longer necessary */
+    /* header_length = -1; */
 }
 
 
 int
-CompIsCompressed(void)
+CompIsCompressed(tcptrace_working_file *working_file)
 {
-    return(is_compressed);
+    return(working_file->is_compressed);
 }
 
 

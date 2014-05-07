@@ -28,8 +28,10 @@ tcptrace_process_file(
     tcptrace_runtime_options_t *options;
 
     /* storage for current working files and packets */
-    tcptrace_working_file working_file;
+    tcptrace_working_file working_file_s, *working_file;
     raw_packet_t raw_packet;
+
+    working_file = &working_file_s;
 
     options = context->options;
 
@@ -39,7 +41,7 @@ tcptrace_process_file(
     /* load the file */
     {
         tcptrace_load_status_t status;
-        status = tcptrace_load_file(filename, &working_file);
+        status = tcptrace_load_file(filename, working_file);
         if (status != TCPTRACE_LOAD_SUCCESS) {
             exit(1);
             /* could use different exit codes depending on status */
@@ -47,19 +49,19 @@ tcptrace_process_file(
         }
     }
 
-    ppread = working_file.reader_function;
-    is_stdin = working_file.is_stdin;
-    working_file.pnum = 0;
-    working_file.location = 0;
+    ppread = working_file->reader_function;
+    is_stdin = working_file->is_stdin;
+    working_file->pnum = 0;
+    working_file->location = 0;
 
     if (tcptrace_debuglevel) {
-        printf("Trace file size: %lu bytes\n", working_file.filesize);
+        printf("Trace file size: %lu bytes\n", working_file->filesize);
     }
 
     location = 0;
 
     /* notify the modules of new file */
-    tcptrace_modules_all_newfile(context, &working_file, filename);
+    tcptrace_modules_all_newfile(context, working_file, filename);
 
     context->file_count++;
 
@@ -72,7 +74,7 @@ tcptrace_process_file(
 
 	/* update global and per-file packet counters */
 	context->pnum++;        /* global */
-	working_file.pnum++;	/* local to this file */
+	working_file->pnum++;	/* local to this file */
 
         /* TODO: move this stuff to read packet struct (maybe) */
         /* not sure if timestamp is necessary in raw_packet */
@@ -94,20 +96,20 @@ tcptrace_process_file(
 	if ((context->options->endpnum != 0) &&
             (context->pnum > options->endpnum)) {
 	    context->pnum--;
-	    working_file.pnum--;
+	    working_file->pnum--;
 	    break;
         }
 
 #if 0
 	/* install signal handler */
-	if (working_file.pnum == 1) {
+	if (working_file->pnum == 1) {
 	    signal(SIGINT,QuitSig);
 	}
 #endif
 
-        progress_counter(context, &raw_packet, &working_file);
+        progress_counter(context, &raw_packet, working_file);
 
-        ret = tcptrace_process_packet(context, &raw_packet, &working_file);
+        ret = tcptrace_process_packet(context, &raw_packet, working_file);
         /* TODO: check ret, see if anything needs to be done about it */
 
 #if 0
@@ -152,7 +154,7 @@ tcptrace_process_file(
     context->current_filename = NULL;
 
     /* close the input file */
-    CompCloseFile(filename);
+    CompCloseFile(working_file);
 
 }
 
@@ -371,7 +373,7 @@ static void progress_counter(tcptrace_context_t *context,
     if (!options->printem &&
         !options->printallofem &&
         options->printticks) {
-        if (CompIsCompressed())
+        if (CompIsCompressed(working_file))
             working_file->location += raw_packet->tlen;  /* just guess... */
         if (((working_file->pnum <    100) && (working_file->pnum %    10 == 0)) ||
             ((working_file->pnum <   1000) && (working_file->pnum %   100 == 0)) ||
@@ -384,7 +386,7 @@ static void progress_counter(tcptrace_context_t *context,
                 fprintf(stderr, "%s: ", context->current_filename);
             if (working_file->is_stdin) {
                 fprintf(stderr ,"%lu", working_file->pnum);
-            } else if (CompIsCompressed()) {
+            } else if (CompIsCompressed(working_file)) {
                 frac = working_file->location/(working_file->filesize/100);
                 if (frac <= 100) {
                     fprintf(stderr ,"%lu ~%u%% (compressed)", working_file->pnum, frac);

@@ -80,7 +80,7 @@ tcptrace_load_file(
     /* TODO: compressed file support seems somewhat unecessary;
        consider removing feature or moving it elsewhere */
 
-    header = CompOpenHeader(filename);
+    header = CompOpenHeader(filename, working_file);
 #ifdef __WIN32
     /* If the file is compressed, exit (Windows version does not support compressed dump files) */
     if (header == (FILE *)-1) {
@@ -93,7 +93,7 @@ tcptrace_load_file(
     }
 #endif /* __WIN32 */
     
-    CompCloseHeader(header);
+    CompCloseHeader(header, working_file);
 
     working_file->is_stdin = 0;
 
@@ -175,7 +175,7 @@ rather than:\n\
 
 #ifndef __WIN32   
     /* open the file for processing */
-    if (CompOpenFile(filename) == NULL) {
+    if (CompOpenFile(filename, working_file) == NULL) {
 	return(TCPTRACE_WONT_UNCOMPRESS);  /* was exit(-1); */
     }
 #endif /* __WIN32 */   
