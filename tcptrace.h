@@ -853,6 +853,8 @@ typedef struct tcptrace_runtime_options_t {
 typedef struct tcptrace_context_t {
     tcptrace_runtime_options_t *options;
 
+    timeval wallclock_start;
+
     u_long pnum;
     timeval first_packet;
     timeval last_packet;
@@ -1161,7 +1163,7 @@ void ParseFilter(char *expr);
 Bool PassesFilter(tcp_pair *ptp);
 
 /* simple string expansion for file names, directories, etc */
-char *ExpandFormat(const char *format);
+char *ExpandFormat(tcptrace_context_t *context, const char *format);
 
 
 /* TCP flags macros */

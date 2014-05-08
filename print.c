@@ -811,3 +811,126 @@ PrintSeqRep(
     }
     return(buf);
 }
+
+
+/* ExpandFormat:
+   Expand the string in "format" and return the result string
+
+   The return value rotates between one of two static strings
+   (to avoid malloc overhead), but if you need more than two at
+   a time, you'll need to make a copy.
+
+   Expansions are performed as follows:
+
+   %f	basename of the current input file
+   %d	execution date, standard unix output, spaces ==> underscores
+   %t	execution time & date, standard unix output, spaces ==> underscores
+   %D	execution date, format "1-14-1963"
+*/
+
+char *
+ExpandFormat(tcptrace_context_t *context, const char *format)
+{
+    static struct dstring *pds1 = NULL;
+    static struct dstring *pds2 = NULL;
+    static struct dstring *pds = NULL;
+
+    /* init the strings */
+    if (pds1 == NULL) {
+	pds1 = DSNew();
+	pds2 = DSNew();
+    }
+
+    /* alternate between them */
+    pds = (pds == pds1)?pds2:pds1;
+
+    /* erase the previous contents */
+    DSErase(pds);
+
+    if (tcptrace_debuglevel>2)
+	fprintf(stderr,"Trying to expand string '%s'\n", format);
+
+    while (*format) {
+	if (strncmp(format,"%f",2) == 0) {
+            char *filename;
+	    char *ptr;
+
+            /* TODO: current_filename is going to be a problem later on. */
+            /* need to parameterize this somehow */
+
+	    /* basename of current file (after the last slash) */
+            if (context->current_filename != NULL) {
+                char *filename = context->current_filename;
+            } else {
+                char *filename = "";
+            }
+
+	    /* find the last '/' in the file */
+	    ptr = strrchr(filename,'/');
+
+	    if (ptr)
+		++ptr;		/* the base of the filename is one past the slash */
+	    else
+		ptr = filename;	/* no directory, just use the file */
+		
+	    DSAppendString(pds,ptr);
+	    format += 2;
+	} else if (strncmp(format,"%D",2) == 0) {
+	    /* current wallclock date (1-14-1963) */
+	    time_t now;
+	    struct tm *ptm;
+	    char buf[32];
+
+	    /* get the current time, broken apart */
+	    time(&now);
+	    ptm = localtime((time_t *)&context->wallclock_start.tv_sec);
+
+	    snprintf(buf,sizeof(buf),"%d-%d-%d",
+		    ptm->tm_mon+1,
+		    ptm->tm_mday,
+		    1900 + ptm->tm_year);
+	    DSAppendString(pds,buf);
+	    format += 2;
+	} else if ((strncmp(format,"%d",2) == 0) ||
+		   (strncmp(format,"%t",2) == 0)) {
+	    /* current wallclock date, unix format */
+	    time_t now;
+	    char *pbuf;
+	    char *pch;
+
+	    /* get the current time in unix format */
+            /* Fri Sep 13 00:00:00 1986\n\0 */
+	    /*           1         2       */
+	    /* 0123456789012345678901234 5 */
+	    time(&now);
+	    pbuf = ctime(&now);
+	    pbuf[24] = '\00';	/* nuke the newline */
+
+	    /* spaces to underscores */
+	    for (pch = pbuf; *pch; ++pch)
+		if (*pch == ' ')
+		    *pch = '_';
+
+
+	    if (strncmp(format,"%d",2) == 0)
+		/* the whole thing */
+		DSAppendString(pds,pbuf);
+	    else {
+		/* just the date */
+		pbuf[11] = '\00';
+		DSAppendString(pds,pbuf);
+		DSAppendString(pds,pbuf+20);
+	    }
+
+	    format += 2;
+	} else {
+	    /* no formatting, just copy one character */
+	    DSAppendChar(pds,*format);
+	    ++format;
+	}
+    }
+
+    return(DSVal(pds));
+}
+
+

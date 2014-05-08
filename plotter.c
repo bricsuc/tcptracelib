@@ -89,6 +89,9 @@ typedef struct plotter_options_t {
    client, where it does not matter */
 static plotter_options_t g_plotter_options;
 
+/* local pointer to context, also not threadsafe */
+static tcptrace_context_t *g_context;
+
 /* locally global parameters */
 static int max_plotters;
 static PLOTTER plotter_ix = NO_PLOTTER;
@@ -172,6 +175,7 @@ plot_init(tcptrace_context_t *context)
 {
     plotter_options_t *plotter_options = &g_plotter_options;
     tcptrace_runtime_options_t *tt_options = context->options;
+    g_context = context;
 
     max_plotters = 256;  /* just a default, make more on the fly */
 
@@ -936,7 +940,7 @@ WritePlotHeader(
    if (options->show_title) {
       if (options->xplot_title_prefix) {
 	  Mfprintf(f,"title\n%s %s\n",
-		 ExpandFormat(options->xplot_title_prefix),
+		 ExpandFormat(g_context, options->xplot_title_prefix),
 		 ppi->title);
       } else {
           Mfprintf(f,"title\n%s\n", ppi->title);

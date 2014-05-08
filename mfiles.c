@@ -138,7 +138,7 @@ Mfopen(
     if (options->output_file_dir == NULL)
 	directory = "";
     else {
-	directory = ExpandFormat(options->output_file_dir);
+	directory = ExpandFormat(context, options->output_file_dir);
 	M_mkdirp(directory);
     }
 
@@ -146,11 +146,11 @@ Mfopen(
     if (options->output_file_prefix == NULL) {
 	prefix = "";
     } else {
-	prefix = ExpandFormat(options->output_file_prefix);
+	prefix = ExpandFormat(context, options->output_file_prefix);
     }
 
 
-	len=strlen(fname)+strlen(directory)+strlen(prefix)+2;
+    len=strlen(fname)+strlen(directory)+strlen(prefix)+2;
 			/* 2: for the slash and null */
 
     pmf->fname = MallocZ(len);
