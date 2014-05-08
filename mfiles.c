@@ -91,11 +91,11 @@ static void M_mkdirp(char *directory);
 
 
 /* head and tail of LRU open file list */
-MFILE mf_head;  /* LEAST recently used */
-MFILE mf_tail;  /* MOST recently used */
+static MFILE mf_head;  /* LEAST recently used */
+static MFILE mf_tail;  /* MOST recently used */
 
-MFILE mfc_head;  /* closed files, LEAST recently closed */
-MFILE mfc_tail;  /* closed files, MOST recently closed */
+static MFILE mfc_head;  /* closed files, LEAST recently closed */
+static MFILE mfc_tail;  /* closed files, MOST recently closed */
 
 
 void
