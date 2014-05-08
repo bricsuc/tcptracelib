@@ -14,12 +14,9 @@ AM_LFLAGS = -P filtyy -o lex.yy.c
 
 tcptrace_SOURCES = \
     tcptrace.c \
-    gcache.c mfiles.c names.c \
-    output.c print.c rexmit.c nlanr.c \
-    thruput.c \
+    nlanr.c \
     filter.c \
-    version.c pool.c poolaccess.c \
-    dstring.c \
+    version.c pool.c \
     filt_parser.y \
     filt_scanner.l
 
@@ -29,12 +26,19 @@ tcptrace_CPPFLAGS =
 
 lib_LTLIBRARIES = libtcptrace.la
 libtcptrace_la_SOURCES = \
-    ipv6.c file_load.c compress.c initialize.c process.c \
+    file_load.c compress.c \
+    initialize.c process.c \
+    mfiles.c output.c print.c \
     modules.c modules_list.c \
-    avl.c \
+    avl.c dstring.c gcache.c \
+    poolaccess.c \
     trace.c udp.c \
+    rexmit.c thruput.c \
+    ipv6.c \
+    names.c \
     plotter.c \
     tcpdump.c snoop.c etherpeek.c netm.c ns.c netscout.c erf.c
+
 libtcptrace_la_CPPFLAGS = 
 
 # Input format options
@@ -121,10 +125,12 @@ endif
 # decompression options
 if COMPRESS_GZIP
     tcptrace_CPPFLAGS += -DGUNZIP=\"gunzip\"
+    libtcptrace_la_CPPFLAGS += -DGUNZIP=\"gunzip\"
 endif
 
 if COMPRESS_BZIP2
     tcptrace_CPPFLAGS += -DBUNZIP2=\"bunzip2\"
+    libtcptrace_la_CPPFLAGS += -DBUNZIP2=\"bunzip2\"
 endif
 
 # missing: dependencies?
