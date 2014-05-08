@@ -909,6 +909,13 @@ typedef struct tcptrace_context_t {
 
     u_long udp_trace_count;
 
+    /* pair pool data */
+    long tcp_pair_pool;
+    long udp_pair_pool;
+    long seqspace_pool;
+    long ptp_snap_pool;
+    long ptp_ptr_pool;
+
 } tcptrace_context_t;
 
 /* raw packet, read from file */
@@ -1114,21 +1121,25 @@ ipaddr *str2ipaddr(char *str);
 int IPcmp(ipaddr *pipA, ipaddr *pipB);
 
 /* Memory allocation routines with page boundaries */ 
-tcp_pair *MakeTcpPair(void);
-void FreeTcpPair(tcp_pair *ptr);
-udp_pair *MakeUdpPair(void);
-void FreeUdpPair(udp_pair *ptr);
-seqspace *MakeSeqspace(void);
-void FreeSeqspace(seqspace *ptr);
-ptp_snap *MakePtpSnap(void);
-void FreePtpSnap(ptp_snap *ptr);
+tcp_pair *MakeTcpPair(tcptrace_context_t *context);
+void FreeTcpPair(tcptrace_context_t *context, tcp_pair *ptr);
+udp_pair *MakeUdpPair(tcptrace_context_t *context);
+void FreeUdpPair(tcptrace_context_t *context, udp_pair *ptr);
+seqspace *MakeSeqspace(tcptrace_context_t *context);
+void FreeSeqspace(tcptrace_context_t *context, seqspace *ptr);
+ptp_snap *MakePtpSnap(tcptrace_context_t *context);
+void FreePtpSnap(tcptrace_context_t *context, ptp_snap *ptr);
+ptp_ptr *MakePtpPtr(tcptrace_context_t *context);
+void FreePtpPtr(tcptrace_context_t *context, ptp_ptr *ptr);
+
+void freequad(quadrant **);
+
+#if 0     /* these seem to be unused */
 segment *MakeSegment(void);
 void FreeSegment(segment *ptr);
 quadrant *MakeQuadrant(void);
 void FreeQuadrant(quadrant *ptr);
-ptp_ptr *MakePtpPtr(void);
-void FreePtpPtr(ptp_ptr *ptr);
-void freequad(quadrant **);
+#endif
 
 /* AVL tree support routines */
 enum AVLRES SnapInsert(ptp_snap **n, ptp_snap *new_node);

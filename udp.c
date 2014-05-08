@@ -95,7 +95,8 @@ NewUTP(
     if (0) {
 	 printf("trace.c:NewUTP() calling MakeUdpPair()\n");
     }
-    pup = MakeUdpPair();
+    /* TODO: FreeUdpPair() is never called, so probably a memory leak */
+    pup = MakeUdpPair(context);
     context->num_udp_pairs++;
     /* make a new one, if possible */
     if ((context->num_udp_pairs + 1) >= max_udp_pairs) {

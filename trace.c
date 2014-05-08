@@ -523,7 +523,7 @@ NewTTP(
     if (0) {
       printf("trace.c:NewTTP() calling MakeTcpPair()\n");
     }
-    ptp = MakeTcpPair();
+    ptp = MakeTcpPair(context);
     context->num_tcp_pairs++;
 
     if (!options->run_continuously) {
@@ -738,8 +738,8 @@ NewTTP(
     /* init RTT graphs */
     ptp->a2b.rtt_plotter = ptp->b2a.rtt_plotter = NO_PLOTTER;
 
-    ptp->a2b.ss = MakeSeqspace();
-    ptp->b2a.ss = MakeSeqspace();
+    ptp->a2b.ss = MakeSeqspace(context);
+    ptp->b2a.ss = MakeSeqspace(context);
 
     ptp->filename = context->current_filename;
 
@@ -974,10 +974,11 @@ FindTTP(
     if (0) {
 	printf("trace.c:FindTTP() calling MakePtpSnap()\n");
     }
-    ptph = MakePtpSnap();
+    /* TODO: FreePtpSnap() is never called, probably a memory leak here */
+    ptph = MakePtpSnap(context);
   
     if (options->run_continuously) {
-	ptp_ptr *ptr = (ptp_ptr *)MakePtpPtr();
+	ptp_ptr *ptr = (ptp_ptr *)MakePtpPtr(context);
 	ptr->prev = NULL;
 
 	if (live_conn_list_head == NULL) {
@@ -1003,7 +1004,7 @@ FindTTP(
 		RemoveConn(context, last_ptr);
 		context->num_removed_tcp_pairs++;
 		context->tcp_active_conn_count--;
-		FreePtpPtr(last_ptr);
+		FreePtpPtr(context, last_ptr);
 	    }
 	}
     }
@@ -1076,7 +1077,7 @@ UpdateConnLists(
 	  RemoveConn(context, last_ptr);
 	  context->num_removed_tcp_pairs++;
 	  context->tcp_closed_conn_count--;
-	  FreePtpPtr(last_ptr);
+	  FreePtpPtr(context, last_ptr);
 	}
       }
 
@@ -1240,7 +1241,7 @@ RemoveOldConns(
       if (0) {
 	printf("trace.c:RemoveOldConns() calling FreePtpSnap()\n");
       }
-      FreePtpPtr(ptr);
+      FreePtpPtr(context, ptr);
       if (num_conn_check)
 	--(*conn_count);
     }
@@ -1256,7 +1257,7 @@ RemoveOldConns(
     *conn_list_tail = NULL;
     RemoveConn(context, ptr);
     context->num_removed_tcp_pairs++;
-    FreePtpPtr(ptr);
+    FreePtpPtr(context, ptr);
     if (num_conn_check)
       --(*conn_count);
   }
@@ -1369,7 +1370,7 @@ RemoveTcpPair(
 	freequad(&ptp->a2b.ss->pquad[i]);
       }
     }
-    FreeSeqspace(ptp->a2b.ss);
+    FreeSeqspace(context, ptp->a2b.ss);
   }
 
   if (ptp->b2a.ss) {
@@ -1378,10 +1379,10 @@ RemoveTcpPair(
 	freequad(&ptp->b2a.ss->pquad[i]);
       }
     }
-    FreeSeqspace(ptp->b2a.ss);
+    FreeSeqspace(context, ptp->b2a.ss);
   }
 
-  FreeTcpPair(ptp);
+  FreeTcpPair(context, ptp);
 }
 
 

@@ -71,6 +71,13 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
 
     context->udp_trace_count = 0;
 
+
+    context->tcp_pair_pool = -1;
+    context->udp_pair_pool = -1;
+    context->seqspace_pool = -1;
+    context->ptp_snap_pool = -1;
+    context->ptp_ptr_pool = -1;
+
 }
 
 /* initialize the tcptrace runtime options */

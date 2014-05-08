@@ -58,119 +58,118 @@ static char const GCC_UNUSED rcsid[] =
     "@(#)$Header: /usr/local/cvs/tcptrace/poolaccess.c,v 5.5 2003/11/19 14:38:04 sdo Exp $";
 
 
-static long tcp_pair_pool = -1;
-static long udp_pair_pool = -1;
-static long seqspace_pool = -1;
-static long ptp_snap_pool = -1;
-static long ptp_ptr_pool  = -1;
+/* static long tcp_pair_pool = -1; */
+/* static long udp_pair_pool = -1; */
+/* static long seqspace_pool = -1; */
+/* static long ptp_snap_pool = -1; */
+/* static long ptp_ptr_pool  = -1; */
+
+#if 0
 static long segment_pool  = -1;
 static long quadrant_pool = -1;
+#endif
 
 tcp_pair *
-MakeTcpPair(
-	    void)
+MakeTcpPair(tcptrace_context_t *context)
 {
   tcp_pair	*ptr = NULL;
 
-  if (tcp_pair_pool < 0) {
-    tcp_pair_pool = MakeMemPool(sizeof(tcp_pair), 0);
+  if (context->tcp_pair_pool < 0) {
+    context->tcp_pair_pool = MakeMemPool(sizeof(tcp_pair), 0);
   }
   
-  ptr = PoolMalloc(tcp_pair_pool, sizeof(tcp_pair));
+  ptr = PoolMalloc(context->tcp_pair_pool, sizeof(tcp_pair));
   return ptr;
 }
 
 void
-FreeTcpPair(
-	    tcp_pair *ptr)
+FreeTcpPair(tcptrace_context_t *context, tcp_pair *ptr)
 {
-  PoolFree(tcp_pair_pool, ptr);
+  PoolFree(context->tcp_pair_pool, ptr);
 }
 
 udp_pair *
-MakeUdpPair(
-	    void)
+MakeUdpPair(tcptrace_context_t *context)
 {
   udp_pair	*ptr = NULL;
 
-  if (udp_pair_pool < 0) {
-    udp_pair_pool = MakeMemPool(sizeof(udp_pair), 0);
+  if (context->udp_pair_pool < 0) {
+    context->udp_pair_pool = MakeMemPool(sizeof(udp_pair), 0);
   }
   
-  ptr = PoolMalloc(udp_pair_pool, sizeof(udp_pair));
+  ptr = PoolMalloc(context->udp_pair_pool, sizeof(udp_pair));
   return ptr;
 }
 
 void
-FreeUdpPair(
+FreeUdpPair(tcptrace_context_t *context,
 	    udp_pair *ptr)
 {
-  PoolFree(udp_pair_pool, ptr);
+  PoolFree(context->udp_pair_pool, ptr);
 }
 
 seqspace *
-MakeSeqspace(
-	     void)
+MakeSeqspace(tcptrace_context_t *context)
 {
   seqspace	*ptr = NULL;
 
-  if (seqspace_pool < 0) {
-    seqspace_pool = MakeMemPool(sizeof(seqspace), 0);
+  if (context->seqspace_pool < 0) {
+    context->seqspace_pool = MakeMemPool(sizeof(seqspace), 0);
   }
   
-  ptr = PoolMalloc(seqspace_pool, sizeof(seqspace));
+  ptr = PoolMalloc(context->seqspace_pool, sizeof(seqspace));
   return ptr;
 }
 
 void
-FreeSeqspace(
+FreeSeqspace(tcptrace_context_t *context,
 	     seqspace *ptr)
 {
-  PoolFree(seqspace_pool, ptr);
+  PoolFree(context->seqspace_pool, ptr);
 }
 
 ptp_snap *
-MakePtpSnap(
-	    void)
+MakePtpSnap(tcptrace_context_t *context)
 {
   ptp_snap	*ptr = NULL;
 
-  if (ptp_snap_pool < 0) {
-    ptp_snap_pool = MakeMemPool(sizeof(ptp_snap), 0);
+  if (context->ptp_snap_pool < 0) {
+    context->ptp_snap_pool = MakeMemPool(sizeof(ptp_snap), 0);
   }
   
-  ptr = PoolMalloc(ptp_snap_pool, sizeof(ptp_snap));
+  ptr = PoolMalloc(context->ptp_snap_pool, sizeof(ptp_snap));
   return ptr;
 }
 
 void
-FreePtpSnap(
+FreePtpSnap(tcptrace_context_t *context,
 	    ptp_snap *ptr)
 {
-  PoolFree(ptp_snap_pool, ptr);
+  PoolFree(context->ptp_snap_pool, ptr);
 }
 
 ptp_ptr *
-MakePtpPtr(
-	   void)
+MakePtpPtr(tcptrace_context_t *context)
 {
   ptp_ptr	*ptr = NULL;
 
-  if (ptp_ptr_pool < 0) {
-    ptp_ptr_pool = MakeMemPool(sizeof(ptp_ptr), 0);
+  if (context->ptp_ptr_pool < 0) {
+    context->ptp_ptr_pool = MakeMemPool(sizeof(ptp_ptr), 0);
   }
   
-  ptr = PoolMalloc(ptp_ptr_pool, sizeof(ptp_ptr));
+  ptr = PoolMalloc(context->ptp_ptr_pool, sizeof(ptp_ptr));
   return ptr;
 }
 
 void
-FreePtpPtr(
+FreePtpPtr(tcptrace_context_t *context,
 	   ptp_ptr *ptr)
 {
-  PoolFree(ptp_ptr_pool, ptr);
+  PoolFree(context->ptp_ptr_pool, ptr);
 }
 
+/* the following no longer seem to be in use */
+#if 0
 segment *
 MakeSegment(
 	    void)
@@ -212,3 +211,5 @@ FreeQuadrant(
 {
   PoolFree(quadrant_pool, ptr);
 }
+
+#endif /* 0 */
