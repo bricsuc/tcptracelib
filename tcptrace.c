@@ -1210,59 +1210,6 @@ static void
      }
 }
 
-/* convert a buffer to an argc,argv[] pair */
-void
-StringToArgv(
-    char *buf,
-    int *pargc,
-    char ***pargv)
-{
-    char **argv;
-    int nargs = 0;
-
-    /* discard the original string, use a copy */
-    buf = strdup(buf);
-
-    /* (very pessimistically) make the argv array */
-    argv = malloc(sizeof(char *) * ((strlen(buf)/2)+1));
-
-    /* skip leading blanks */
-    while ((*buf != '\00') && (isspace((int)*buf))) {
-	if (tcptrace_debuglevel > 10)
-	    printf("skipping isspace('%c')\n", *buf);	    
-	++buf;
-    }
-
-    /* break into args */
-    for (nargs = 1; *buf != '\00'; ++nargs) {
-	char *stringend;
-	argv[nargs] = buf;
-
-	/* search for separator */
-	while ((*buf != '\00') && (!isspace((int)*buf))) {
-	    if (tcptrace_debuglevel > 10)
-		printf("'%c' (%d) is NOT a space\n", *buf, (int)*buf);	    
-	    ++buf;
-	}
-	stringend = buf;
-
-	/* skip spaces */
-	while ((*buf != '\00') && (isspace((int)*buf))) {
-	    if (tcptrace_debuglevel > 10)
-		printf("'%c' (%d) IS a space\n", *buf, (int)*buf);	    
-	    ++buf;
-	}
-
-	*stringend = '\00';  /* terminate the previous string */
-
-	if (tcptrace_debuglevel)
-	    printf("  argv[%d] = '%s'\n", nargs, argv[nargs]);
-    }
-
-    *pargc = nargs;
-    *pargv = argv;
-}
-
 
 static void
 CheckArguments(
@@ -2061,21 +2008,6 @@ DumpFlags(void)
         str_location = find_str_option_location(bvop);
 	fprintf(stderr,"%-18s%s\n", buf, (*str_location)?*str_location:"<NULL>");
     }
-}
-
-/* the memcpy() function that gcc likes to stuff into the program has alignment
-   problems, so here's MY version.  It's only used for small stuff, so the
-   copy should be "cheap", but we can't be too fancy due to alignment boo boos */
-void *
-MemCpy(void *vp1, void *vp2, size_t n)
-{
-    char *p1 = vp1;
-    char *p2 = vp2;
-
-    while (n-->0)
-	*p1++=*p2++;
-
-    return(vp1);
 }
 
 

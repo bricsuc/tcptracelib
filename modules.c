@@ -254,3 +254,56 @@ tcptrace_modules_readpacket_udp(
     }
 }
 
+/* convert a buffer to an argc,argv[] pair */
+void
+StringToArgv(
+    char *buf,
+    int *pargc,
+    char ***pargv)
+{
+    char **argv;
+    int nargs = 0;
+
+    /* discard the original string, use a copy */
+    buf = strdup(buf);
+
+    /* (very pessimistically) make the argv array */
+    argv = malloc(sizeof(char *) * ((strlen(buf)/2)+1));
+
+    /* skip leading blanks */
+    while ((*buf != '\00') && (isspace((int)*buf))) {
+	if (tcptrace_debuglevel > 10)
+	    printf("skipping isspace('%c')\n", *buf);	    
+	++buf;
+    }
+
+    /* break into args */
+    for (nargs = 1; *buf != '\00'; ++nargs) {
+	char *stringend;
+	argv[nargs] = buf;
+
+	/* search for separator */
+	while ((*buf != '\00') && (!isspace((int)*buf))) {
+	    if (tcptrace_debuglevel > 10)
+		printf("'%c' (%d) is NOT a space\n", *buf, (int)*buf);	    
+	    ++buf;
+	}
+	stringend = buf;
+
+	/* skip spaces */
+	while ((*buf != '\00') && (isspace((int)*buf))) {
+	    if (tcptrace_debuglevel > 10)
+		printf("'%c' (%d) IS a space\n", *buf, (int)*buf);	    
+	    ++buf;
+	}
+
+	*stringend = '\00';  /* terminate the previous string */
+
+	if (tcptrace_debuglevel)
+	    printf("  argv[%d] = '%s'\n", nargs, argv[nargs]);
+    }
+
+    *pargc = nargs;
+    *pargv = argv;
+}
+
