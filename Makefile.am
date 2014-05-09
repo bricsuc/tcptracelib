@@ -12,13 +12,7 @@ AM_YFLAGS = -d -p filtyy
 # output file the same, due to automake's ylwrap program
 AM_LFLAGS = -P filtyy -o lex.yy.c
 
-tcptrace_SOURCES = \
-    tcptrace.c \
-    nlanr.c \
-    filter.c \
-    version.c pool.c \
-    filt_parser.y \
-    filt_scanner.l
+tcptrace_SOURCES = tcptrace.c version.c
 
 tcptrace_LDADD = libtcptrace.la @LEXLIB@
 
@@ -31,13 +25,14 @@ libtcptrace_la_SOURCES = \
     mfiles.c output.c print.c \
     modules.c modules_list.c \
     avl.c dstring.c gcache.c \
-    poolaccess.c \
+    memutil.c pool.c poolaccess.c \
     trace.c udp.c \
     rexmit.c thruput.c \
     ipv6.c \
     names.c \
     plotter.c \
-    tcpdump.c snoop.c etherpeek.c netm.c ns.c netscout.c erf.c
+    filter.c filt_parser.y filt_scanner.l \
+    tcpdump.c snoop.c etherpeek.c netm.c ns.c netscout.c erf.c nlanr.c
 
 libtcptrace_la_CPPFLAGS = 
 
