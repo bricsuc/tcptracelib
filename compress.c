@@ -543,10 +543,9 @@ CompCloseHeader(
 {
     int r;
 
-    /* header is stdin, so no need to close, but must remove the temp file
-     * if it's still there */
+    /* remove the temporary header file from an open if necessary */
 
-    if (working_file->tempfile != NULL) {
+    if (working_file->tempfile != NULL && working_file->is_stdin == 0) {
         if (tcptrace_debuglevel) {
             fprintf(stderr, "removing temporary file '%s'.\n", working_file->tempfile);
         }

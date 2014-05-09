@@ -93,21 +93,21 @@ tcptrace_load_file(
     }
 #endif /* __WIN32 */
     
-    CompCloseHeader(header, working_file);
-
-    working_file->is_stdin = 0;
-
-    /* see how big the file is */
+    /* determine if file is stdin, and see how big the file is */
     if (FileIsStdin(filename)) {
-	working_file->filesize = 1;
 	working_file->is_stdin = 1;
+	working_file->filesize = 1;
     } else {
+        working_file->is_stdin = 0;
 	if (stat(filename,&str_stat) != 0) {
 	    perror("stat");
 	    return(TCPTRACE_CANT_STAT);  /* was exit(1); */
 	}
 	working_file->filesize = str_stat.st_size;
     }
+
+    /* must close header here, only after determining if the file is stdin */
+    CompCloseHeader(header, working_file);
 
     /* determine file format */
     ppread = NULL;
