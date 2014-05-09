@@ -5,10 +5,12 @@ library.
 
 Current status:
 ===============
-constructing API
+refining API
+working on output export
 
 Done:
 =====
+libtcptrace now independent of tcptrace client
 most global variables removed
 packet processing loop factored out into process.c
 updated to use automake/libtool
