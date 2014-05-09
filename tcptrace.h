@@ -1000,8 +1000,10 @@ void trace_done(tcptrace_context_t *context);
 
 void seglist_init(tcb *);
 
-/* state initialization routines */
-void tcptrace_initialize_state(tcptrace_context_t *context);
+/* context initialization routines */
+tcptrace_context_t *tcptrace_context_new();
+void tcptrace_context_free(tcptrace_context_t *context);
+void tcptrace_initialize_context(tcptrace_context_t *context);
 void tcptrace_initialize_options(tcptrace_runtime_options_t *options);
 
 /* module routines */

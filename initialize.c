@@ -3,6 +3,36 @@
 
 int tcptrace_debuglevel = 0;
 
+/* create and initialize a new tcptrace runtime context, including
+ * runtime options */
+tcptrace_context_t *tcptrace_context_new() {
+    tcptrace_context_t *context;
+    tcptrace_runtime_options_t *options;
+
+    context = malloc(sizeof(tcptrace_context_t));
+    if (!context) {
+        /* TODO: fail here */
+    }
+    tcptrace_initialize_context(context);
+
+    options = malloc(sizeof(tcptrace_runtime_options_t));
+    if (!options) {
+        /* TODO: fail here */
+    }
+    tcptrace_initialize_options(options);
+    context->options = options;
+
+    return(context);
+}
+
+void tcptrace_context_free(tcptrace_context_t *context) {
+    if (context->options != NULL) {
+        free(context->options);
+        context->options = NULL;
+    }
+    free(context);
+}
+
 /* initialize the tcptrace runtime context */
 void
 tcptrace_initialize_context(tcptrace_context_t *context) {
