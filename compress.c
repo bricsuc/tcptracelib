@@ -89,6 +89,7 @@ static int CompOpenPipe(char *filename, tcptrace_working_file *working_file, str
 static FILE *PipeHelper(tcptrace_working_file *working_file);
 static void PipeFitting(FILE *f_pipe, FILE *f_header, FILE *f_stdin, tcptrace_working_file *working_file);
 static void RemoveTmpfile(tcptrace_working_file *working_file);
+static Bool FileIsStdin(char *filename);
 
 
 /* local globals */
@@ -489,8 +490,11 @@ CompOpenHeader(
 
     /* short hand if it's just reading from standard input */
     if (FileIsStdin(filename)) {
+        working_file->is_stdin = TRUE;
 	working_file->is_compressed = TRUE; /* pretend that it's compressed */
 	return(CompSaveHeader(filename, working_file, NULL));
+    } else {
+        working_file->is_stdin = FALSE;
     }
 
     /* see if it's a supported compression file */
@@ -822,7 +826,7 @@ CompFormats(void)
 
 /* does the file name "filename" refer to stdin rather than a real file? */
 /* (in case I need to extend this definition someday) */
-Bool
+static Bool
 FileIsStdin(
     char *filename)
 {

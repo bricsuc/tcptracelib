@@ -1109,7 +1109,7 @@ FILE *CompOpenFile(char *filename, tcptrace_working_file *working_file);
 void CompCloseFile(tcptrace_working_file *working_file);
 void CompFormats(void);
 int CompIsCompressed(tcptrace_working_file *working_file);
-Bool FileIsStdin(char *filename);
+/* Bool FileIsStdin(char *filename); */
 struct tcb *ptp2ptcb(tcptrace_context_t *context, tcp_pair *ptp, struct ip *pip, struct tcphdr *ptcp);
 void PcapSavePacket(tcptrace_context_t *context, char *filename, struct ip *pip, void *plast);
 void StringToArgv(char *buf, int *pargc, char ***pargv);
