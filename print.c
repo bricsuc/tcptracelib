@@ -76,6 +76,7 @@ static void printipv6(struct ipv6 *pipv6, void *plast);
 static char *ipv6addr2str(struct in6_addr addr);
 static void printipv4_opt_addrs(tcptrace_context_t *context, char *popt, int ptr, int len);
 static char *PrintSeqRep(tcptrace_context_t *context, tcb *ptcb, u_long seq);
+static char *Ether_Ntoa(struct ether_addr *e);
 
 
 
@@ -776,7 +777,7 @@ ipv6addr2str(
 /* Lots of machines HAVE this, but they give slightly different formats */
 /* and it messes up my cross-platform testing.  I'll just do it the */
 /* "one true" way!  :-)  */
-char *
+static char *
 Ether_Ntoa (struct ether_addr *e)
 {
     unsigned char *pe;
