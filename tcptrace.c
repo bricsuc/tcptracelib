@@ -92,8 +92,6 @@ static void Version(void);
 static char *FileToBuf(char *filename);
 
 
-/* global context (contains options and context for tcptrace client) */
-tcptrace_context_t global_context;
 
 /* option flags and default values */
 /* Bool colorplot = TRUE; */
@@ -183,6 +181,10 @@ tcptrace_context_t global_context;
 /* static u_long filesize = 0; */
 
 /* globals confined to this file */
+
+/* global context (contains options and context for tcptrace client) */
+static tcptrace_context_t *global_context;
+
 static char **filenames = NULL;
 static int num_files = 0;
 static char *progname;
@@ -566,14 +568,14 @@ Stuff arguments that you always use into either the tcptrace resource file\n\
 /* try to find a boolean option's runtime location */
 static Bool *find_option_location(struct ext_bool_op *bopt) {
     Bool *option_location;
-    tcptrace_context_t *context = &global_context;
+    tcptrace_context_t *context = global_context;
     tcptrace_runtime_options_t *options = context->options;
 
     option_location = bopt->bool_popt;
 
     /* If the location for the option setting isn't directly in
        the struct, then it might be at an offset into
-       global_context.options. Check that. */
+       global_context->options. Check that. */
     if (option_location == NULL) {
         if (bopt->runtime_struct_offset != 0) {
             /* if this is an offset, find the actual location */
@@ -589,7 +591,7 @@ static Bool *find_option_location(struct ext_bool_op *bopt) {
 
 /* try to find a string option's runtime location */
 static char **find_str_option_location(struct ext_var_op *popt) {
-    tcptrace_context_t *context = &global_context;
+    tcptrace_context_t *context = global_context;
     tcptrace_runtime_options_t *options = context->options;
     char **option_location;
 
@@ -597,7 +599,7 @@ static char **find_str_option_location(struct ext_var_op *popt) {
 
     /* If the location for the option setting isn't directly in
        the struct, then it might be at an offset into
-       global_context.options. Check that. */
+       global_context->options. Check that. */
     if (option_location == NULL) {
         if (popt->runtime_struct_offset != 0) {
             /* if this is an offset, find the actual location */
@@ -775,24 +777,20 @@ main(
 {
     int i;
     double etime;
-    tcptrace_runtime_options_t cmd_options, *options;
+    tcptrace_runtime_options_t *options;
     tcptrace_context_t *context;
     char *comment;
     u_int numfiles;
    
-    context = &global_context;
-    options = &cmd_options;
+    /* allocate and initialize context */
+    global_context = tcptrace_context_new();
 
-    context->options = options;
+    context = global_context;
+    options = context->options;
 
-    /* initialize global context */
-    tcptrace_initialize_context(context);
-
-    /* initialize the runtime options */
-    tcptrace_initialize_options(options);
-
-    if (argc == 1)
+    if (argc == 1) {
 	Help(NULL);
+    }
 
     /* initialize internals */
     trace_init(context);
@@ -897,6 +895,9 @@ main(
     tcptrace_modules_finish(context);
     plotter_done(context);
 
+    tcptrace_context_free(context);
+    global_context = NULL;
+
     exit(0);
 }
 
@@ -907,11 +908,11 @@ QuitSig(
 {
     tcptrace_context_t *context;
 
-    context = &global_context;
+    context = global_context;
 
     printf("%c\n\n", 7);  /* BELL */
     printf("Terminating processing early on signal %d\n", signum);
-    printf("Partial result after processing %lu packets:\n\n\n", global_context.pnum);
+    printf("Partial result after processing %lu packets:\n\n\n", context->pnum);
     tcptrace_modules_finish(context);
     plotter_done(context);
     trace_done(context);
@@ -925,8 +926,8 @@ Ignore(
        char *opt)
 {
      char *o_arg;
-     tcptrace_context_t *context = &global_context;
-     tcptrace_runtime_options_t *options = global_context.options;
+     tcptrace_context_t *context = global_context;
+     tcptrace_runtime_options_t *options = context->options;
 		      
      /* next part of arg is a filename or number list */
      if (*opt == '\00') {
@@ -995,8 +996,8 @@ GrabOnly(
     char *opt)
 {
      char *o_arg;
-     tcptrace_context_t *context = &global_context;
-     tcptrace_runtime_options_t *options = global_context.options;
+     tcptrace_context_t *context = global_context;
+     tcptrace_runtime_options_t *options = context->options;
      
      /* next part of arg is a filename or number list */
      if (*opt == '\00') {
@@ -1063,12 +1064,12 @@ GrabOnly(
 }
 
 static void
-     IgnoreUDP(
-	       char *argsource,
-	       char *opt)
+IgnoreUDP(
+          char *argsource,
+          char *opt)
 {
      char *o_arg;
-     tcptrace_context_t *context = &global_context;
+     tcptrace_context_t *context = global_context;
      tcptrace_runtime_options_t *options = context->options;
      
      /* next part of arg is a filename or number list */
@@ -1141,7 +1142,7 @@ static void
 		 char *opt)
 {
      char *o_arg;
-     tcptrace_context_t *context = &global_context;
+     tcptrace_context_t *context = global_context;
      tcptrace_runtime_options_t *options = context->options;
      
      /* next part of arg is a filename or number list */
@@ -1221,7 +1222,7 @@ CheckArguments(
     char *rc_path = NULL;
     char *rc_buf = NULL;
 
-    tcptrace_runtime_options_t *options = global_context.options;
+    tcptrace_runtime_options_t *options = global_context->options;
 
     /* remember the name of the program for errors... */
     progname = argv[0];
@@ -1640,7 +1641,7 @@ VerifyUpdateInt(
     char *varname,
     char *value)
 {
-    tcptrace_runtime_options_t *options = global_context.options;
+    tcptrace_runtime_options_t *options = global_context->options;
 
     options->update_interval = VerifyPositive(varname, value);
 }
@@ -1651,7 +1652,7 @@ VerifyMaxConnNum(
     char *varname, 
     char *value)
 {
-    tcptrace_runtime_options_t *options = global_context.options;
+    tcptrace_runtime_options_t *options = global_context->options;
 
     options->max_conn_num = VerifyPositive(varname, value);
     options->conn_num_threshold = TRUE;
@@ -1663,7 +1664,7 @@ VerifyLiveConnInt(
     char *varname, 
     char *value)
 {
-    tcptrace_runtime_options_t *options = global_context.options;
+    tcptrace_runtime_options_t *options = global_context->options;
 
     options->remove_live_conn_interval = VerifyPositive(varname, value);
 }
@@ -1673,7 +1674,7 @@ static void
 		        char *varname,
 		        char *value)
 {
-    tcptrace_runtime_options_t *options = global_context.options;
+    tcptrace_runtime_options_t *options = global_context->options;
 
     options->nonreal_live_conn_interval = VerifyPositive(varname, value);
 }
@@ -1684,7 +1685,7 @@ VerifyClosedConnInt(
     char *varname, 
     char *value)
 {
-    tcptrace_runtime_options_t *options = global_context.options;
+    tcptrace_runtime_options_t *options = global_context->options;
 
     options->remove_closed_conn_interval = VerifyPositive(varname, value);  
 }
@@ -1699,8 +1700,8 @@ ParseArgs(
 {
     int i;
     int saw_i_or_o = 0;
-    tcptrace_context_t *context = &global_context;
-    tcptrace_runtime_options_t *options = global_context.options;
+    tcptrace_context_t *context = global_context;
+    tcptrace_runtime_options_t *options = global_context->options;
 
     /* parse the args */
     for (i=1; i < *pargc; ++i) {
@@ -1962,7 +1963,7 @@ static void
 DumpFlags(void)
 {
     int i;
-    tcptrace_runtime_options_t *options = global_context.options;
+    tcptrace_runtime_options_t *options = global_context->options;
 
     fprintf(stderr,"printbrief:       %s\n", BOOL2STR(options->printbrief));
     fprintf(stderr,"printsuppress:    %s\n", BOOL2STR(options->printsuppress));
