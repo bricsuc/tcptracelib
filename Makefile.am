@@ -21,7 +21,7 @@ tcptrace_CPPFLAGS =
 lib_LTLIBRARIES = libtcptrace.la
 libtcptrace_la_SOURCES = \
     file_load.c compress.c \
-    initialize.c process.c \
+    initialize.c process.c options.c \
     mfiles.c output.c print.c \
     modules.c modules_list.c \
     avl.c dstring.c gcache.c \
