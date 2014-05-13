@@ -742,6 +742,7 @@ typedef struct udphdr udphdr;
 /* extern u_long max_conn_num; */
 
 extern int tcptrace_debuglevel;
+
 /* extern int thru_interval; */
 
 /* extern u_long pnum; */ /* now localized in tcptrace_context_t */
@@ -844,6 +845,15 @@ typedef struct tcptrace_runtime_options_t {
     int thru_interval;
 
 } tcptrace_runtime_options_t;
+
+typedef struct tcptrace_ext_bool_op {
+    char *bool_optname;
+    Bool *bool_popt;
+    unsigned long runtime_struct_offset;
+    Bool bool_default;
+    char *bool_descr;
+} tcptrace_ext_bool_op;
+
 
 #define __TCPTRACE_COMMENT_PREFIX_MAX 5
 
@@ -1006,6 +1016,11 @@ tcptrace_context_t *tcptrace_context_new();
 void tcptrace_context_free(tcptrace_context_t *context);
 void tcptrace_initialize_context(tcptrace_context_t *context);
 void tcptrace_initialize_options(tcptrace_runtime_options_t *options);
+
+/* runtime option access routines */
+tcptrace_ext_bool_op *tcptrace_find_option_bool(char *argname);
+int tcptrace_set_option_bool(tcptrace_context_t *context, char *argname, Bool value) ;
+Bool tcptrace_get_option_bool(tcptrace_context_t *context, char *argname);
 
 /* module routines */
 void tcptrace_modules_load(tcptrace_context_t *context, int argc, char *argv[]);
