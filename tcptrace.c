@@ -203,13 +203,7 @@ static struct timeval wallclock_finished;
 #define __T_OPTIONS_OFFSET(field) offsetof(tcptrace_runtime_options_t,field)
 
 /* extended boolean options */
-static struct ext_bool_op {
-    char *bool_optname;
-    Bool *bool_popt;
-    unsigned long runtime_struct_offset;
-    Bool bool_default;
-    char *bool_descr;
-} extended_bools[] = {
+static tcptrace_ext_bool_op extended_bools[] = {
     {"showsacks", NULL, __T_OPTIONS_OFFSET(show_sacks), TRUE,
      "show SACK blocks on time sequence graphs"},
     {"showrexmit", NULL, __T_OPTIONS_OFFSET(show_rexmit), TRUE,
@@ -274,9 +268,9 @@ static struct ext_bool_op {
      "turn off the BSD version of the duplicate ack handling"},
 };
 
-static Bool *find_option_location(struct ext_bool_op *bopt);
+static Bool *find_option_location(tcptrace_ext_bool_op *bopt);
 
-#define NUM_EXTENDED_BOOLS (sizeof(extended_bools) / sizeof(struct ext_bool_op))
+#define NUM_EXTENDED_BOOLS (sizeof(extended_bools) / sizeof(tcptrace_ext_bool_op))
 
 
 /* extended variable verification routines */
@@ -566,7 +560,7 @@ Stuff arguments that you always use into either the tcptrace resource file\n\
 }
 
 /* try to find a boolean option's runtime location */
-static Bool *find_option_location(struct ext_bool_op *bopt) {
+static Bool *find_option_location(tcptrace_ext_bool_op *bopt) {
     Bool *option_location;
     tcptrace_context_t *context = global_context;
     tcptrace_runtime_options_t *options = context->options;
@@ -685,7 +679,7 @@ Dump File Names\n\
     fprintf(stderr," (unambiguous prefixes also work)\n");
     for (i=0; i < NUM_EXTENDED_BOOLS; ++i) {
         Bool *option_location;
-	struct ext_bool_op *pbop = &extended_bools[i];
+	tcptrace_ext_bool_op *pbop = &extended_bools[i];
 
         option_location = find_option_location(pbop);
 
@@ -1407,8 +1401,8 @@ ParseExtendedBool(
     char *arg)
 {
     int i;
-    struct ext_bool_op *pbop_found = NULL;
-    struct ext_bool_op *pbop_prefix = NULL;
+    tcptrace_ext_bool_op *pbop_found = NULL;
+    tcptrace_ext_bool_op *pbop_prefix = NULL;
     Bool prefix_ambig = FALSE;
     Bool negative_arg_prefix;
     char *argtext;
@@ -1431,7 +1425,7 @@ ParseExtendedBool(
 
     /* search for a match on each extended boolean arg */
     for (i=0; i < NUM_EXTENDED_BOOLS; ++i) {
-	struct ext_bool_op *pbop = &extended_bools[i];
+	tcptrace_ext_bool_op *pbop = &extended_bools[i];
 
 	/* check for the default value flag */
 	if (strcmp(argtext,pbop->bool_optname) == 0) {
@@ -1483,7 +1477,7 @@ ParseExtendedBool(
     /* ... else ambiguous prefix */
     fprintf(stderr,"Extended boolean arg '%s' is ambiguous, it matches:\n", arg);
     for (i=0; i < NUM_EXTENDED_BOOLS; ++i) {
-	struct ext_bool_op *pbop = &extended_bools[i];
+	tcptrace_ext_bool_op *pbop = &extended_bools[i];
 	if (strncmp(argtext,pbop->bool_optname,arglen) == 0)
 	    fprintf(stderr,"  %s%s - %s%s\n",
 		    negative_arg_prefix?"no":"",
@@ -1994,7 +1988,7 @@ DumpFlags(void)
 	
     /* print out the stuff controlled by the extended boolean args */
     for (i=0; i < NUM_EXTENDED_BOOLS; ++i) {
-	struct ext_bool_op *pbop = &extended_bools[i];
+	tcptrace_ext_bool_op *pbop = &extended_bools[i];
 	char buf[100];
 	snprintf(buf,sizeof(buf),"%s:", pbop->bool_optname);
         fprintf(stderr,"%-18s%s\n", buf, BOOL2STR(*(find_option_location(pbop))));
