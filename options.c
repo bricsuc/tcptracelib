@@ -5,7 +5,7 @@
 #define __T_OPTIONS_OFFSET(field) offsetof(tcptrace_runtime_options_t,field)
 
 /* extended boolean options */
-static tcptrace_ext_bool_op tcptrace_extended_bools[] = {
+tcptrace_ext_bool_op tcptrace_extended_bools[] = {
     {"showsacks", NULL, __T_OPTIONS_OFFSET(show_sacks), TRUE,
      "show SACK blocks on time sequence graphs"},
     {"showrexmit", NULL, __T_OPTIONS_OFFSET(show_rexmit), TRUE,
@@ -68,11 +68,11 @@ static tcptrace_ext_bool_op tcptrace_extended_bools[] = {
      "display the long output as tab separated values"},
     {"turn_off_BSD_dupack", NULL, __T_OPTIONS_OFFSET(dup_ack_handling), FALSE,
      "turn off the BSD version of the duplicate ack handling"},
+    /* null-filled record to indicate end of array */
+    {NULL, NULL, 0, FALSE, NULL}
 };
 
 static Bool *find_option_location_bool(tcptrace_runtime_options_t *options, tcptrace_ext_bool_op *bopt);
-
-#define NUM_EXTENDED_BOOLS (sizeof(tcptrace_extended_bools) / sizeof(tcptrace_ext_bool_op))
 
 /* try to find a boolean option's runtime location */
 static Bool *find_option_location_bool(tcptrace_runtime_options_t *options, tcptrace_ext_bool_op *bopt) {
@@ -101,7 +101,7 @@ tcptrace_ext_bool_op
     tcptrace_ext_bool_op *option_found = NULL;
     int i;
 
-    for (i = 0; i < NUM_EXTENDED_BOOLS; i++) {
+    for (i = 0; tcptrace_extended_bools[i].bool_optname != NULL; i++) {
         tcptrace_ext_bool_op *option = &tcptrace_extended_bools[i];
         if (strcmp(argname, option->bool_optname) == 0) {
             option_found = option;
