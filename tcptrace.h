@@ -848,7 +848,6 @@ typedef struct tcptrace_runtime_options_t {
 
 typedef struct tcptrace_ext_bool_op {
     char *bool_optname;
-    Bool *bool_popt;
     unsigned long runtime_struct_offset;
     Bool bool_default;
     char *bool_descr;
