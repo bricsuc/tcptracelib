@@ -205,11 +205,17 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
 
     options->sep = NULL;
 
-    options->remove_live_conn_interval = REMOVE_LIVE_CONN_INTERVAL;
-    options->nonreal_live_conn_interval = NONREAL_LIVE_CONN_INTERVAL;
-    options->remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL;
+    /* TODO: maybe fix these strings */
     options->update_interval = UPDATE_INTERVAL;
+    options->update_interval_s = "UPDATE_INTERVAL";
     options->max_conn_num = MAX_CONN_NUM;
+    options->max_conn_num_s = "MAX_CONN_NUM";
+    options->remove_live_conn_interval = REMOVE_LIVE_CONN_INTERVAL;
+    options->remove_live_conn_interval_s = "REMOVE_LIVE_CONN_INTERVAL";
+    options->nonreal_live_conn_interval = NONREAL_LIVE_CONN_INTERVAL;
+    options->nonreal_live_conn_interval_s = "NONREAL_LIVE_CONN_INTERVAL";
+    options->remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL;
+    options->remove_closed_conn_interval_s = "REMOVE_CLOSED_CONN_INTERVAL";
 
     options->thru_interval = 10; /* segments */
 

@@ -836,11 +836,12 @@ typedef struct tcptrace_runtime_options_t {
        different than *sv */
     char *sep;
 
-    u_long remove_live_conn_interval;
-    u_long nonreal_live_conn_interval;
-    u_long remove_closed_conn_interval;
-    u_long update_interval;
-    u_long max_conn_num;
+    /* integers -- these have accompanying string locations */
+    u_long update_interval;              char *update_interval_s;
+    u_long max_conn_num;                 char *max_conn_num_s;
+    u_long remove_live_conn_interval;    char *remove_live_conn_interval_s;
+    u_long nonreal_live_conn_interval;   char *nonreal_live_conn_interval_s;
+    u_long remove_closed_conn_interval;  char *remove_closed_conn_interval_s;
 
     int thru_interval;
 
