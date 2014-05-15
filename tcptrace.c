@@ -67,6 +67,7 @@ static char const GCC_UNUSED rcsid[] =
 #include <stddef.h>
 
 extern tcptrace_ext_bool_op tcptrace_extended_bools[];
+extern tcptrace_ext_var_op tcptrace_extended_vars[];
 
 /* version information */
 static char *tcptrace_version = VERSION;
@@ -278,6 +279,7 @@ static Bool *find_option_location(tcptrace_ext_bool_op *bopt);
 #endif
 
 
+#if 0
 /* extended variable verification routines */
 static u_long VerifyPositive(char *varname, char *value);
 static void VerifyUpdateInt(char *varname, char *value);
@@ -285,8 +287,11 @@ static void VerifyMaxConnNum(char *varname, char *value);
 static void VerifyLiveConnInt(char *varname, char *value);
 static void VerifyNonrealLiveConnInt(char *varname, char*value);
 static void VerifyClosedConnInt(char *varname, char *value);
+#endif
 
+#if 0
 /* extended variable options */
+/* now moved to options.c */
 /* they must all be strings */
 static struct ext_var_op {
     char *var_optname;		/* what it's called when you set it */
@@ -321,8 +326,10 @@ static struct ext_var_op {
    
 };
 #define NUM_EXTENDED_VARS (sizeof(extended_vars) / sizeof(struct ext_var_op))
-
 static char **find_str_option_location(struct ext_var_op *popt);
+
+#endif
+
 
 // Extended option verification routines
 static void Ignore(char *argsource, char *opt);
@@ -565,6 +572,7 @@ Stuff arguments that you always use into either the tcptrace resource file\n\
 }
 
 
+#if 0
 /* try to find a string option's runtime location */
 static char **find_str_option_location(struct ext_var_op *popt) {
     tcptrace_context_t *context = global_context;
@@ -588,10 +596,12 @@ static char **find_str_option_location(struct ext_var_op *popt) {
     }
     return(option_location);
 }
+#endif
 
 static void
 Args(void)
 {
+    tcptrace_context_t *context = global_context;
     int i;
     
     fprintf(stderr,"\n\
@@ -675,20 +685,21 @@ Dump File Names\n\
 
     fprintf(stderr,"\nExtended variable options\n");
     fprintf(stderr," (unambiguous prefixes also work)\n");
-    for (i=0; i < NUM_EXTENDED_VARS; ++i) {
+    for (i=0; tcptrace_extended_vars[i].var_optname != NULL; i++) {
 	char buf[256];		/* plenty large, but checked below with strncpy */
-        char **var_location;
+        char *var_value;
 
-	struct ext_var_op *pvop = &extended_vars[i];
+	tcptrace_ext_var_op *pvop = &tcptrace_extended_vars[i];
 	strncpy(buf,pvop->var_optname,sizeof(buf)-10);
 	strcat(buf,"=\"STR\"");
 
-        var_location = find_str_option_location(pvop);
+        /* var_location = find_str_option_location(pvop); */
+        var_value = tcptrace_get_option_var(context, pvop->var_optname);
 
 	fprintf(stderr,"  --%-20s %s (default: '%s')\n",
 		buf,
 		pvop->var_descr,
-		*var_location ? *var_location : "<NULL>");
+		var_value ? var_value : "<NULL>");
     }
 
     fprintf(stderr,"\n\
@@ -1482,9 +1493,10 @@ ParseExtendedVar(
     char *argsource,
     char *arg_in)
 {
+    tcptrace_context_t *context = global_context;
     int i;
-    struct ext_var_op *pvop_found = NULL;
-    struct ext_var_op *pvop_prefix = NULL;
+    tcptrace_ext_var_op *pvop_found = NULL;
+    tcptrace_ext_var_op *pvop_prefix = NULL;
     Bool prefix_ambig = FALSE;
     char *pequals;
     char *argname;		/* the variable name itself */
@@ -1521,8 +1533,8 @@ ParseExtendedVar(
     arglen = argval - argname - 1;
 
     /* search for a match in the extended variable table */
-    for (i=0; i < NUM_EXTENDED_VARS; ++i) {
-	struct ext_var_op *pvop = &extended_vars[i];
+    for (i=0; tcptrace_extended_vars[i].var_optname != NULL; i++) {
+	tcptrace_ext_var_op *pvop = &tcptrace_extended_vars[i];
 
 	/* check for an exact match */
 	if (strcmp(argname,pvop->var_optname) == 0) {
@@ -1551,8 +1563,9 @@ ParseExtendedVar(
 
     /* either exact match or good prefix, do it */
     if (pvop_found != NULL) {
+        tcptrace_set_option_var(context, pvop_found->var_optname, argval);
+#if 0
         char **var_location;
-
         var_location = find_str_option_location(pvop_found);
 
 	*var_location = strdup(argval);
@@ -1565,14 +1578,15 @@ ParseExtendedVar(
 		fprintf(stderr,"verifying extended variable '%s'\n", argname);
 	    (*pvop_found->var_verify)(argname, *var_location);
 	}
+#endif
 	free(arg);
 	return;
     }
 
     /* ... else ambiguous prefix */
     fprintf(stderr,"Extended variable arg '%s' is ambiguous, it matches:\n", arg);
-    for (i=0; i < NUM_EXTENDED_VARS; ++i) {
-	struct ext_var_op *pvop = &extended_vars[i];
+    for (i=0; tcptrace_extended_vars[i].var_optname != NULL; i++) {
+	tcptrace_ext_var_op *pvop = &tcptrace_extended_vars[i];
 	if (strncmp(argname,pvop->var_optname,arglen) == 0)
 	    fprintf(stderr,"  %s - %s\n",
 		    pvop->var_optname, pvop->var_descr);
@@ -1582,6 +1596,7 @@ ParseExtendedVar(
 }
 
 
+#if 0
 
 static u_long
 VerifyPositive(
@@ -1664,6 +1679,7 @@ VerifyClosedConnInt(
     options->remove_closed_conn_interval = VerifyPositive(varname, value);  
 }
 
+#endif
 
 
 static void
@@ -1977,13 +1993,14 @@ DumpFlags(void)
     }
 
     /* print out the stuff controlled by the extended variable args */
-    for (i=0; i < NUM_EXTENDED_VARS; ++i) {
-	struct ext_var_op *bvop = &extended_vars[i];
+    for (i=0; tcptrace_extended_vars[i].var_optname != NULL; i++) {
+	tcptrace_ext_var_op *bvop = &tcptrace_extended_vars[i];
 	char buf[100];
-        char **str_location;
+        char *option_value;
+
 	snprintf(buf,sizeof(buf),"%s:", bvop->var_optname);
-        str_location = find_str_option_location(bvop);
-	fprintf(stderr,"%-18s%s\n", buf, (*str_location)?*str_location:"<NULL>");
+        option_value = tcptrace_get_option_var(context, bvop->var_optname);
+	fprintf(stderr,"%-18s%s\n", buf, (option_value)?option_value:"<NULL>");
     }
 }
 
