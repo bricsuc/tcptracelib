@@ -90,15 +90,15 @@ tcptrace_ext_var_op tcptrace_extended_vars[] = {
      "prefix all output files with this string"},
     {"xplot_title_prefix", __T_OPTIONS_OFFSET(xplot_title_prefix), NULL,
      "prefix to place in the titles of all xplot files"},
-    {"update_interval", 0, VerifyUpdateInt,
+    {"update_interval", __T_OPTIONS_OFFSET(update_interval_s), VerifyUpdateInt,
      "time interval for updates in real-time mode"},
-    {"max_conn_num", 0, VerifyMaxConnNum,
+    {"max_conn_num", __T_OPTIONS_OFFSET(max_conn_num_s), VerifyMaxConnNum,
      "maximum number of connections to keep at a time in real-time mode"},
-    {"remove_live_conn_interval", 0, VerifyLiveConnInt,
+    {"remove_live_conn_interval", __T_OPTIONS_OFFSET(remove_live_conn_interval_s), VerifyLiveConnInt,
      "idle time after which an open connection is removed in real-time mode"},
-    {"endpoint_reuse_interval", 0, VerifyNonrealLiveConnInt,
+    {"endpoint_reuse_interval", __T_OPTIONS_OFFSET(nonreal_live_conn_interval_s), VerifyNonrealLiveConnInt,
      "time interval of inactivity after which an open connection is considered closed"},
-    {"remove_closed_conn_interval", 0, VerifyClosedConnInt,
+    {"remove_closed_conn_interval", __T_OPTIONS_OFFSET(remove_closed_conn_interval_s), VerifyClosedConnInt,
      "time interval after which a closed connection is removed in real-time mode"},
     {"xplot_args", __T_OPTIONS_OFFSET(xplot_args), NULL,
      "arguments to pass to xplot, if we are calling xplot from here"},
@@ -195,6 +195,35 @@ tcptrace_ext_var_op
 }
 
 
+int tcptrace_set_option_var(tcptrace_context_t *context, char *argname, char *value) {
+    tcptrace_ext_var_op *pvop;
+    char **option_loc;
+
+    pvop = tcptrace_find_option_var(argname);
+    if (pvop == NULL) {
+        /* option not found */
+        fprintf(stderr, "option %s not found.\n", argname);
+        return(-1);
+    }
+
+    option_loc = find_option_location_str(context->options, pvop);
+    *option_loc = strdup(value);
+
+    if (tcptrace_debuglevel > 2) {
+        fprintf(stderr,"Set extended variable '%s' to '%s'\n",
+                argname, *option_loc);
+    }
+
+    /* some variables have a "verification" routine that also sets an
+       integer in context->options. */
+    if (pvop->var_verify) {
+        if (tcptrace_debuglevel > 2) {
+            fprintf(stderr,"verifying extended variable '%s'\n", argname);
+        }
+        (*pvop->var_verify)(context, argname, *option_loc);
+    }
+    return(0);
+}
 
 char *tcptrace_get_option_var(tcptrace_context_t *context, char *argname) {
     tcptrace_ext_var_op *pvop;
