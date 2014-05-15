@@ -846,14 +846,6 @@ typedef struct tcptrace_runtime_options_t {
 
 } tcptrace_runtime_options_t;
 
-typedef struct tcptrace_ext_bool_op {
-    char *bool_optname;
-    unsigned long runtime_struct_offset;
-    Bool bool_default;
-    char *bool_descr;
-} tcptrace_ext_bool_op;
-
-
 #define __TCPTRACE_COMMENT_PREFIX_MAX 5
 
 #define UDP_HASH_TABLE_SIZE 1021   /* should be prime */
@@ -962,6 +954,25 @@ typedef struct tcptrace_working_file {
     int header_length; /* set only for compressed files */
 } tcptrace_working_file;
 
+/* types for setting options */
+typedef struct tcptrace_ext_bool_op {
+    char *bool_optname;
+    unsigned long runtime_struct_offset;
+    Bool bool_default;
+    char *bool_descr;
+} tcptrace_ext_bool_op;
+
+typedef struct tcptrace_ext_var_op {
+    char *var_optname;          /* what it's called when you set it */
+    unsigned long runtime_struct_offset;  /* offset into context struct */
+    void (*var_verify)(tcptrace_context_t *,
+                       char *varname,
+                       char *value);
+                                /* function to call to verify that the
+                                   value is OK (if non-null) */
+    char *var_descr;            /* variable description */
+} tcptrace_ext_var_op;
+
 /* extended variables with values */
 /* extern char *output_file_dir; */
 /* extern char *output_file_prefix; */
@@ -1020,6 +1031,10 @@ void tcptrace_initialize_options(tcptrace_runtime_options_t *options);
 tcptrace_ext_bool_op *tcptrace_find_option_bool(char *argname);
 int tcptrace_set_option_bool(tcptrace_context_t *context, char *argname, Bool value) ;
 Bool tcptrace_get_option_bool(tcptrace_context_t *context, char *argname);
+
+tcptrace_ext_var_op *tcptrace_find_option_var(char *argname);
+int tcptrace_set_option_var(tcptrace_context_t *context, char *argname, char *value);
+char *tcptrace_get_option_var(tcptrace_context_t *context, char *argname);
 
 /* module routines */
 void tcptrace_modules_load(tcptrace_context_t *context, int argc, char *argv[]);

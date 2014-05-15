@@ -72,7 +72,46 @@ tcptrace_ext_bool_op tcptrace_extended_bools[] = {
     {NULL, 0, FALSE, NULL}
 };
 
+/* extended variable verification routines */
+static u_long VerifyPositive(char *varname, char *value);
+static void VerifyUpdateInt(tcptrace_context_t *context, char *varname, char *value);
+static void VerifyMaxConnNum(tcptrace_context_t *context, char *varname, char *value);
+static void VerifyLiveConnInt(tcptrace_context_t *context, char *varname, char *value);
+static void VerifyNonrealLiveConnInt(tcptrace_context_t *context, char *varname, char*value);
+static void VerifyClosedConnInt(tcptrace_context_t *context, char *varname, char *value);
+
 static Bool *find_option_location_bool(tcptrace_runtime_options_t *options, tcptrace_ext_bool_op *bopt);
+
+/* string/variable options */
+tcptrace_ext_var_op tcptrace_extended_vars[] = {
+    {"output_dir", __T_OPTIONS_OFFSET(output_file_dir), NULL,
+     "directory where all output files are placed"},
+    {"output_prefix", __T_OPTIONS_OFFSET(output_file_prefix), NULL,
+     "prefix all output files with this string"},
+    {"xplot_title_prefix", __T_OPTIONS_OFFSET(xplot_title_prefix), NULL,
+     "prefix to place in the titles of all xplot files"},
+    {"update_interval", 0, VerifyUpdateInt,
+     "time interval for updates in real-time mode"},
+    {"max_conn_num", 0, VerifyMaxConnNum,
+     "maximum number of connections to keep at a time in real-time mode"},
+    {"remove_live_conn_interval", 0, VerifyLiveConnInt,
+     "idle time after which an open connection is removed in real-time mode"},
+    {"endpoint_reuse_interval", 0, VerifyNonrealLiveConnInt,
+     "time interval of inactivity after which an open connection is considered closed"},
+    {"remove_closed_conn_interval", 0, VerifyClosedConnInt,
+     "time interval after which a closed connection is removed in real-time mode"},
+    {"xplot_args", __T_OPTIONS_OFFSET(xplot_args), NULL,
+     "arguments to pass to xplot, if we are calling xplot from here"},
+    {"sv", __T_OPTIONS_OFFSET(sv), NULL,
+     "separator to use for long output with <STR>-separated-values"},
+    {NULL, 0, NULL, NULL}
+};
+
+#define NUM_EXTENDED_VARS (sizeof(extended_vars) / sizeof(struct ext_var_op))
+
+static char **find_option_location_str(tcptrace_runtime_options_t *options, tcptrace_ext_var_op *popt);
+
+
 
 /* try to find a boolean option's runtime location */
 static Bool *find_option_location_bool(tcptrace_runtime_options_t *options, tcptrace_ext_bool_op *bopt) {
@@ -103,8 +142,6 @@ tcptrace_ext_bool_op
 
     return(option_found);
 }
-
-/* TODO: function to look for ambiguous option */
 
 int tcptrace_set_option_bool(tcptrace_context_t *context, char *argname, Bool value) {
     tcptrace_ext_bool_op *pbop;
@@ -138,5 +175,154 @@ Bool tcptrace_get_option_bool(tcptrace_context_t *context, char *argname) {
 
     return(*option_loc);
 
+}
+
+
+tcptrace_ext_var_op
+*tcptrace_find_option_var(char *argname) {
+    tcptrace_ext_var_op *option_found = NULL;
+    int i;
+
+    for (i = 0; tcptrace_extended_vars[i].var_optname != NULL; i++) {
+        tcptrace_ext_var_op *option = &tcptrace_extended_vars[i];
+        if (strcmp(argname, option->var_optname) == 0) {
+            option_found = option;
+            break;
+        }
+    }
+
+    return(option_found);
+}
+
+
+
+char *tcptrace_get_option_var(tcptrace_context_t *context, char *argname) {
+    tcptrace_ext_var_op *pvop;
+    char **option_loc;
+
+    pvop = tcptrace_find_option_var(argname);
+
+    if (pvop == NULL) {
+        /* option not found */
+        fprintf(stderr, "option %s not found.\n", argname);
+        return("");
+    }
+
+    /* some of these options don't show up as offsets */
+    if (pvop->runtime_struct_offset == 0) {
+        fprintf(stderr, "option %s not a string.\n", argname);
+        return("");
+    }
+
+    option_loc = find_option_location_str(context->options, pvop);
+
+    return(*option_loc);
+
+}
+
+
+/* try to find a string option's runtime location */
+static char **find_option_location_str(tcptrace_runtime_options_t *options, tcptrace_ext_var_op *popt) {
+    char **option_location = NULL;
+
+    // option_location = popt->var_popt;
+
+    if (option_location == NULL) {
+        if (popt->runtime_struct_offset != 0) {
+            /* if this is an offset, find the actual location */
+            unsigned char *p = (unsigned char *) options;
+            p += popt->runtime_struct_offset;
+            option_location = (char **) p;
+        } else {
+            option_location = NULL;
+        }
+    }
+    return(option_location);
+}
+
+static u_long
+VerifyPositive(
+    char *varname,
+    char *value)
+{
+    int i, ivalue = 0;
+
+    for (i = 0; i < strlen(value); i++) {
+        if (!isdigit((int)value[i])) {
+	    fprintf(stderr, 
+		    "Value '%s' is not valid for variable '%s'\n", 
+		    value, varname);
+	    exit(1);
+	}
+    }
+    ivalue = atoi(value);
+    if (ivalue <= 0) {
+	fprintf(stderr,
+		"Value '%s' is not valid for variable '%s'\n", 
+		value, varname);
+	exit(1);
+    }
+
+    return (u_long)ivalue;
+}
+
+
+static void
+VerifyUpdateInt(
+    tcptrace_context_t *context,
+    char *varname,
+    char *value)
+{
+    tcptrace_runtime_options_t *options = context->options;
+
+    options->update_interval = VerifyPositive(varname, value);
+}
+
+
+static void 
+VerifyMaxConnNum(
+    tcptrace_context_t *context,
+    char *varname, 
+    char *value)
+{
+    tcptrace_runtime_options_t *options = context->options;
+
+    options->max_conn_num = VerifyPositive(varname, value);
+    options->conn_num_threshold = TRUE;
+}
+
+
+static void 
+VerifyLiveConnInt(
+    tcptrace_context_t *context,
+    char *varname, 
+    char *value)
+{
+    tcptrace_runtime_options_t *options = context->options;
+
+    options->remove_live_conn_interval = VerifyPositive(varname, value);
+}
+
+static void
+VerifyNonrealLiveConnInt(
+    tcptrace_context_t *context,
+    char *varname,
+    char *value)
+{
+    tcptrace_runtime_options_t *options = context->options;
+
+    options->nonreal_live_conn_interval = VerifyPositive(varname, value);
+}
+
+
+static void 
+VerifyClosedConnInt(
+    tcptrace_context_t *context,
+    char *varname, 
+    char *value)
+{
+    tcptrace_runtime_options_t *options = context->options;
+
+    options->remove_closed_conn_interval = VerifyPositive(varname, value);  
 }
 
