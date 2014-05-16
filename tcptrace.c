@@ -84,7 +84,7 @@ static void ListModules(void);
 static void UsageModules(void);
 static void CheckArguments(int *pargc, char *argv[]);
 static void ParseArgs(char *argsource, int *pargc, char *argv[]);
-static int  ParseExtendedOpt(char *argsource, char *arg);
+/* static int ParseExtendedOpt(char *argsource, char *arg); */ /* eliminated */
 static void ParseExtendedBool(char *argsource, char *arg);
 static void ParseExtendedVar(char *argsource, char *arg);
 static void QuitSig(int signum);
@@ -331,11 +331,12 @@ static char **find_str_option_location(struct ext_var_op *popt);
 #endif
 
 
+#if 0
 // Extended option verification routines
-// static void Ignore(char *argsource, char *opt);
-// static void GrabOnly(char *argsource, char *opt);
-// static void IgnoreUDP(char *argsource, char *opt);
-// static void GrabOnlyUDP(char *argsource, char *opt);
+static void Ignore(char *argsource, char *opt);
+static void GrabOnly(char *argsource, char *opt);
+static void IgnoreUDP(char *argsource, char *opt);
+static void GrabOnlyUDP(char *argsource, char *opt);
 
 // Extended options to allow --iudp and --oudp to be able to 
 // specifically ignore or output UDP connections.
@@ -346,13 +347,14 @@ static struct ext_opt {
      void (*opt_func) (char *argsource, char *opt);
      char *opt_descr;
 } extended_options[] = {
-     /* {"iTCP",Ignore,"ignore specific TCP connections, same as -i"}, */
-     /* {"oTCP",GrabOnly,"only specific TCP connections, same as -o"}, */
-     /* {"iUDP",IgnoreUDP,"ignore specific UDP connections"}, */
-     /* {"oUDP",GrabOnlyUDP,"only specific UDP connections"} */
+     {"iTCP",Ignore,"ignore specific TCP connections, same as -i"},
+     {"oTCP",GrabOnly,"only specific TCP connections, same as -o"},
+     {"iUDP",IgnoreUDP,"ignore specific UDP connections"},
+     {"oUDP",GrabOnlyUDP,"only specific UDP connections"}
 
 };
 #define NUM_EXTENDED_OPTIONS (sizeof(extended_options)/sizeof(struct ext_opt))
+#endif
 
 static void
 Help(
@@ -1344,6 +1346,8 @@ CheckArguments(
     }
 }
 
+/* eliminated in favor of extended vars */
+#if 0
 // these extended options are table driven, to make it easier to
 // add more later without messing them up.
 // Initially they include --iTCP, --iUDP to ignore TCP, UDP connections
@@ -1386,6 +1390,7 @@ ParseExtendedOpt(
      (*popt_found->opt_func)(argsource,opt);
      return 1;
 }
+#endif
 
 
 /* these extended boolean options are table driven, to make it easier to
@@ -1710,7 +1715,7 @@ ParseArgs(
 	// as in --iUDP2 , --iTCP3-5, --oUDP5-9,19 etc
 	// or they could be the regular extended variables or booleans.
 	if (strncmp(argv[i],"--",2) == 0) {
-	     if (ParseExtendedOpt(argsource,argv[i])) 
+	     if (FALSE /* ParseExtendedOpt(argsource,argv[i]) */) 
 		  continue;
 	     else {
 		  if (strchr(argv[i],'=') != NULL)
