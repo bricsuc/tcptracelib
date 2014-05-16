@@ -79,6 +79,8 @@ static void VerifyMaxConnNum(tcptrace_context_t *context, char *varname, char *v
 static void VerifyLiveConnInt(tcptrace_context_t *context, char *varname, char *value);
 static void VerifyNonrealLiveConnInt(tcptrace_context_t *context, char *varname, char*value);
 static void VerifyClosedConnInt(tcptrace_context_t *context, char *varname, char *value);
+static void IgnoreUDP(tcptrace_context_t *context, char *varname, char *value);
+static void SelectUDP(tcptrace_context_t *context, char *varname, char *value);
 
 static void bad_option(char *option, char *format, ...);
 
@@ -111,7 +113,11 @@ tcptrace_ext_var_op tcptrace_extended_vars[] = {
     {"iTCP", __T_OPTIONS_OFFSET(tcp_ignored), tcptrace_ignore_tcp,
      "ignore specific TCP connections (same as -i)"},
     {"oTCP", __T_OPTIONS_OFFSET(tcp_selected), tcptrace_select_tcp,
-     "select specific connections (same as -o)"},
+     "select specific TCP connections (same as -o)"},
+    {"iUDP", __T_OPTIONS_OFFSET(udp_ignored), IgnoreUDP,
+     "ignore specific UDP connections"},
+    {"oUDP", __T_OPTIONS_OFFSET(udp_selected), SelectUDP,
+     "select specific UDP connections"},
     {NULL, 0, NULL, NULL}
 };
 
@@ -507,6 +513,155 @@ tcptrace_select_tcp(
 	       ++o_arg;
      }
 }
+
+static void
+IgnoreUDP(
+          tcptrace_context_t *context,
+          char *varname,
+          char *value)
+{
+     char *o_arg;
+     tcptrace_runtime_options_t *options = context->options;
+     
+     /* next part of arg is a filename or number list */
+     if (*value == '\00') {
+	  bad_option(varname,
+		 "Expected filename or number list *immediately* after --iUDP\n");
+     }
+
+     if (options->run_continuously) {
+	  fprintf(stderr, 
+		  "Warning: cannot ignore UDP connections in continuous mode\n");
+     }
+
+     /* option is a list of connection numbers separated by commas */
+     /* option can be immediately "here" or given as a file name */
+     if (isdigit((int)(*value)))  // --iUDP1 case
+	  o_arg=value;
+     else {
+	  /* it's in a file */	  
+	  /* open the file */
+	  o_arg = FileToBuf(value);
+	  /* if that fails, it's a command line error */
+	  if (o_arg == NULL) 
+	       bad_option(varname,
+		      "Expected filename or number list *immediately* after --iUDP\n");
+
+     }
+     /* wherever we got it, o_arg is a connection list */
+     while (o_arg && *o_arg) {
+	  int num1,num2;
+	  
+	  if (sscanf(o_arg,"%d-%d",&num1,&num2) == 2) {
+	       /* process range */
+	       if (num2 <= num1) {
+		    bad_option(varname,
+			   "--iUDPX-Y, must have X<Y, '%s'\n", o_arg);
+	       }
+	       if (tcptrace_debuglevel)
+		    printf("setting IgnoreUDPConn(%d-%d)\n", num1,num2);
+	       
+	       while (num1<=num2) {
+		    if (tcptrace_debuglevel > 1) {
+			 printf("setting IgnoreUDPConn(%d)\n", num1);
+                    }
+		    IgnoreUDPConn(context, num1++); /* XXX argh */
+                                           /*  ^^ why do people do this? */
+	       }
+	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
+	       /* single argument */
+	       if (tcptrace_debuglevel) {
+		    printf("setting IgnoreUDPConn(%d)\n", num1);
+               }
+	       IgnoreUDPConn(context, num1);
+	  } else {
+	       /* error */
+	       bad_option(varname,
+		      "Don't understand conn number starting at '%s'\n", o_arg);
+	  }
+	  
+	  /* look for the next comma */
+	  o_arg = strchr(o_arg,',');
+	  if (o_arg)
+	       ++o_arg;
+     }
+}
+
+static void
+SelectUDP(
+    tcptrace_context_t *context,
+    char *varname,
+    char *value)
+{
+     char *o_arg;
+     tcptrace_runtime_options_t *options = context->options;
+     
+     /* next part of arg is a filename or number list */
+     if (*value == '\00') {
+	  bad_option(varname,"Expected filename or number list *immediately* after --oUDP\n");
+     }
+
+     if (options->run_continuously) {
+	  fprintf(stderr, 
+		  "Warning: cannot 'grab-only' UDP connections in continuous mode\n");
+     }
+     
+     /* option is a list of connection numbers separated by commas */
+     /* option can be immediately "here" or given as a file name */
+     if (isdigit((int)(*value))) {
+	  /* list is on the command line */
+	  o_arg = value;
+     } else {
+	  /* it's in a file */
+	  
+	  /* open the file */
+	  o_arg = FileToBuf(value);
+	  
+	  /* if that fails, it's a command line error */
+	  if (o_arg == NULL) {
+	       bad_option(varname,"Expected filename or number list *immediately* after --oUDP\n");
+	  }
+     }
+     
+     /* wherever we got it, o_arg is a connection list */
+     while (o_arg && *o_arg) {
+	  int num1,num2;
+	  
+	  if (sscanf(o_arg,"%d-%d",&num1,&num2) == 2) {
+	       /* process range */
+	       if (num2 <= num1) {
+		    bad_option(varname,
+			   "--oUDPX-Y, must have X<Y, '%s'\n", o_arg);
+	       }
+	       if (tcptrace_debuglevel)
+		    printf("setting OnlyUDPConn(%d-%d)\n", num1, num2);
+	       
+	       while (num1<=num2) {
+		    if (tcptrace_debuglevel > 1) {
+			 printf("setting OnlyUDPConn(%d)\n", num1);
+                    }
+		    OnlyUDPConn(context, num1++);
+                                         /*  ^^ XXX argh, again. */
+	       }
+	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
+	       /* single argument */
+	       if (tcptrace_debuglevel)
+		    printf("setting OnlyUDPConn(%d)\n", num1);
+	       OnlyUDPConn(context, num1);
+	  } else {
+	       /* error */
+	       bad_option(varname,
+		      "Don't understand conn number starting at '%s'\n", 
+		      o_arg);
+	  }
+	  
+	  /* look for the next comma */
+	  o_arg = strchr(o_arg,',');
+	  if (o_arg)
+	       ++o_arg;
+     }
+}
+
 
 /* TODO: consider eliminating this feature */
 

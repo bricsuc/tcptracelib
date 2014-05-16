@@ -333,9 +333,9 @@ static char **find_str_option_location(struct ext_var_op *popt);
 
 // Extended option verification routines
 // static void Ignore(char *argsource, char *opt);
-static void GrabOnly(char *argsource, char *opt);
-static void IgnoreUDP(char *argsource, char *opt);
-static void GrabOnlyUDP(char *argsource, char *opt);
+// static void GrabOnly(char *argsource, char *opt);
+// static void IgnoreUDP(char *argsource, char *opt);
+// static void GrabOnlyUDP(char *argsource, char *opt);
 
 // Extended options to allow --iudp and --oudp to be able to 
 // specifically ignore or output UDP connections.
@@ -348,8 +348,8 @@ static struct ext_opt {
 } extended_options[] = {
      /* {"iTCP",Ignore,"ignore specific TCP connections, same as -i"}, */
      /* {"oTCP",GrabOnly,"only specific TCP connections, same as -o"}, */
-     {"iUDP",IgnoreUDP,"ignore specific UDP connections"},
-     {"oUDP",GrabOnlyUDP,"only specific UDP connections"}
+     /* {"iUDP",IgnoreUDP,"ignore specific UDP connections"}, */
+     /* {"oUDP",GrabOnlyUDP,"only specific UDP connections"} */
 
 };
 #define NUM_EXTENDED_OPTIONS (sizeof(extended_options)/sizeof(struct ext_opt))
@@ -1049,6 +1049,7 @@ GrabOnly(
 }
 #endif
 
+#if 0
 static void
 IgnoreUDP(
           char *argsource,
@@ -1121,7 +1122,9 @@ IgnoreUDP(
 	       ++o_arg;
      }
 }
+#endif
 
+#if 0
 static void
      GrabOnlyUDP(
 		 char *argsource,
@@ -1196,6 +1199,7 @@ static void
 	       ++o_arg;
      }
 }
+#endif
 
 
 static void
@@ -1384,7 +1388,6 @@ ParseExtendedOpt(
 }
 
 
-/* TODO: replace this mess with GNU getopt or something */
 /* these extended boolean options are table driven, to make it easier to
    add more later without messing them up */
 static void
