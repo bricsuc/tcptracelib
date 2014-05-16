@@ -80,6 +80,10 @@ static void VerifyLiveConnInt(tcptrace_context_t *context, char *varname, char *
 static void VerifyNonrealLiveConnInt(tcptrace_context_t *context, char *varname, char*value);
 static void VerifyClosedConnInt(tcptrace_context_t *context, char *varname, char *value);
 
+static void bad_option(char *option, char *format, ...);
+
+static char *FileToBuf(char *filename);
+
 static Bool *find_option_location_bool(tcptrace_runtime_options_t *options, tcptrace_ext_bool_op *bopt);
 
 /* string/variable options */
@@ -104,6 +108,10 @@ tcptrace_ext_var_op tcptrace_extended_vars[] = {
      "arguments to pass to xplot, if we are calling xplot from here"},
     {"sv", __T_OPTIONS_OFFSET(sv), NULL,
      "separator to use for long output with <STR>-separated-values"},
+    {"iTCP", __T_OPTIONS_OFFSET(tcp_ignored), tcptrace_ignore_tcp,
+     "ignore specific TCP connections (same as -i)"},
+    {"oTCP", __T_OPTIONS_OFFSET(tcp_selected), tcptrace_select_tcp,
+     "select specific connections (same as -o)"},
     {NULL, 0, NULL, NULL}
 };
 
@@ -354,4 +362,219 @@ VerifyClosedConnInt(
 
     options->remove_closed_conn_interval = VerifyPositive(varname, value);  
 }
+
+/* verification for ignoring a TCP connection */
+void
+tcptrace_ignore_tcp(
+    tcptrace_context_t *context,
+    char *varname, 
+    char *value)
+{
+     char *o_arg;
+     tcptrace_runtime_options_t *options = context->options;
+		      
+     /* next part of arg is a filename or number list */
+     if (*value == '\00') {
+	  bad_option(varname,
+	 	 "Expected filename or number list *immediately* after -i / --iTCP\n");
+     }
+
+     if (options->run_continuously) {
+	  fprintf(stderr, 
+		  "Warning: cannot ignore connections in continuous mode\n");
+     }
+     
+     /* option is a list of connection numbers separated by commas */
+     /* option can be immediately "here" or given as a file name */
+     if (isdigit((int)(*value))) {  // --iTCP1 case
+	  o_arg=value;
+     } else {  /* TODO: consider removing this feature */
+	  /* it's in a file */	  
+	  /* open the file */
+	  o_arg = FileToBuf(value);
+	  /* if that fails, it's a command line error */
+	  if (o_arg == NULL) {
+	       bad_option(varname,
+	 	      "Expected filename or number list *immediately* after -i/--iTCP\n");
+          }
+     }
+     /* wherever we got it, o_arg is a connection list */
+     while (o_arg && *o_arg) {
+	  int num1,num2;
+	  
+	  if (sscanf(o_arg,"%d-%d",&num1,&num2) == 2) {
+	       /* process range */
+	       if (num2 <= num1) {
+		    // BadArg(varname,
+			   // "-iX-Y / --iTCPX-Y, must have X<Y, '%s'\n", o_arg);
+	       }
+	       if (tcptrace_debuglevel)
+		    printf("setting IgnoreConn(%d-%d)\n", num1, num2);
+	       
+	       while (num1<=num2) {
+		    if (tcptrace_debuglevel > 1)
+			 printf("setting IgnoreConn(%d)\n", num1);
+		    IgnoreConn(context, num1++);
+		    
+	       }
+	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
+	       /* single argument */
+	       if (tcptrace_debuglevel)
+		    printf("setting IgnoreConn(%d)\n", num1);
+	       IgnoreConn(context, num1);
+	  } else {
+	       /* error */
+	       bad_option(varname,
+	 	      "Don't understand conn number starting at '%s'\n", o_arg);
+	  }
+	  
+	  /* look for the next comma */
+	  o_arg = strchr(o_arg,',');
+	  if (o_arg)
+	       ++o_arg;
+     }
+}
+
+void
+tcptrace_select_tcp(
+    tcptrace_context_t *context,
+    char *varname,
+    char *value)
+{
+     char *o_arg;
+     tcptrace_runtime_options_t *options = context->options;
+     
+     /* next part of arg is a filename or number list */
+     if (*value == '\00') {
+	  bad_option(varname,
+		 "Expected filename or number list *immediately* after -o / --oTCP\n");
+     }
+
+     if (options->run_continuously) {
+	  fprintf(stderr, 
+		  "Warning: cannot 'grab-only' connections in continuous mode\n");
+     }
+
+     /* option is a list of connection numbers separated by commas */
+     /* option can be immediately "here" or given as a file name */
+     if (isdigit((int)(*value))) {
+	  /* list is on the command line */
+	  o_arg = value;
+     } else {
+	  /* it's in a file */
+	  /* open the file */
+	  o_arg = FileToBuf(value);
+	  
+	  /* if that fails, it's a command line error */
+	  if (o_arg == NULL) {
+	       bad_option(varname,"Expected filename or number list *immediately* after -o / --oTCP\n");
+	  }
+     }
+     
+     /* wherever we got it, o_arg is a connection list */
+     while (o_arg && *o_arg) {
+	  int num1,num2;
+	  
+	  if (sscanf(o_arg,"%d-%d",&num1,&num2) == 2) {
+	       /* process range */
+	       if (num2 <= num1) {
+		    bad_option(varname,
+			   "-oX-Y / --oTCPX-Y, must have X<Y, '%s'\n", 
+			   o_arg);
+	       }
+	       if (tcptrace_debuglevel)
+		    printf("setting OnlyConn(%d-%d)\n", num1, num2);
+	       
+	       while (num1<=num2) {
+		    if (tcptrace_debuglevel > 1)
+			 printf("setting OnlyConn(%d)\n", num1);
+		    OnlyConn(context, num1++);
+	       }
+	  } else if (sscanf(o_arg,"%d",&num1) == 1) {
+	       /* single argument */
+	       if (tcptrace_debuglevel)
+		    printf("setting OnlyConn(%d)\n", num1);
+	       OnlyConn(context, num1);
+	  } else {
+	       /* error */
+	       bad_option(varname,
+		      "Don't understand conn number starting at '%s'\n", o_arg);
+	  }
+	  
+	  /* look for the next comma */
+	  o_arg = strchr(o_arg,',');
+	  if (o_arg)
+	       ++o_arg;
+     }
+}
+
+/* TODO: consider eliminating this feature */
+
+/* read from a file, store contents into NULL-terminated string */
+/* memory returned must be "free"ed to be reclaimed */
+static char *
+FileToBuf(
+    char *filename)
+{
+    FILE *f;
+    struct stat str_stat;
+    int filesize;
+    char *buffer;
+
+    /* open the file */
+    if ((f = fopen(filename,"r")) == NULL) {
+	fprintf(stderr,"Open of '%s' failed\n", filename);
+	perror(filename);
+	return(NULL);
+    }
+
+
+    /* determine the file length */
+    if (fstat(fileno(f),&str_stat) != 0) {
+	perror("fstat");
+	exit(1);
+    }
+    filesize = str_stat.st_size;
+
+    /* make a big-enough buffer */
+    buffer = MallocZ(filesize+2);  /* with room to NULL terminate */
+
+
+    /* read the file into the buffer */
+    if (fread(buffer,1,filesize,f) != filesize) {
+	perror("fread");
+	exit(1);
+    }
+
+    fclose(f);
+
+    /* put a NULL at the end */
+    buffer[filesize] = '\00';
+
+    if (tcptrace_debuglevel > 1)
+	printf("Read %d characters from resource '%s': '%s'\n",
+	       filesize, filename, buffer);
+
+    /* somebody else will "free" it */
+    return(buffer);
+}
+
+static void bad_option(
+    char *option,
+    char *format,
+    ...)
+{
+    va_list ap;
+
+    fprintf(stderr, "Option error");
+    if (option) {
+        fprintf(stderr," (from %s)", option);
+    }
+    fprintf(stderr,": ");
+    
+    va_start(ap, format);
+    vfprintf(stderr, format, ap);
+    va_end(ap);
+}
+
 

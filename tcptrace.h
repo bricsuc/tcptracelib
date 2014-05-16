@@ -843,6 +843,12 @@ typedef struct tcptrace_runtime_options_t {
     u_long nonreal_live_conn_interval;   char *nonreal_live_conn_interval_s;
     u_long remove_closed_conn_interval;  char *remove_closed_conn_interval_s;
 
+    /* ignore and selected connections (as strings) */
+    char *tcp_ignored;
+    char *tcp_selected;
+    char *udp_ignored;
+    char *udp_selected;
+
     int thru_interval;
 
 } tcptrace_runtime_options_t;
@@ -1036,6 +1042,10 @@ Bool tcptrace_get_option_bool(tcptrace_context_t *context, char *argname);
 tcptrace_ext_var_op *tcptrace_find_option_var(char *argname);
 int tcptrace_set_option_var(tcptrace_context_t *context, char *argname, char *value);
 char *tcptrace_get_option_var(tcptrace_context_t *context, char *argname);
+
+/* connection ignore/select routines */
+void tcptrace_ignore_tcp(tcptrace_context_t *context, char *varname, char *value);
+void tcptrace_select_tcp(tcptrace_context_t *context, char *varname, char *value);
 
 /* module routines */
 void tcptrace_modules_load(tcptrace_context_t *context, int argc, char *argv[]);

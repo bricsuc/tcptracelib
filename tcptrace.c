@@ -332,7 +332,7 @@ static char **find_str_option_location(struct ext_var_op *popt);
 
 
 // Extended option verification routines
-static void Ignore(char *argsource, char *opt);
+// static void Ignore(char *argsource, char *opt);
 static void GrabOnly(char *argsource, char *opt);
 static void IgnoreUDP(char *argsource, char *opt);
 static void GrabOnlyUDP(char *argsource, char *opt);
@@ -346,8 +346,8 @@ static struct ext_opt {
      void (*opt_func) (char *argsource, char *opt);
      char *opt_descr;
 } extended_options[] = {
-     {"iTCP",Ignore,"ignore specific TCP connections, same as -i"},
-     {"oTCP",GrabOnly,"only specific TCP connections, same as -o"},
+     /* {"iTCP",Ignore,"ignore specific TCP connections, same as -i"}, */
+     /* {"oTCP",GrabOnly,"only specific TCP connections, same as -o"}, */
      {"iUDP",IgnoreUDP,"ignore specific UDP connections"},
      {"oUDP",GrabOnlyUDP,"only specific UDP connections"}
 
@@ -902,6 +902,7 @@ QuitSig(
     exit(1);
 }
 
+#if 0
 static void
 Ignore(
        char *argsource,
@@ -971,7 +972,9 @@ Ignore(
 	       ++o_arg;
      }
 }
+#endif
 
+#if 0
 static void
 GrabOnly(
     char *argsource,
@@ -1044,6 +1047,7 @@ GrabOnly(
 	       ++o_arg;
      }
 }
+#endif
 
 static void
 IgnoreUDP(
@@ -1793,7 +1797,7 @@ ParseArgs(
 		    }
 		    break;
 		  case 'h': Help(argv[i]+1); *(argv[i]+1) = '\00'; break;
-		  case 'i': Ignore(argsource,argv[i]+1);
+		  case 'i': tcptrace_ignore_tcp(context, argsource, argv[i]+1);
 /*			      {
 		      int conn = -1;
 		      if (options->run_continuously) {
@@ -1828,7 +1832,7 @@ ParseArgs(
 		    }
 		    else {
 		        ++saw_i_or_o;
-		        GrabOnly(argsource,argv[i]+1);
+		        tcptrace_select_tcp(context, argsource, argv[i]+1);
 		    }
 		    *(argv[i]+1) = '\00'; break;
 		  case 'p': options->printallofem = TRUE; break;

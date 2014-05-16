@@ -205,7 +205,7 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
 
     options->sep = NULL;
 
-    /* TODO: maybe fix these strings */
+    /* TODO: maybe set these strings to the defaults */
     options->update_interval = UPDATE_INTERVAL;
     options->update_interval_s = "UPDATE_INTERVAL";
     options->max_conn_num = MAX_CONN_NUM;
@@ -216,6 +216,12 @@ tcptrace_initialize_options(tcptrace_runtime_options_t *options) {
     options->nonreal_live_conn_interval_s = "NONREAL_LIVE_CONN_INTERVAL";
     options->remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL;
     options->remove_closed_conn_interval_s = "REMOVE_CLOSED_CONN_INTERVAL";
+
+    /* ignored/selected connections */
+    options->tcp_ignored = NULL;
+    options->tcp_selected = NULL;
+    options->udp_ignored = NULL;
+    options->udp_selected = NULL;
 
     options->thru_interval = 10; /* segments */
 
