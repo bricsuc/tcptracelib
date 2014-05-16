@@ -892,6 +892,7 @@ typedef struct tcptrace_context_t {
     Bool *tcp_ignore_pairs;
     Bool tcp_more_conns_ignored;
     int num_removed_tcp_pairs;   /* doesn't seem to be used for anything */
+    Bool tcp_connections_cleared;
 
     int tcp_active_conn_count;
     int tcp_closed_conn_count;

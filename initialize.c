@@ -71,6 +71,7 @@ tcptrace_initialize_context(tcptrace_context_t *context) {
 
     context->tcp_ignore_pairs = NULL;
     context->tcp_more_conns_ignored = FALSE;
+    context->tcp_connections_cleared = FALSE;
     context->num_removed_tcp_pairs = 0;
 
     context->tcp_active_conn_count = 0;

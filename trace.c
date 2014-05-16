@@ -2842,21 +2842,18 @@ OnlyConn(
     int ix_only)
 {
     int ix;
-    static Bool cleared = FALSE;
 	
     if (tcptrace_debuglevel) fprintf(stderr,"only printing conn %d\n", ix_only);
 
-//    trace_init();
-	
     --ix_only;
 
     MoreTcpPairs(context, ix_only);
 
-    if (!cleared) {
+    if (!context->tcp_connections_cleared) {
 	for (ix = 0; ix < context->max_tcp_pairs; ++ix) {
 	    context->tcp_ignore_pairs[ix] = TRUE;
 	}
-	cleared = TRUE;
+	context->tcp_connections_cleared = TRUE;
     }
 
     context->tcp_more_conns_ignored = TRUE;
