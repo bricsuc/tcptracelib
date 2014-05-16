@@ -216,7 +216,6 @@ OnlyUDPConn(tcptrace_context_t *context,
 	    int ix_only)
 {
      int ix;
-     context->udp_connections_cleared = FALSE; /* is there a better name? */
 
      if (tcptrace_debuglevel) {
          fprintf(stderr,"only printing UDP conn %d\n", ix_only);
