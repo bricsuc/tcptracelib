@@ -92,95 +92,6 @@ static void BadArg(char *argsource, char *format, ...);
 static void Version(void);
 static char *FileToBuf(char *filename);
 
-
-
-/* option flags and default values */
-/* Bool colorplot = TRUE; */
-/* Bool dump_rtt = FALSE; */
-/* Bool graph_rtt = FALSE; */
-/* Bool graph_tput = FALSE; */
-/* Bool graph_tsg = FALSE; */
-/* Bool graph_segsize = FALSE; */
-/* Bool graph_owin = FALSE; */
-/* Bool graph_tline = FALSE; */
-/* Bool hex = TRUE; */
-/* Bool ignore_non_comp = FALSE; */
-/* Bool dump_packet_data = FALSE; */
-/* Bool print_rtt = FALSE; */
-/* Bool print_owin = FALSE; */
-/* Bool printbrief = TRUE; */
-/* Bool printsuppress = FALSE; */
-/* Bool printem = FALSE; */
-/* Bool printallofem = FALSE; */
-/* Bool printticks = FALSE; */
-/* Bool warn_ooo = FALSE; */
-/* Bool warn_printtrunc = FALSE; */
-/* Bool warn_printbadmbz = FALSE; */
-/* Bool warn_printhwdups = FALSE; */
-/* Bool warn_printbadcsum = FALSE; */
-/* Bool warn_printbad_syn_fin_seq = FALSE; */
-/* Bool docheck_hw_dups = TRUE; */
-/* Bool save_tcp_data = FALSE; */
-/* Bool graph_time_zero = FALSE; */
-/* Bool graph_seq_zero = FALSE; */
-/* Bool print_seq_zero = FALSE; */
-/* Bool graph_zero_len_pkts = TRUE; */
-/* Bool plot_tput_instant = TRUE; */
-/* Bool filter_output = FALSE; */
-/* Bool show_title = TRUE; */
-/* Bool show_rwinline = TRUE; */
-/* Bool do_udp = FALSE; */
-/* Bool resolve_ipaddresses = TRUE; */
-/* Bool resolve_ports = TRUE; */
-/* Bool verify_checksums = FALSE; */
-/* Bool triple_dupack_allows_data = FALSE; */
-/* Bool run_continuously = FALSE; */
-/* Bool xplot_all_files = FALSE; */
-/* Bool conn_num_threshold = FALSE; */
-/* Bool ns_hdrs = TRUE; */
-/* Bool dup_ack_handling = TRUE; */
-/* Bool csv = FALSE; */
-/* Bool tsv = FALSE; */
-/* u_long remove_live_conn_interval = REMOVE_LIVE_CONN_INTERVAL; */
-/* u_long nonreal_live_conn_interval = NONREAL_LIVE_CONN_INTERVAL; */
-/* u_long remove_closed_conn_interval = REMOVE_CLOSED_CONN_INTERVAL; */
-/* u_long update_interval = UPDATE_INTERVAL; */
-/* u_long max_conn_num = MAX_CONN_NUM; */
-
-/* int debug = 0; */
-
-/* the following have been de-globalized */
-/* u_long pnum = 0; */
-/* u_long beginpnum = 0; */
-/* u_long endpnum = 0; */
-/* struct timeval current_time; */
-
-/* u_long ctrunc = 0; */
-/* u_long bad_ip_checksums = 0; */
-/* u_long bad_tcp_checksums = 0; */
-/* u_long bad_udp_checksums = 0; */
-
-/* first and last packet timestamp */
-/* timeval first_packet = {0,0}; */
-/* timeval last_packet = {0,0}; */
-
-/* extended variables with values */
-/* char *output_file_dir = NULL; */
-/* char *output_file_prefix = NULL; */
-/* char *xplot_title_prefix = NULL; */
-/* char *xplot_args = NULL; */
-/* char *sv = NULL; */
-
-/* globals */
-/* int num_modules = 0; */  /* deglobalized */
-/* char *ColorNames[NCOLORS] = {"green", "red", "blue", "yellow", "purple", * "orange", "magenta", "pink"}; */
-/* char *comment; */
-
-/* char *output_filename = NULL; */
-
-/* char *cur_filename; */
-/* static u_long filesize = 0; */
-
 /* globals confined to this file */
 
 /* global context (contains options and context for tcptrace client) */
@@ -189,13 +100,6 @@ static tcptrace_context_t *global_context;
 static char **filenames = NULL;
 static int num_files = 0;
 static char *progname;
-
-/* temporary storage for arg parsing */
-static char *update_interval_st = NULL;
-static char *max_conn_num_st = NULL;
-static char *live_conn_interval_st = NULL;
-static char *nonreal_conn_interval_st = NULL;
-static char *closed_conn_interval_st = NULL;
 
 /* for elapsed processing time */
 /* static struct timeval wallclock_start; */
@@ -549,10 +453,6 @@ ListModules(void)
     for (i=0; i < NUM_MODULES; ++i) {
 	fprintf(stderr,"  %-15s  %s\n",
 		tcptrace_modules[i].module_name, tcptrace_modules[i].module_descr);
-/* 	if (tcptrace_modules[i].module_usage) { */
-/* 	    fprintf(stderr,"    usage:\n"); */
-/* 	    (*tcptrace_modules[i].module_usage)(); */
-/* 	} */
     }
 }
 
@@ -901,15 +801,10 @@ ParseExtendedBool(
     /* search for a match on each extended boolean arg */
     pbop_found = tcptrace_find_option_bool(argtext);
 
+    /* if no exact match, look for a partial match */
     if (pbop_found == NULL) {
         for (i = 0; tcptrace_extended_bools[i].bool_optname != NULL; i++) {
             tcptrace_ext_bool_op *pbop = &tcptrace_extended_bools[i];
-
-            /* check for the default value flag */
-            // if (strcmp(argtext,pbop->bool_optname) == 0) {
-            //     pbop_found = pbop;
-            //     break;
-            // }
 
             /* check for a prefix match */
             if (strncmp(argtext,pbop->bool_optname,arglen) == 0) {
@@ -1018,6 +913,7 @@ ParseExtendedVar(
     /*  therefore length = argval(1013)-argname(1002)-1 (10) */
     arglen = argval - argname - 1;
 
+    /* TODO: we can use tcptrace_find_option_var() here */
     /* search for a match in the extended variable table */
     for (i=0; tcptrace_extended_vars[i].var_optname != NULL; i++) {
 	tcptrace_ext_var_op *pvop = &tcptrace_extended_vars[i];
