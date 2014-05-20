@@ -1036,6 +1036,7 @@ void tcptrace_initialize_context(tcptrace_context_t *context);
 void tcptrace_initialize_options(tcptrace_runtime_options_t *options);
 
 /* runtime option access routines */
+void tcptrace_set_debuglevel(int level);
 tcptrace_ext_bool_op *tcptrace_find_option_bool(char *argname);
 int tcptrace_set_option_bool(tcptrace_context_t *context, char *argname, Bool value) ;
 Bool tcptrace_get_option_bool(tcptrace_context_t *context, char *argname);

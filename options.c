@@ -125,7 +125,9 @@ tcptrace_ext_var_op tcptrace_extended_vars[] = {
 
 static char **find_option_location_str(tcptrace_runtime_options_t *options, tcptrace_ext_var_op *popt);
 
-
+void tcptrace_set_debuglevel(int level) {
+    tcptrace_debuglevel = level;
+}
 
 /* try to find a boolean option's runtime location */
 static Bool *find_option_location_bool(tcptrace_runtime_options_t *options, tcptrace_ext_bool_op *bopt) {
