@@ -68,6 +68,23 @@ tcptrace_ext_bool_op tcptrace_extended_bools[] = {
      "display the long output as tab separated values"},
     {"turn_off_BSD_dupack", __T_OPTIONS_OFFSET(dup_ack_handling), FALSE,
      "turn off the BSD version of the duplicate ack handling"},
+
+    /* these are long versions of short options in the original client */
+    {"print_brief", __T_OPTIONS_OFFSET(printbrief), TRUE,
+     "display brief output (disable to display long output)"},
+    {"graph_tput", __T_OPTIONS_OFFSET(graph_tput), FALSE,
+     "produce throughput graph(s)"},
+    {"graph_tsg", __T_OPTIONS_OFFSET(graph_tsg), FALSE,
+     "produce time sequence graph(s)"},
+    {"graph_rtt", __T_OPTIONS_OFFSET(graph_rtt), FALSE,
+     "produce rtt sample graph(s)"},
+    {"graph_owin", __T_OPTIONS_OFFSET(graph_owin), FALSE,
+     "produce owin (outstanding data on network) graph(s)"},
+    {"graph_segsize", __T_OPTIONS_OFFSET(graph_segsize), FALSE,
+     "produce segment size graph(s)"},
+    {"graph_tline", __T_OPTIONS_OFFSET(graph_tline), FALSE,
+     "produce timeline graph(s)"},
+    
     /* null-filled record to indicate end of array */
     {NULL, 0, FALSE, NULL}
 };
