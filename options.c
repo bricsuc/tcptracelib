@@ -70,6 +70,11 @@ tcptrace_ext_bool_op tcptrace_extended_bools[] = {
      "turn off the BSD version of the duplicate ack handling"},
 
     /* these are long versions of short options in the original client */
+    {"udptrace", __T_OPTIONS_OFFSET(do_udp), FALSE,
+     "do UDP analysis"},
+    {"show_rtt", __T_OPTIONS_OFFSET(print_rtt), FALSE,
+     "print rtt statistics"},
+
     {"print_brief", __T_OPTIONS_OFFSET(printbrief), TRUE,
      "display brief output (disable to display long output)"},
     {"graph_tput", __T_OPTIONS_OFFSET(graph_tput), FALSE,
@@ -84,6 +89,7 @@ tcptrace_ext_bool_op tcptrace_extended_bools[] = {
      "produce segment size graph(s)"},
     {"graph_tline", __T_OPTIONS_OFFSET(graph_tline), FALSE,
      "produce timeline graph(s)"},
+
     
     /* null-filled record to indicate end of array */
     {NULL, 0, FALSE, NULL}
