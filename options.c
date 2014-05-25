@@ -74,9 +74,11 @@ tcptrace_ext_bool_op tcptrace_extended_bools[] = {
      "do UDP analysis"},
     {"show_rtt", __T_OPTIONS_OFFSET(print_rtt), FALSE,
      "print rtt statistics"},
-
     {"print_brief", __T_OPTIONS_OFFSET(printbrief), TRUE,
      "display brief output (disable to display long output)"},
+    {"quiet", __T_OPTIONS_OFFSET(printsuppress), FALSE,
+     "quiet mode (supress all output)"},
+
     {"graph_tput", __T_OPTIONS_OFFSET(graph_tput), FALSE,
      "produce throughput graph(s)"},
     {"graph_tsg", __T_OPTIONS_OFFSET(graph_tsg), FALSE,
