@@ -76,6 +76,10 @@ tcptrace_ext_bool_op tcptrace_extended_bools[] = {
      "print rtt statistics"},
     {"print_brief", __T_OPTIONS_OFFSET(printbrief), TRUE,
      "display brief output (disable to display long output)"},
+    {"print_packets", __T_OPTIONS_OFFSET(printallofem), TRUE,
+     "print contents of packets"},
+    {"print_hex", __T_OPTIONS_OFFSET(hex), TRUE,
+     "if printing packets, print types, seq, and ack in hexdecimal"},
     {"quiet", __T_OPTIONS_OFFSET(printsuppress), FALSE,
      "quiet mode (supress all output)"},
 
