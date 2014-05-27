@@ -82,6 +82,8 @@ tcptrace_ext_bool_op tcptrace_extended_bools[] = {
      "if printing packets, print types, seq, and ack in hexdecimal"},
     {"quiet", __T_OPTIONS_OFFSET(printsuppress), FALSE,
      "quiet mode (supress all output)"},
+    {"save_connections", __T_OPTIONS_OFFSET(save_tcp_data), FALSE,
+     "split and save (TCP) connection content in separate files"},
 
     {"graph_tput", __T_OPTIONS_OFFSET(graph_tput), FALSE,
      "produce throughput graph(s)"},
